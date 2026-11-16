@@ -75,6 +75,13 @@ function query(filters: HistoryFilters, page: number, limit: number) {
   });
 }
 
+// The API counts the plays it pages only when a read has a start date. Without one it sums a per-show counter that can
+// run far over, so the counter is off and the last pages come up empty. MySQL's earliest date keeps every play.
+const EVERY_PLAY = '1000-01-01T00:00:00.000Z';
+
+const historyQuery = (filters: HistoryFilters, page: number, limit: number) =>
+  query({ ...filters, startAt: filters.startAt ?? EVERY_PLAY }, page, limit);
+
 const filtered = (filters: HistoryFilters) =>
   Boolean(filters.startAt || filters.endAt || filters.genre || filters.watchnow);
 
@@ -125,7 +132,7 @@ async function fetchPage({
       ? await readAll(
           fetch,
           token,
-          (n) => `${base}/history/${type}?${query(filters, n, MAX_LIMIT)}`,
+          (n) => `${base}/history/${type}?${historyQuery(filters, n, MAX_LIMIT)}`,
           MAX_PAGES,
           (body) => historyRowsSchema.safeParse(body).data,
         ).then((read) => ({ ...read, rows: read.rows && toChartsFromPlays(read.rows) }))
@@ -155,7 +162,7 @@ async function fetchPage({
     const all = await readAll(
       fetch,
       token,
-      (n) => `${base}${path}?${query(filters, n, MAX_LIMIT)}`,
+      (n) => `${base}${path}?${historyQuery(filters, n, MAX_LIMIT)}`,
       MAX_PAGES,
       (body) => historyRowsSchema.safeParse(body).data,
     );
@@ -168,7 +175,7 @@ async function fetchPage({
     const { slice, page } = paged(charts, current, limit);
     return { ...empty, status: 200, charts: slice, total: charts.length, playCount: all.total, page };
   }
-  const { response, body } = await read(fetch, token, `${base}${path}?${query(filters, current, limit)}`);
+  const { response, body } = await read(fetch, token, `${base}${path}?${historyQuery(filters, current, limit)}`);
   if (response.status === 404) return { ...empty, status: 404 };
   const rows = historyRowsSchema.safeParse(body);
   if (!rows.success) return invalid(response.status);

@@ -77,6 +77,15 @@ describe('loadHistory', () => {
     expect(result.days[0]?.cards[0]).toMatchObject({ variant: 'screenshot', show: { text: 'Breaking Bad' } });
   });
 
+  it('should read every play from the earliest date, so the count is the plays the API pages', async () => {
+    const result = await load();
+    expect(requested()).toEqual([
+      '/users/tester/history?extended=full&page=1&limit=60&start_at=1000-01-01T00%3A00%3A00.000Z',
+    ]);
+    expect(result.counts).toEqual({ plays: 61 });
+    expect(result.page).toMatchObject({ current: 1, total: 2 });
+  });
+
   it('should page the watched list on the Shows tab', async () => {
     const result = await load({ type: 'shows' });
     expect(requested()).toEqual(['/users/tester/watched/shows?extended=full&page=1&limit=60']);
@@ -90,8 +99,8 @@ describe('loadHistory', () => {
   it('should group the filtered plays by show on a filtered Shows tab', async () => {
     const result = await load({ type: 'shows', query: '?genres=drama' });
     expect(requested()).toEqual([
-      '/users/tester/history/shows?extended=full&page=1&limit=250&genres=drama',
-      '/users/tester/history/shows?extended=full&page=2&limit=250&genres=drama',
+      '/users/tester/history/shows?extended=full&page=1&limit=250&start_at=1000-01-01T00%3A00%3A00.000Z&genres=drama',
+      '/users/tester/history/shows?extended=full&page=2&limit=250&start_at=1000-01-01T00%3A00%3A00.000Z&genres=drama',
     ]);
     expect(result.counts).toEqual({ unique: { count: 1, noun: 'show' } });
     expect(result.page).toEqual({ type: 'paginated', current: 1, total: 1 });
@@ -153,8 +162,8 @@ describe('loadHistory', () => {
     );
     const result = await load({ type: 'episodes', sort: 'added/desc', query: '?show=1388' });
     expect(requested()).toEqual([
-      '/users/tester/history/shows/1388?extended=full&page=1&limit=250',
-      '/users/tester/history/shows/1388?extended=full&page=2&limit=250',
+      '/users/tester/history/shows/1388?extended=full&page=1&limit=250&start_at=1000-01-01T00%3A00%3A00.000Z',
+      '/users/tester/history/shows/1388?extended=full&page=2&limit=250&start_at=1000-01-01T00%3A00%3A00.000Z',
     ]);
     expect(result).toMatchObject({ sort: { by: 'added', how: 'desc' }, charted: false, counts: { plays: 61 } });
     expect(result.days.map(({ cards }) => cards.map(({ key }) => key))).toEqual([[8], [9]]);

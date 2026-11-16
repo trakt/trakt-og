@@ -223,6 +223,30 @@ describe('toPersonSummary', () => {
     ]);
   });
 
+  it('should link out to TikTok, YouTube and Wikidata after the other socials', () => {
+    const social_ids = { ...person.social_ids, tiktok: 'bryancranston', youtube: 'UC123', wikidata: 'Q43416' };
+    const summary = toPersonSummary({ ...base, person: { ...person, social_ids } });
+
+    expect(summary.links.slice(3).map(({ label, href, title }) => [label, href, title])).toEqual([
+      ['Twitter', 'https://twitter.com/BryanCranston', '@BryanCranston'],
+      ['TikTok', 'https://www.tiktok.com/@bryancranston', '@bryancranston'],
+      ['YouTube', 'https://www.youtube.com/channel/UC123', undefined],
+      ['Wikidata', 'https://www.wikidata.org/wiki/Q43416', undefined],
+    ]);
+  });
+
+  it("should open Wikipedia in the page's language, English when it has none", () => {
+    const wikipedia = (wikipedia_language?: string | null) =>
+      toPersonSummary({
+        ...base,
+        person: { ...person, social_ids: { wikipedia: 'Gérard_Depardieu', wikipedia_language } },
+      }).links.find(({ label }) => label === 'Wikipedia')?.href;
+
+    expect(wikipedia('fr')).toBe('https://fr.wikipedia.org/wiki/G%C3%A9rard_Depardieu');
+    expect(wikipedia(null)).toBe('https://en.wikipedia.org/wiki/G%C3%A9rard_Depardieu');
+    expect(wikipedia('')).toBe('https://en.wikipedia.org/wiki/G%C3%A9rard_Depardieu');
+  });
+
   it('should search IMDB and Wikipedia for someone with no ids', () => {
     const summary = toPersonSummary({
       ...base,

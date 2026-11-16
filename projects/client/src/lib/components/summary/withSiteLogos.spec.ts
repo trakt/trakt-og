@@ -30,6 +30,18 @@ describe('withSiteLogos', () => {
     expect(colors['Official Site']).toBeUndefined();
   });
 
+  it("should give a person's Wikidata link its logo, and each new site its color", () => {
+    const [wikidata, tiktok, youtube] = withSiteLogos([
+      { label: 'Wikidata', href: 'https://www.wikidata.org/wiki/Q43416' },
+      { label: 'TikTok', href: 'https://www.tiktok.com/@bryancranston', icon: '<svg/>' },
+      { label: 'YouTube', href: 'https://www.youtube.com/channel/UC123', icon: '<svg/>' },
+    ]);
+    expect(wikidata?.icon).toContain('<svg');
+    expect(wikidata?.color).toBe('var(--color-site-wikidata)');
+    expect(tiktok?.color).toBe('var(--color-site-tiktok)');
+    expect(youtube?.color).toBe('var(--color-site-youtube)');
+  });
+
   it('should keep an icon a link already has', () => {
     expect(withSiteLogos(links).find((link) => link.label === 'Wikipedia')?.icon).toBe(links[5]?.icon);
   });

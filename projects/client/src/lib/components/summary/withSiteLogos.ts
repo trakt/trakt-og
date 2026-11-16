@@ -3,6 +3,7 @@ import imdb from '#lib/icons/sites/imdb.svg?raw';
 import officialSite from '#lib/icons/sites/official-site.svg?raw';
 import tmdb from '#lib/icons/sites/tmdb.svg?raw';
 import tvdb from '#lib/icons/sites/tvdb.svg?raw';
+import wikidata from '#lib/icons/sites/wikidata.svg?raw';
 import type { ExternalLink } from './ExternalLink.ts';
 
 /** OG's fonts had no logos for these: they come from the current Trakt site and the sites' own artwork. */
@@ -12,6 +13,7 @@ const SITE_ICONS: Readonly<Record<string, string>> = {
   TMDB: tmdb,
   TVDB: tvdb,
   'Fanart.tv': fanartTv,
+  Wikidata: wikidata,
 };
 
 /** Each logo's color under the pointer: its site's brand color, or none for a plain one (Wikipedia). */
@@ -24,6 +26,9 @@ const SITE_COLORS: Readonly<Record<string, string>> = {
   Twitter: 'var(--color-site-twitter)',
   Facebook: 'var(--color-site-facebook)',
   Instagram: 'var(--color-site-instagram)',
+  TikTok: 'var(--color-site-tiktok)',
+  Wikidata: 'var(--color-site-wikidata)',
+  YouTube: 'var(--color-site-youtube)',
 };
 
 /** Gives the sites with a logo their icon and brand color, and puts every icon link ahead of the text ones. */

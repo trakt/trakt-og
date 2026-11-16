@@ -13,5 +13,6 @@ export type LinkedMedia = {
     readonly facebook?: string | null;
     readonly instagram?: string | null;
     readonly wikipedia?: string | null;
+    readonly wikipedia_language?: string | null;
   } | null;
 };

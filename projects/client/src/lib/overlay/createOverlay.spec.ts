@@ -354,6 +354,16 @@ describe('createOverlay', () => {
       expect(overlay.state('movie', 1).watched).toBeUndefined();
     });
 
+    it('should report every slice it has no copy of as failed', async () => {
+      server.use(http.get(`${API}/sync/last_activities`, () => HttpResponse.json({}, { status: 502 })));
+      const { overlay } = setup({ sean: [droppedRecord('old', 99)] });
+
+      await overlay.start('sean');
+
+      expect(overlay.failed()).toContain('watchedMovies');
+      expect(overlay.failed()).not.toContain('dropped');
+    });
+
     it.each([
       ['a body missing fields', () => HttpResponse.json({ all: T0, movies: { watched_at: T0 } })],
       ['a body with a timestamp of the wrong type', () => HttpResponse.json({ ...activities(), all: 1 })],
@@ -412,6 +422,18 @@ describe('createOverlay', () => {
 
       expect(overlay.state('show', 2).dropped).toBeUndefined();
       expect(overlay.state('show', 2).watched).toBe(true);
+    });
+
+    it('should report it as failed until a later check fetches it', async () => {
+      server.use(http.get(`${API}/users/hidden/dropped`, () => HttpResponse.error(), { once: true }));
+      const { overlay } = setup();
+
+      await overlay.start('sean');
+      expect(overlay.failed()).toEqual(['dropped']);
+
+      await overlay.refresh();
+      expect(overlay.failed()).toEqual([]);
+      expect(overlay.state('show', 2).dropped).toBe(true);
     });
   });
 

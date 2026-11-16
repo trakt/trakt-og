@@ -274,10 +274,17 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
   let known: Partial<Record<SliceName, string>> = {};
   let inFlight: { user: string; done: Promise<void> } | null = null;
   let checkedAt = -Infinity;
+  // Slices the last check couldn't fetch, until one fetches.
+  let failed = $state.raw<readonly SliceName[]>([]);
 
   const apply = ({ name, data, activity }: SliceRecord) => {
     slices = { ...slices, [name]: data };
     known = { ...known, [name]: activity };
+    if (failed.includes(name)) failed = failed.filter((other) => other !== name);
+  };
+
+  const fail = (forUser: string, name: SliceName) => {
+    if (user === forUser && !failed.includes(name)) failed = [...failed, name];
   };
 
   // `start` begins the import with the cache read, so the chunk loads while IndexedDB answers.
@@ -300,13 +307,15 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
     checkedAt = now();
     const loaded = await preloadChecker().catch(() => null);
     // A chunk that fails to load is a failed check: keep the cached slices. The next visibility check retries.
-    if (!loaded || user !== forUser) return;
+    if (user !== forUser) return;
+    if (!loaded) return SLICE_NAMES.filter((name) => known[name] === undefined).forEach((name) => fail(forUser, name));
 
     await loaded.checkActivities({
       get,
       known: () => known,
       isCurrent: () => user === forUser,
       onSlice: (record) => saveSlice(forUser, record),
+      onFailed: (name) => fail(forUser, name),
     });
   };
 
@@ -325,6 +334,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
   const forget = () => {
     slices = {};
     known = {};
+    failed = [];
     inFlight = null;
   };
 
@@ -338,6 +348,9 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
 
     /** Every slice as it stands, for views that compute from the whole library. Reactive; missing means unknown. */
     slices: (): Partial<OverlaySlices> => slices,
+
+    /** The slices the last check couldn't fetch. One with a cached copy still reads from it. Reactive. */
+    failed: (): readonly SliceName[] => failed,
 
     /** Signs `nextUser` in: drops any other user's records, applies the cache, then checks `last_activities`. */
     start: async (nextUser: string): Promise<void> => {

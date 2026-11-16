@@ -1,8 +1,7 @@
 <!--
-  A one-off offer over a lists page or a list, in the dialogs' amber notice: a line of text, then its action and a
-  quiet way to say no. Bringing back classic saved filters as smart lists, or letting a list an app stopped syncing
-  fill itself.
-    <ListNotice action="Bring back 2" {busy} onaction={importFilters} ondismiss={dismiss}>You had …</ListNotice>
+  A one-off offer over a list, in the dialogs' amber notice: a line of text, then its action. It stays until the offer
+  is taken, like letting a list an app stopped syncing fill itself.
+    <ListNotice action="Make it a smart list" {busy} onaction={convert}>Synced from …</ListNotice>
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -12,20 +11,15 @@ interface Props {
   action: string;
   busy?: boolean;
   onaction: () => void;
-  /** Left out, there's no way to say no: the offer goes when it's taken. */
-  ondismiss?: () => void;
   children: Snippet;
 }
 
-const { action, busy = false, onaction, ondismiss, children }: Props = $props();
+const { action, busy = false, onaction, children }: Props = $props();
 </script>
 
 <div class="list-notice" role="status">
   <p>{@render children()}</p>
-  <span class="buttons">
-    <button type="button" class="action" disabled={busy} onclick={onaction}>{busy ? 'Working…' : action}</button>
-    {#if ondismiss}<button type="button" class="dismiss" disabled={busy} onclick={ondismiss}>No thanks</button>{/if}
-  </span>
+  <button type="button" disabled={busy} onclick={onaction}>{busy ? 'Working…' : action}</button>
 </div>
 
 <style>
@@ -49,39 +43,24 @@ const { action, busy = false, onaction, ondismiss, children }: Props = $props();
   }
 }
 
-.buttons {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-base-block);
-}
-
 button {
   min-block-size: var(--control-height-small);
   padding: 0 var(--space-sm-inline);
-  border: 1px solid transparent;
+  border: 1px solid var(--color-dialog-art-alert-border);
   border-radius: var(--radius-control);
-  background: none;
+  background-color: var(--color-control-bg);
   color: inherit;
   font: inherit;
   font-weight: var(--font-weight-headings-heavy);
   cursor: pointer;
 
+  &:is(:hover, :focus-visible):not(:disabled) {
+    border-color: var(--color-control-border-hover);
+  }
+
   &:disabled {
     cursor: default;
     opacity: var(--opacity-action-disabled);
   }
-}
-
-.action {
-  border-color: var(--color-dialog-art-alert-border);
-  background-color: var(--color-control-bg);
-
-  &:is(:hover, :focus-visible):not(:disabled) {
-    border-color: var(--color-control-border-hover);
-  }
-}
-
-.dismiss:is(:hover, :focus-visible):not(:disabled) {
-  text-decoration: underline;
 }
 </style>

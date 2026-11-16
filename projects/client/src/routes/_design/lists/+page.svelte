@@ -206,20 +206,11 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="List notice"
-  note="A one-off offer over a lists page or a list. Try the action: it shows Working… while busy.">
+  note="A one-off offer over a list. Try the action: it shows Working… while busy.">
   <div class="states">
-    <Variant label="Classic saved filters, on the viewer's own Smart lists">
+    <Variant label="A list an app stopped syncing, on its own page: it stays until converted">
       <div class="padded">
-        <ListNotice action="Bring back 2" busy={noticeBusy} onaction={() => (noticeBusy = !noticeBusy)}
-          ondismiss={() => {}}>
-          You had <strong>3</strong> saved filters on classic Trakt. 2 can come back as smart lists. The rest use a chart
-          or filter smart lists don't have.
-        </ListNotice>
-      </div>
-    </Variant>
-    <Variant label="A list an app stopped syncing, on its own page: no way to say no, it stays until converted">
-      <div class="padded">
-        <ListNotice action="Make it a smart list" onaction={() => {}}>
+        <ListNotice action="Make it a smart list" busy={noticeBusy} onaction={() => (noticeBusy = !noticeBusy)}>
           Synced from <strong>Sonarr</strong>, which no longer updates Trakt lists. As a smart list it keeps 92% of its
           titles today and adds new ones that match on its own.
         </ListNotice>

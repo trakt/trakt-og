@@ -3,24 +3,35 @@
   one washed red like PillTabs. An optional count sits in each as a small badge. Discover's moods, their Movies/Shows
   switch and the premiere filters use it, filled with the season's accent (`--toggle-chip-on-bg`, `-border`, `-text`
   and `--toggle-chip-count-on-bg` set on its page), and the related band's threads, where a `swatch` before the label
-  keys each chip to its color in the fingerprints.
+  keys each chip to its color in the fingerprints. It picks one chip, `selected` an id; with `multiple` any number
+  stay on, `selected` the array of their ids, like the Quality chart's lines. A chip with `busy` is waiting on
+  something it loads, which a screen reader hears.
     <ToggleChips label="Moods" options={[{ id: 'short', label: 'Under 95 Minutes' }]} bind:selected />
+    <ToggleChips label="Lines" multiple options={[{ id: 'you', label: 'You' }]} bind:selected={lines} />
 -->
 <script lang="ts">
-interface Props {
+interface Base {
   /** Names the group for screen readers. */
   label: string;
   /** `swatch` is a CSS color for a small square before the label. */
-  options: readonly { id: string; label: string; count?: number; swatch?: string }[];
-  selected: string;
+  options: readonly { id: string; label: string; count?: number; swatch?: string; busy?: boolean }[];
 }
 
+type Props = Base & ({ multiple?: false; selected: string } | { multiple: true; selected: readonly string[] });
+
 let { label, options, selected = $bindable() }: Props = $props();
+
+const isOn = (id: string) => (typeof selected === 'string' ? selected === id : selected.includes(id));
+
+function toggle(id: string) {
+  if (typeof selected === 'string') selected = id;
+  else selected = selected.includes(id) ? selected.filter((on) => on !== id) : [...selected, id];
+}
 </script>
 
 <div class="chips" role="group" aria-label={label}>
   {#each options as option (option.id)}
-    <button type="button" aria-pressed={option.id === selected} onclick={() => (selected = option.id)}>
+    <button type="button" aria-pressed={isOn(option.id)} aria-busy={option.busy || undefined} onclick={() => toggle(option.id)}>
       {#if option.swatch}<span class="swatch" style:background-color={option.swatch}></span>{/if}{option.label}{#if
         option.count !== undefined
       }<span class="count">{option.count}</span>{/if}
@@ -32,7 +43,7 @@ let { label, options, selected = $bindable() }: Props = $props();
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-dropdown-row);
+  gap: var(--toggle-chip-gap);
 }
 
 button {

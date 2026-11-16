@@ -37,6 +37,7 @@ import RatingPopover from '#lib/components/rating/RatingPopover.svelte';
 import { RATING_LABELS } from '#lib/components/rating/ratingPrompt.ts';
 import { watchedFirst } from '#lib/components/rating/watchedFirst.ts';
 import RailGroup from '#lib/components/sidebar/RailGroup.svelte';
+import ToggleChips from '#lib/components/toggle-chips/ToggleChips.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
 import DemoButton from '#lib/design/DemoButton.svelte';
@@ -52,6 +53,16 @@ import { imageUrl } from '#lib/utils/imageUrl.ts';
 import { samples } from './fixtures.ts';
 
 const { data } = $props();
+
+const chipOptions = [
+  { id: 'community', label: 'Community', swatch: 'var(--color-quality-community)' },
+  { id: 'you', label: 'You', swatch: 'var(--color-quality-you)' },
+  { id: 'imdb', label: 'IMDb', swatch: 'var(--color-quality-imdb)' },
+  { id: 'tmdb', label: 'TMDB', swatch: 'var(--color-quality-tmdb)', count: 3 },
+];
+let chipOne = $state('community');
+let chipMany = $state<readonly string[]>(['community', 'you']);
+let chipBusy = $state(false);
 
 const shows = $derived(
   data.trending.map(({ show }) => ({
@@ -258,6 +269,20 @@ function showOverlay() {
   </section>
 </Specimen>
 
+<Specimen title="Toggle chips" row
+  note="A row of chips in the dropdown trigger's look, the picked ones washed red. One picks a single chip, like Discover's Movies and Shows; Several lets any number stay on, like the Quality chart's lines. A busy chip is waiting on a load.">
+  <Variant label="One">
+    <ToggleChips label="Line" options={chipOptions} bind:selected={chipOne} />
+  </Variant>
+  <Variant label="Several">
+    <div class="chips-demo">
+      <ToggleChips label="Lines" multiple options={chipOptions.map((option) => ({ ...option, busy: chipBusy && option.id === 'imdb' }))}
+        bind:selected={chipMany} />
+      <DemoToggle bind:checked={chipBusy}>IMDb busy</DemoToggle>
+    </div>
+  </Variant>
+</Specimen>
+
 <Specimen title="Terms filter" note="Opens a small panel; Apply or Enter filters to the term, and T opens it from anywhere.">
   <div class="toolbar">
     <TermsFilter bind:terms={soloTerms} />
@@ -446,6 +471,12 @@ function showOverlay() {
 
 .knob {
   padding: var(--design-canvas-padding);
+}
+
+.chips-demo {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-sm-block);
 }
 
 .frame {

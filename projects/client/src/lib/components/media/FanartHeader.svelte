@@ -91,7 +91,7 @@ const backdrop = $derived(loadedScreenshot ?? image);
 
 <style>
 .fanart-header {
-  --stats-height: 60px;
+  --stats-height: 52px;
   --item-nav-band: 0px; /* what the previous and next arrows center above: the strip, when there is one */
   --stats-padding-block: 10px; /* above and below the strip's content; a full-height divider reaches past it */
   position: relative;

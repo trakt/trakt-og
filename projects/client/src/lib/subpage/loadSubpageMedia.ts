@@ -18,7 +18,7 @@ type Params = {
   item: SubpageItem;
   /** The subpage's own path segment: `credits`, `stats`, `lists`, `comments`. */
   suffix: string;
-  /** Stats has no sibling arrows and needs no neighbour reads. */
+  /** A show's or movie's stats have no sibling arrows and need no neighbour reads. */
   neighbours?: boolean;
   /** Stats reads the ratings and counts too, for its strip and sections; other subpages go without the strip. */
   ratings?: boolean;

@@ -1,7 +1,6 @@
 <!--
   One section of a title's stats page: its h2 with the icon as a faint watermark behind it, like the dashboard's panel
-  headings, then the section. The id is the sidebar's anchor. With `hideHeading` the heading is only for screen
-  readers, for a section the page opens with.
+  headings, then the section. The id is the sidebar's anchor.
     <StatsSection id="community" title="Community" icon={userGroup}>...</StatsSection>
 -->
 <script lang="ts">
@@ -13,21 +12,15 @@ interface Props {
   title: string;
   /** Raw SVG, drawn as the watermark. */
   icon: string;
-  hideHeading?: boolean;
   children: Snippet;
 }
 
-const { id, title, icon, hideHeading = false, children }: Props = $props();
+const { id, title, icon, children }: Props = $props();
 </script>
 
 <section {id} aria-labelledby="{id}-heading">
-  {#if hideHeading}
-    <h2 id="{id}-heading" class="visually-hidden">{title}</h2>
-    {@render children()}
-  {:else}
-    <h2 id="{id}-heading"><HeadingMark svg={icon} />{title}</h2>
-    <div class="body">{@render children()}</div>
-  {/if}
+  <h2 id="{id}-heading"><HeadingMark svg={icon} />{title}</h2>
+  <div class="body">{@render children()}</div>
 </section>
 
 <style>

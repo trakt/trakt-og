@@ -48,7 +48,7 @@ export const designCatalog: readonly DesignGroup[] = [
         slug: 'controls',
         title: 'Controls',
         summary:
-          'Sidebar and toolbar filters, link buttons, pagination, the rating meter, empty states and the page loader.',
+          'Sidebar and toolbar filters, toggle chips, link buttons, pagination, the rating meter, empty states and the page loader.',
         source: 'components/filters',
       },
       {
@@ -92,7 +92,8 @@ export const designCatalog: readonly DesignGroup[] = [
       {
         slug: 'stats',
         title: 'Media stats',
-        summary: "A title's rating chart, community tiles and second opinions, in the stats page's column.",
+        summary:
+          "A title's rating chart, community tiles, quality over time and second opinions, in the stats page's column.",
         source: 'stats',
       },
       {

@@ -4,12 +4,13 @@
   the offer in a new tab. Its size comes from the parent: `--service-width` and `--service-height`, and
   `--service-radius` rounds it more than OG's square tile. With no `href` it's a plain
   tile, like the applied filters' in the chart sidebar. `country` tags a service from another country, like 4K. With `onclick` it's a toggle button, OG's onboarding picker: gray until `pressed`, then its
-  color and a check.
+  color and a check. A logo carries its service's name in a tooltip above it, since a logo can't say which channel it is.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import check from '#lib/icons/solid/check.svg?raw';
 import type { ServiceLink } from './watchNow.ts';
@@ -52,20 +53,24 @@ const { track } = useTrack(AnalyticsEvent.StreamOn);
   {@render children?.()}
 {/snippet}
 
-{#if onclick}
-  <button type="button" class={['service', 'toggle', { pressed }]} aria-pressed={pressed} {onclick}>
-    {@render body()}
-  </button>
-{:else if link.href}
-  <a class="service" href={link.href} target="_blank" rel="nofollow noopener"
-    onclick={() => track({ source: link.slug })}>
-    {@render body()}
-  </a>
-{:else}
-  <span class="service">
-    {@render body()}
-  </span>
-{/if}
+<Tooltip text={link.logo ? link.name : undefined}>
+  {#snippet trigger(tooltip)}
+    {#if onclick}
+      <button type="button" class={['service', 'toggle', { pressed }]} aria-pressed={pressed} {onclick} {...tooltip}>
+        {@render body()}
+      </button>
+    {:else if link.href}
+      <a class="service" href={link.href} target="_blank" rel="nofollow noopener"
+        onclick={() => track({ source: link.slug })} {...tooltip}>
+        {@render body()}
+      </a>
+    {:else}
+      <span class="service" {...tooltip}>
+        {@render body()}
+      </span>
+    {/if}
+  {/snippet}
+</Tooltip>
 
 <style>
 .service {

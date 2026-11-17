@@ -20,7 +20,6 @@ export async function loadShowPreview({ fetch, id, now }: Params): Promise<Previ
     people: null,
     studios: [],
     seasons: [],
-    progress: null,
     signedIn: false,
     rank: null,
     otherSiteRatings: false,

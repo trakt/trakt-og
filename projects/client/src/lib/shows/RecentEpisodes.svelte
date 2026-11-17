@@ -2,9 +2,12 @@
   A show summary's recent episodes : "Up Next" or "Next Episode" over the
   first card, "Recently Aired" with "All Episodes" over the rest, three fanart cards a row. A small tablet's narrow
   column keeps two a row with the headings on one line, and drops the rest. Nothing renders without episodes.
+  `pending` is a signed-in viewer's progress still loading: the same section with shimmering cards, so Up Next fills in
+  without moving anything.
 -->
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import CardShimmer from '#lib/components/loading/CardShimmer.svelte';
 import FanartCard from '#lib/components/media/FanartCard.svelte';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import SeeMore from '#lib/components/see-more/SeeMore.svelte';
@@ -15,13 +18,15 @@ import type { EpisodeCard } from './toShowSummary.ts';
 
 interface Props {
   upNext: boolean;
+  /** The viewer's progress is loading: `next` and `aired` size the section, and their cards shimmer. */
+  pending?: boolean;
   next?: EpisodeCard;
   aired: readonly EpisodeCard[];
   allHref: string;
   datePreferences: DatePreferences;
 }
 
-const { upNext, next, aired, allHref, datePreferences }: Props = $props();
+const { upNext, pending = false, next, aired, allHref, datePreferences }: Props = $props();
 const cards = $derived(next ? [next, ...aired] : aired);
 </script>
 
@@ -36,9 +41,9 @@ const cards = $derived(next ? [next, ...aired] : aired);
 {/snippet}
 
 {#if cards.length > 0}
-  <section class="recent-episodes" id="recent-episodes" aria-label="Recent episodes">
+  <section class="recent-episodes" id="recent-episodes" aria-label="Recent episodes" aria-busy={pending}>
   <div class={['headings', { 'with-next': next }]}>
-      {#if next}<h2 class="next">{upNext ? 'Up Next' : 'Next Episode'}</h2>{/if}
+      {#if next}<h2 class="next">{upNext || pending ? 'Up Next' : 'Next Episode'}</h2>{/if}
       {#if aired.length > 0}
         <div class="aired" {@attach trackSectionDrilldown({ source: 'seasons' })}>
           <h2>Recently Aired</h2>
@@ -48,7 +53,7 @@ const cards = $derived(next ? [next, ...aired] : aired);
     </div>
   <div class="cards" {@attach trackDrilldowns({ source: 'season-episode-list' })}>
       {#each cards as episode (episode.id)}
-        <div>{@render card(episode)}</div>
+        <div>{#if pending}<CardShimmer ratio="fanart" />{:else}{@render card(episode)}{/if}</div>
       {/each}
     </div>
 </section>

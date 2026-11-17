@@ -9,15 +9,18 @@ import AdditionalStats from '#lib/components/summary/AdditionalStats.svelte';
 import NameList from '#lib/components/summary/NameList.svelte';
 import Overview from '#lib/components/summary/Overview.svelte';
 import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
+import { createViewerNote } from '#lib/notes/createViewerNote.svelte.ts';
 import type { ComponentProps } from 'svelte';
 import type { toShowSummary } from './toShowSummary.ts';
 
 interface Props {
   show: ReturnType<typeof toShowSummary>;
-  privateNotes: ComponentProps<typeof PrivateNotes>;
+  /** The note comes from the browser, after paint. */
+  privateNotes: Omit<ComponentProps<typeof PrivateNotes>, 'note'>;
 }
 
 const { show, privateNotes }: Props = $props();
+const viewerNote = createViewerNote(() => privateNotes);
 const facts = $derived(show.facts);
 const textLinks = $derived(show.links.filter(({ icon }) => !icon));
 </script>
@@ -85,7 +88,7 @@ const textLinks = $derived(show.links.filter(({ icon }) => !icon));
 <MediaSpoiler target={{type:"show",id:show.id}} kind="overview">
   <Overview tagline={show.tagline} overview={show.overview} />
 </MediaSpoiler>
-<PrivateNotes {...privateNotes} />
+<PrivateNotes {...privateNotes} note={viewerNote.note} />
 
 <style>
 .alt {

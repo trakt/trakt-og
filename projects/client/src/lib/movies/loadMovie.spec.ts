@@ -15,17 +15,19 @@ const statusOf = (promise: Promise<unknown>) =>
     (thrown: unknown) => (isHttpError(thrown) ? thrown.status : thrown),
   );
 
-const load = () =>
+type Layout = Awaited<ReturnType<Parameters<typeof loadMovie>[0]['parent']>>;
+
+const load = (viewer: { token: string; slug: string } | null = null) =>
   loadMovie({
     fetch: globalThis.fetch,
-    token: null,
+    token: viewer?.token ?? null,
     parent: () =>
       Promise.resolve({
         settings: null,
-        user: null,
+        user: viewer && ({ slug: viewer.slug } as Layout['user']),
         datePreferences: { order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
       }),
-    id: 'no-such-movie',
+    id: viewer ? 'fight-club-1999' : 'no-such-movie',
   });
 
 describe('loadMovie', () => {
@@ -37,5 +39,22 @@ describe('loadMovie', () => {
     server.use(http.get('https://apiz.trakt.tv/movies/:id', () => new HttpResponse(null, { status: 503 })));
 
     expect(await statusOf(load())).toBe(503);
+  });
+
+  it("should leave the viewer's private note to the browser", async () => {
+    const paths: string[] = [];
+    const record = ({ request }: { request: Request }) => paths.push(new URL(request.url).pathname);
+    server.events.on('request:start', record);
+    server.use(
+      http.get('https://apiz.trakt.tv/movies/:id', () =>
+        HttpResponse.json({ title: 'Fight Club', year: 1999, ids: { trakt: 268, slug: 'fight-club-1999' } }),
+      ),
+    );
+    const data = await load({ token: 'abc', slug: 'kim' });
+    server.events.removeListener('request:start', record);
+
+    expect(paths.filter((path) => path.includes('notes'))).toEqual([]);
+    expect(data.privateNotes).not.toHaveProperty('note');
+    expect(data.privateNotes.signedIn).toBe(true);
   });
 });

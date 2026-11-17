@@ -24,6 +24,7 @@ import ListsPreview from '#lib/components/summary/ListsPreview.svelte';
 import NameList from '#lib/components/summary/NameList.svelte';
 import Overview from '#lib/components/summary/Overview.svelte';
 import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
+import { createViewerNote } from '#lib/notes/createViewerNote.svelte.ts';
 import RatingsStrip from '#lib/components/summary/RatingsStrip.svelte';
 import RelatedItems from '#lib/components/summary/RelatedItems.svelte';
 import SectionNav from '#lib/components/summary/SectionNav.svelte';
@@ -45,6 +46,7 @@ type Props = {
 
 const { data }: Props = $props();
 const movie = $derived(data.movie);
+const viewerNote = createViewerNote(() => data.privateNotes);
 const parental = $derived({ page: `${movie.href}/parental-guide`, guide: data.parentalGuide });
 // The GIF picker's header, in every comment box on the page.
 gifArtContext.set(() => movie.fanart);
@@ -168,7 +170,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
       {/if}
     </AdditionalStats>
     <MediaSpoiler target={ratingTarget} kind="overview"><Overview tagline={movie.tagline} overview={movie.overview} /></MediaSpoiler>
-    <PrivateNotes {...data.privateNotes} />
+    <PrivateNotes {...data.privateNotes} note={viewerNote.note} />
   {/snippet}
 
   {#snippet actions()}

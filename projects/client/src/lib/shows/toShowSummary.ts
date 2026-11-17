@@ -2,7 +2,6 @@ import type { ItemStats } from './ItemStats.ts';
 import { statSorts } from './statSorts.ts';
 import type { EpisodeResponse, RatingsResponse, ShowResponse, ShowStatsResponse, StudioResponse } from '@trakt/api';
 import type { ComponentProps } from 'svelte';
-import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type FanartCard from '../components/media/FanartCard.svelte';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
@@ -20,15 +19,10 @@ import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
 import { toShowLinks } from './toShowLinks.ts';
-import { airDateParts } from './airDateParts.ts';
-import { airsTip } from './airsTip.ts';
-import { earlyStreamDate } from './earlyStreamDate.ts';
 import { episodeReleasedAt } from './episodeReleasedAt.ts';
 import { hasEpisodeAired } from './hasEpisodeAired.ts';
-import { isEpisodeWatchable } from './isEpisodeWatchable.ts';
+import { type EpisodeCardContext, toEpisodeCard } from './toEpisodeCard.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
-
-type Tag = NonNullable<ComponentProps<typeof FanartCard>['tags']>[number];
 
 interface ShowSummaryParams {
   show: ShowResponse;
@@ -37,8 +31,6 @@ interface ShowSummaryParams {
   people: ShowPeople | null;
   studios: readonly StudioResponse[];
   seasons: readonly SeasonWithEpisodes[];
-  /** The viewer's progress, when there is one: its next episode (null when they're caught up) and the last one watched. */
-  progress: { next: EpisodeResponse | null; last?: EpisodeResponse | null } | null;
   signedIn: boolean;
   rank: StreamingRank | null;
   otherSiteRatings: boolean;
@@ -105,12 +97,10 @@ const person = (member: { person: { name: string; ids: { slug: string } } }): Na
 });
 
 /**
- * OG's recent episodes. Signed in with progress, the first card is Up Next (the next to watch,
- * else the next to air) and two recent episodes follow. Otherwise it's Next Episode and two, or three recent ones.
- * Specials and episodes without an air date sit out, like OG's `next_episode`. An episode that streams first counts
- * from its stream.
+ * The episodes behind OG's recent episodes: the next to air and the aired ones, newest first. Specials and episodes
+ * without an air date sit out, like OG's `next_episode`. An episode that streams first counts from its stream.
  */
-function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'seasons' | 'progress' | 'now'>) {
+function recentEpisodes({ seasons, now }: Pick<ShowSummaryParams, 'seasons' | 'now'>) {
   const episodes = seasons
     .filter(({ number }) => number > 0)
     .flatMap(({ episodes }) => episodes ?? [])
@@ -118,27 +108,16 @@ function recentEpisodes({ seasons, progress, now }: Pick<ShowSummaryParams, 'sea
   const at = (episode: EpisodeResponse) => new Date(episodeReleasedAt(episode) ?? 0).getTime();
   const byAir = (a: EpisodeResponse, b: EpisodeResponse) => at(a) - at(b) || a.number - b.number;
 
-  const upcoming = episodes
-    .filter((episode) => at(episode) > now.getTime())
-    .toSorted(byAir)
-    .at(0);
-  const aired = episodes
-    .filter((episode) => at(episode) <= now.getTime())
-    .toSorted(byAir)
-    .toReversed();
-  const watchNext = progress?.next && episodes.find(({ ids }) => ids.trakt === progress.next?.ids.trakt);
-  const next = (progress ? watchNext : undefined) ?? upcoming;
-
   return {
-    upNext: progress !== null,
-    next,
-    recent: next ? aired.filter((episode) => episode !== next).slice(0, 2) : aired.slice(0, 3),
+    upcoming: episodes
+      .filter((episode) => at(episode) > now.getTime())
+      .toSorted(byAir)
+      .at(0),
+    aired: episodes
+      .filter((episode) => at(episode) <= now.getTime())
+      .toSorted(byAir)
+      .toReversed(),
   };
-}
-
-function nextToWatch(next: EpisodeResponse | null | undefined, now: Date) {
-  if (!next || !isEpisodeWatchable(episodeReleasedAt(next), now.getTime())) return undefined;
-  return { type: 'episode' as const, id: next.ids.trakt };
 }
 
 type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'now'> & {
@@ -208,47 +187,18 @@ export function toShowSummary(params: ShowSummaryParams) {
   // Unaired shows show no ratings and only their list count, whatever the viewer's early-ratings setting.
   const aired = !!show.first_aired && new Date(show.first_aired) <= now;
 
-  const split = (at: string) => {
-    const { date, time } = airDateParts(at, { ...datePreferences, timeZone, format: 'll' });
-    return { text: date, segments: [time] };
+  const cardContext: EpisodeCardContext = {
+    showId: show.ids.trakt,
+    href,
+    network: show.network ?? undefined,
+    genres: show.genres,
+    runtime: show.runtime ?? undefined,
+    episodeTypeTags: params.episodeTypeTags,
+    timeZone,
   };
-
-  const episodeCard = (episode: EpisodeResponse): EpisodeCard => {
-    const label = params.episodeTypeTags ? episodeType(episode) : undefined;
-    const streams = earlyStreamDate(episode);
-    const tags: Tag[] = [
-      ...(label ? [label] : []),
-      ...(streams
-        ? [
-            {
-              text: format(streams, { format: 'll', timeZone: 'UTC' }),
-              segments: ['Streaming'],
-              airs: airsTip(episode.first_aired, {
-                network: show.network,
-                now,
-                parts: (at) => airDateParts(at, { ...datePreferences, timeZone, format: 'LL' }),
-              }),
-            },
-          ]
-        : episode.first_aired
-          ? [split(episode.first_aired)]
-          : []),
-    ];
-    return {
-      id: episode.ids.trakt,
-      collectionContext: { show: show.ids.trakt, number: episode.season, episode: episode.number },
-      href: `${href}/seasons/${episode.season}/episodes/${episode.number}`,
-      number: episodeNumber(episode, show.genres),
-      title: episode.title ?? `Episode ${episode.number}`,
-      image: mediaImage({ type: 'episode', id: episode.ids.trakt, slot: 'screenshot', size: 'thumb' }),
-      spoilerImage: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
-      tags,
-      rating: episode.rating ?? 0,
-      released: isEpisodeWatchable(episodeReleasedAt(episode), now.getTime()),
-      runtime: episode.runtime ?? show.runtime ?? undefined,
-    };
-  };
-  const recent = recentEpisodes(params);
+  const episodeCard = (episode: EpisodeResponse) =>
+    toEpisodeCard({ episode, context: cardContext, datePreferences, now });
+  const { upcoming, aired: airedEpisodes } = recentEpisodes(params);
 
   const seasonCards: SeasonCard[] = seasons.map((season) => ({
     id: season.ids.trakt,
@@ -307,10 +257,6 @@ export function toShowSummary(params: ShowSummaryParams) {
       .filter((episode) => hasEpisodeAired(episodeReleasedAt(episode), params.now.getTime()))
       .sort((a, b) => a.season - b.season || a.number - b.number)
       .map(({ ids }) => ids.trakt),
-    /** The viewer's last watched episode ("3x02"), for a dropped show's stamp. */
-    lastSeen: params.progress?.last ? episodeNumber(params.progress.last, show.genres) : undefined,
-    /** The viewer's next episode to watch once it has aired, for the Check In button. */
-    checkin: nextToWatch(params.progress?.next, params.now),
     commentCount: stats?.comments ?? show.comment_count ?? 0,
     listCount: stats?.lists ?? 0,
     facts: facts({ ...params, day, airs }),
@@ -320,11 +266,20 @@ export function toShowSummary(params: ShowSummaryParams) {
     cast: toCastMembers(params.people?.cast, params.actorSpoilers, show.ids.trakt),
     guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers, show.ids.trakt),
     crew: toCrewGroups(params.people?.crew, params.actorSpoilers),
+    /** Next Episode and the aired ones, as a signed-out visit sees them. */
     recent: {
-      upNext: recent.upNext,
-      next: recent.next && episodeCard(recent.next),
-      aired: recent.recent.map(episodeCard),
+      upNext: false,
+      next: upcoming && episodeCard(upcoming),
+      aired: airedEpisodes.slice(0, upcoming ? 2 : 3).map(episodeCard),
     },
+    /** A signed-in viewer's progress picks Up Next in the browser, from these. Signed out, nothing waits on it. */
+    progressBase: params.signedIn
+      ? {
+          context: cardContext,
+          upcoming: upcoming && episodeCard(upcoming),
+          aired: airedEpisodes.slice(0, 3).map(episodeCard),
+        }
+      : null,
     seasons: seasonCards,
     /** OG's "N Seasons" leaves the specials out. */
     seasonCount: seasons.filter(({ number }) => number > 0).length,

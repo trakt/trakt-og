@@ -18,13 +18,16 @@ import SummaryTitle from '#lib/components/summary/SummaryTitle.svelte';
 import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
 import type { WatchNowButton } from '#lib/components/watchnow/watchNow.ts';
 import type { ComponentProps, Snippet } from 'svelte';
+import { createViewerShowProgress } from './createViewerShowProgress.svelte.ts';
 import ShowDetails from './ShowDetails.svelte';
 import type { toShowSummary } from './toShowSummary.ts';
+import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 
 interface Props {
   show: ReturnType<typeof toShowSummary>;
   watchNow: WatchNowButton;
   privateNotes: ComponentProps<typeof ShowDetails>['privateNotes'];
+  datePreferences: DatePreferences;
   /** The h1: "Original Air Date", "All Episodes". */
   heading: string;
   years?: string;
@@ -35,8 +38,10 @@ interface Props {
   children: Snippet;
 }
 
-const { show, watchNow, privateNotes, heading, years, seasonLinks, sections, previous, next, children }: Props =
+const { show, watchNow, privateNotes, datePreferences, heading, years, seasonLinks, sections, previous, next, children }: Props =
   $props();
+const viewerProgress = createViewerShowProgress(() => ({ showId: show.id, base: show.progressBase, datePreferences }));
+const progress = $derived(viewerProgress.view);
 const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.fullTitle });
 </script>
 
@@ -67,7 +72,7 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
   {/snippet}
 
   {#snippet sidebar()}
-    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={show.lastSeen} />
+    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={progress?.lastSeen} />
     <WatchNow button={watchNow} title={show.title} year={show.year} fanart={show.fanart} />
     <SectionNav {sections} label="{show.title} sections" />
     <ExternalLinks links={show.links} />
@@ -79,7 +84,7 @@ const ratingTarget = $derived({ type: 'show' as const, id: show.id, title: show.
 
   {#snippet actions()}
     <WatchNow button={watchNow} title={show.title} year={show.year} fanart={show.fanart} phone />
-    <ActionButtons checkin={show.checkin} show={show.id} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
+    <ActionButtons checkin={progress?.checkin} show={show.id} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
   {/snippet}
 
   {@render children()}

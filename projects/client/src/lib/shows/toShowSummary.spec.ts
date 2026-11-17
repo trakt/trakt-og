@@ -26,7 +26,6 @@ const base = {
   people: null,
   studios: [],
   seasons: [],
-  progress: null,
   signedIn: false,
   rank: null,
   otherSiteRatings: true,
@@ -175,12 +174,13 @@ describe('toShowSummary', () => {
       expect(recent.aired.map(({ number }) => number)).toEqual(['1x04', '1x03']);
     });
 
-    it('should put the next to watch first and leave it out of Recently Aired', () => {
-      const { recent } = toShowSummary({ ...base, seasons, progress: { next: episode(1, 3, null) } });
+    it('should keep the cards Up Next picks from for a signed-in viewer, and nothing for a signed-out one', () => {
+      const signedIn = toShowSummary({ ...base, seasons, signedIn: true });
 
-      expect(recent.upNext).toBe(true);
-      expect(recent.next?.number).toBe('1x03');
-      expect(recent.aired.map(({ number }) => number)).toEqual(['1x04', '1x02']);
+      expect(signedIn.progressBase?.upcoming?.number).toBe('1x05');
+      expect(signedIn.progressBase?.aired.map(({ number }) => number)).toEqual(['1x04', '1x03', '1x02']);
+      expect(signedIn.progressBase?.context).toMatchObject({ showId: 1388, href: '/shows/breaking-bad' });
+      expect(toShowSummary({ ...base, seasons }).progressBase).toBeNull();
     });
 
     it('should show three aired episodes when nothing is next', () => {
@@ -201,26 +201,6 @@ describe('toShowSummary', () => {
       expect(tags(true)).toEqual(['Series Premiere', 'Aug 31, 2026 | 9:00 PM']);
       expect(tags(false)).toEqual(['Aug 31, 2026 | 9:00 PM']);
     });
-  });
-
-  it('should check in to the next episode to watch once it has aired', () => {
-    const next = (firstAired: string | null) =>
-      toShowSummary({ ...base, progress: { next: episode(2, 5, firstAired), last: null } }).checkin;
-
-    expect(next('2026-09-01T01:00:00Z')).toEqual({ type: 'episode', id: 205 });
-    expect(next('2026-10-01T01:00:00Z')).toBeUndefined();
-    expect(next(null)).toBeUndefined();
-    expect(toShowSummary({ ...base, progress: { next: null, last: null } }).checkin).toBeUndefined();
-    expect(toShowSummary(base).checkin).toBeUndefined();
-  });
-
-  it('should name the last episode watched for the dropped stamp', () => {
-    const watched = toShowSummary({ ...base, progress: { next: null, last: episode(3, 2, null) } });
-    const unwatched = toShowSummary({ ...base, progress: { next: episode(1, 1, null), last: null } });
-
-    expect(watched.lastSeen).toBe('3x02');
-    expect(unwatched.lastSeen).toBeUndefined();
-    expect(toShowSummary(base).lastSeen).toBeUndefined();
   });
 
   it('should count seasons without the specials', () => {

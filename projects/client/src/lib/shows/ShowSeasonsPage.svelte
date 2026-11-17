@@ -35,6 +35,7 @@ const sections = $derived([
 <ShowSubpage
   watchNow={data.watchNow}
   privateNotes={data.privateNotes}
+  datePreferences={data.datePreferences}
   {show}
   heading="Original Air Date"
   seasonLinks={{

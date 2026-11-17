@@ -65,6 +65,32 @@ describe('loadShowData', () => {
     expect(data.seasons).toEqual([]);
     expect(data.summary.guestStars).toEqual([]);
   });
+  it("should leave the viewer's progress and note to the browser", async () => {
+    const paths: string[] = [];
+    const { fetch: inner, parent, ...rest } = params([season]);
+    const recording: typeof fetch = (input, init) => {
+      paths.push(new URL(new Request(input, init).url).pathname);
+      return inner(input, init);
+    };
+    const user = { slug: 'kim' } as NonNullable<Awaited<ReturnType<typeof parent>>['user']>;
+    const data = await loadShowData({
+      ...rest,
+      fetch: recording,
+      token: 'abc',
+      parent: () => parent().then((layout) => ({ ...layout, user })),
+    });
+
+    expect(paths.filter((path) => /progress|notes/.test(path))).toEqual([]);
+    expect(data.privateNotes).not.toHaveProperty('note');
+    expect(data.privateNotes.signedIn).toBe(true);
+    expect(data.summary.progressBase?.aired.map(({ number }) => number)).toEqual(['1x01']);
+  });
+  it('should render a signed-out page without anything waiting on progress', async () => {
+    const data = await loadShowData(params([season]));
+
+    expect(data.summary.progressBase).toBeNull();
+    expect(data.privateNotes.signedIn).toBe(false);
+  });
   it('should answer a missing show with a 404', async () => {
     const missing: typeof fetch = () => Promise.resolve(new Response(null, { status: 404 }));
     const thrown = await loadShowData({ ...params([season]), fetch: missing }).catch((error: unknown) => error);

@@ -63,7 +63,12 @@ const favoritesSortOf = (frame: Pick<Frame, 'isSelf' | 'settings'>): FavoritesSo
   profilePrefs(frame)?.favorites ?? RANDOM;
 
 async function fetchSections(
-  { fetch, token, progress = false }: { fetch: typeof globalThis.fetch; token?: string | null; progress?: boolean },
+  {
+    fetch,
+    token,
+    progress = false,
+    full = false,
+  }: { fetch: typeof globalThis.fetch; token?: string | null; progress?: boolean; full?: boolean },
   id: string,
   now: Date,
   favoritesSort: FavoritesSort = RANDOM,
@@ -78,7 +83,7 @@ async function fetchSections(
       query: { extended: 'full', limit: 3 },
     }),
     recent: fetchRecentHistory({ client, id, now }),
-    watched: fetchWatchedLists({ fetch, token, id, progress }),
+    watched: fetchWatchedLists({ fetch, token, id, progress, full }),
   };
   // A failure shows where the page awaits it. A read the frame cancels, or one a failed section strands, has nobody
   // waiting on it.
@@ -123,8 +128,8 @@ export async function loadProfile({ fetch, locals, params, parent, now = new Dat
       frame,
       read: ({ fetch, token, frame: known }) =>
         fetchSections(
-          // Your own stats counted here need your shows' episodes.
-          { fetch, token, progress: !!known?.isSelf && known.stats === null },
+          // Stats counted here need every watched item, and your own need your shows' episodes too.
+          { fetch, token, progress: !!known?.isSelf && known.stats === null, full: known?.stats === null },
           params.id,
           now,
           token && known ? favoritesSortOf(known) : RANDOM,

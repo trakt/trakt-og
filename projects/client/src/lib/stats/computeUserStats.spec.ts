@@ -5,6 +5,7 @@ import type { StatsCounts } from './StatsCounts.ts';
 
 const counts: StatsCounts = {
   watched: { movies: 2, shows: 3, episodes: 7 },
+  plays: { movies: 5, episodes: 9 },
   ratings: {
     movies: 2,
     shows: 1,
@@ -56,12 +57,18 @@ describe('computeUserStats', () => {
     expect(stats.network).toBeNull();
   });
 
-  it('should count plays and minutes from the watched lists, a missing runtime as none', () => {
+  it('should take plays from the history counts and minutes from the watched lists, a missing runtime as none', () => {
     const stats = computeUserStats({ counts, watched: lists, dropped: null });
 
-    expect(stats.movies).toMatchObject({ plays: 3, minutes: 200 });
-    expect(stats.episodes).toMatchObject({ plays: 8, minutes: 240 });
-    expect([stats.total_plays, stats.total_minutes]).toEqual([11, 440]);
+    expect(stats.movies).toMatchObject({ plays: 5, minutes: 200 });
+    expect(stats.episodes).toMatchObject({ plays: 9, minutes: 240 });
+    expect([stats.total_plays, stats.total_minutes]).toEqual([14, 440]);
+  });
+
+  it('should count every play when the watched lists stop short of the history', () => {
+    const stats = computeUserStats({ counts, watched: { ...lists, movies: [] }, dropped: null });
+
+    expect(stats.movies.plays).toBeGreaterThanOrEqual(stats.movies.watched);
   });
 
   it('should leave progress out when the dropped shows are unknown', () => {

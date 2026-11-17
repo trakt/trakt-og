@@ -171,18 +171,21 @@ describe('loadDashboard', () => {
         { headers: { 'X-Pagination-Item-Count': '12' } },
       ),
     );
+    const moviePlays = http.get(`${API}/users/me/history/movies`, () =>
+      HttpResponse.json([], { headers: { 'X-Pagination-Item-Count': '20' } }),
+    );
 
     it.each([
       ['an empty 204', () => new HttpResponse(null, { status: 204 })],
       ['a 404', () => new HttpResponse(null, { status: 404 })],
       ['all zeros', () => HttpResponse.json({ ...dashboardFrameFixture.newStats, ...zeroed })],
     ])('should count them itself after %s, streaming the panel', async (_, stats) => {
-      server.use(http.get(`${API}/users/me/stats`, stats), watchedMovies);
+      server.use(http.get(`${API}/users/me/stats`, stats), watchedMovies, moviePlays);
       const data = await load();
       await Promise.all(panels(data));
 
       expect(data.stats).toBeInstanceOf(Promise);
-      expect((await data.stats)?.movies).toMatchObject({ watched: 12, plays: 2, minutes: 200 });
+      expect((await data.stats)?.movies).toMatchObject({ watched: 12, plays: 20, minutes: 200 });
       expect(data.watched).toBe(12);
       expect(data.firstNight).toBeNull();
     });

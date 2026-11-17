@@ -13,7 +13,7 @@ type Params = {
   isSelf: boolean;
   /** `fetchStatsCounts`, when the caller already started it. */
   counts: Promise<StatsCounts>;
-  /** The whole watched lists, when the caller already reads them, with the shows' episodes for your own. */
+  /** The whole watched lists (`full`), when the caller already reads them, with the shows' episodes for your own. */
   watched?: ReturnType<typeof fetchWatchedLists>;
 };
 
@@ -36,7 +36,7 @@ async function readDropped(fetch: typeof globalThis.fetch, token: string | null)
 export async function fetchComputedStats({ fetch, token, id, isSelf, counts, watched }: Params): Promise<UserStats> {
   const [resolvedCounts, lists, dropped] = await Promise.all([
     counts,
-    watched ?? fetchWatchedLists({ fetch, token, id, progress: isSelf }),
+    watched ?? fetchWatchedLists({ fetch, token, id, progress: isSelf, full: true }),
     // Without them, no progress rather than no stats.
     isSelf ? readDropped(fetch, token).catch(() => null) : null,
   ]);

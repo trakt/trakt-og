@@ -7,6 +7,8 @@ type Params = {
   id: string;
   /** The shows' watched episodes too (`extended=progress`), which the worker pages 100 at a time. */
   progress?: boolean;
+  /** Past the ranks' 2,000, for stats og counts itself: their minutes need every movie and show. */
+  full?: boolean;
 };
 
 // The worker's MAX_LIMIT, and its limit for shows with their episodes.
@@ -16,8 +18,10 @@ const PROGRESS_PAGE_SIZE = 100;
 // the first in parallel). Past that, All Time ranks the 2,000 most recently watched; page further if the worker ever
 // gets a sort.
 const MAX_ITEMS = 2000;
+// A ceiling on the full read, so a runaway page count can't fan out without end.
+const FULL_MAX_ITEMS = 10000;
 
-async function readWatched({ fetch, token, id, progress = false }: Params, type: 'shows' | 'movies') {
+async function readWatched({ fetch, token, id, progress = false, full = false }: Params, type: 'shows' | 'movies') {
   const seasons = progress && type === 'shows';
   const limit = seasons ? PROGRESS_PAGE_SIZE : PAGE_SIZE;
   const page = async (n: number) => {
@@ -35,7 +39,9 @@ async function readWatched({ fetch, token, id, progress = false }: Params, type:
 
   const first = await page(1);
   const rest = await Promise.all(
-    Array.from({ length: Math.min(first.count, MAX_ITEMS / limit) - 1 }, (_, i) => page(i + 2)),
+    Array.from({ length: Math.min(first.count, (full ? FULL_MAX_ITEMS : MAX_ITEMS) / limit) - 1 }, (_, i) =>
+      page(i + 2),
+    ),
   );
   return [first, ...rest].flatMap(({ rows }) => rows);
 }

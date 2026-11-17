@@ -6,6 +6,8 @@ type PerType = { readonly movies: number; readonly shows: number; readonly seaso
 export type StatsCounts = {
   /** Unique movies, shows and episodes watched. */
   readonly watched: { readonly movies: number; readonly shows: number; readonly episodes: number };
+  /** Every movie and episode play in the history. */
+  readonly plays: { readonly movies: number; readonly episodes: number };
   readonly ratings: PerType & { readonly distribution: UserStats['ratings']['distribution'] };
   readonly comments: PerType;
   readonly lists: number;

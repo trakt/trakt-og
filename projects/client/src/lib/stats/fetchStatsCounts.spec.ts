@@ -1,12 +1,15 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { EVERY_PLAY } from '../users/history/EVERY_PLAY.ts';
 import { fetchStatsCounts } from './fetchStatsCounts.ts';
 
 const COUNTS: Record<string, number> = {
   'watched/movies': 12,
   'watched/shows': 3,
   'watched/episodes': 140,
+  'history/movies': 30,
+  'history/episodes': 200,
   'ratings/movies': 5,
   'ratings/episodes': 2,
   'ratings/all/8': 4,
@@ -35,6 +38,7 @@ describe('fetchStatsCounts', () => {
 
     expect(counts).toEqual({
       watched: { movies: 12, shows: 3, episodes: 140 },
+      plays: { movies: 30, episodes: 200 },
       ratings: {
         movies: 5,
         shows: 0,
@@ -49,6 +53,14 @@ describe('fetchStatsCounts', () => {
     const comments = seen.filter((request) => new URL(request.url).pathname.includes('/comments/'));
     expect(comments.every((request) => new URL(request.url).searchParams.get('include_replies') === 'true')).toBe(true);
     expect(seen.every((request) => request.headers.get('authorization') === 'Bearer token')).toBe(true);
+  });
+
+  it('should count every play in the history, from the earliest date', async () => {
+    await fetchStatsCounts({ fetch, token: null, id: 'tester' });
+
+    const history = seen.filter((request) => new URL(request.url).pathname.includes('/history/'));
+    expect(history).toHaveLength(2);
+    expect(history.every((request) => new URL(request.url).searchParams.get('start_at') === EVERY_PLAY)).toBe(true);
   });
 
   it('should fail when a count fails, rather than read it as zero', async () => {

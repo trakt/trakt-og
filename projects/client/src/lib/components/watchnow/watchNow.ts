@@ -14,7 +14,7 @@ export type Source = {
   /** A white logo on a transparent 2:1 canvas, drawn over `color`. Missing for some, which show `name` instead. */
   logo?: string;
   color: string;
-  /** The store badge for a channel sold through another service ("on Apple TV"). */
+  /** The badge under the logo: the store a channel is sold through ("on Apple TV"), or Free, Ads or Live. */
   channel?: string;
 };
 
@@ -144,8 +144,8 @@ const money = (amount: string, currency: string | null | undefined) =>
     Number(amount),
   );
 
-/** An Amazon, Roku or Apple TV channel says which one: "with Starz subscription". */
-const CHANNEL = /_amazon_prime|_ama?zon_channels?|_roku_premium_channel/;
+/** An Amazon, Roku or Apple TV channel says which one: "with Starz subscription". Its badge is the store's. */
+const STORE_BADGE = /\/badges\/(amazon-channel|apple-tv|roku)\.\w+$/;
 
 type Lowest = { rent: number | null; purchase: number | null };
 
@@ -159,13 +159,13 @@ function lowestPrices(offers: readonly Offer[]): Lowest {
   return { rent: cheapest('rent'), purchase: cheapest('purchase') };
 }
 
-function offerTerms(type: OfferType, offer: Offer, name: string, lowest: Lowest): OfferTerms {
+function offerTerms(type: OfferType, offer: Offer, { name, channel }: Source, lowest: Lowest): OfferTerms {
   switch (type) {
     case 'subscription':
       return {
         kind: 'note',
         title: 'Included',
-        detail: CHANNEL.test(offer.source)
+        detail: STORE_BADGE.test(channel ?? '')
           ? `with ${name.replace(/ \(on (Amazon|Roku|Apple TV)\)/, '')} subscription`
           : 'with subscription',
       };
@@ -211,7 +211,7 @@ export function toWatchNowSections({ offers, country, sources, favorites }: Watc
     const source = sources[where]?.get(offer.source);
     if (!source) return [];
     const abroad = where !== country;
-    const terms = offerTerms(type, offer, source.name, abroad ? { rent: null, purchase: null } : lowest);
+    const terms = offerTerms(type, offer, source, abroad ? { rent: null, purchase: null } : lowest);
     return [
       {
         ...source,

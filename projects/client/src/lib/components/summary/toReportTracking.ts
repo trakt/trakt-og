@@ -1,31 +1,11 @@
 import type { ReportTarget } from './ReportTarget.ts';
 
 const COMMENT = ['spoilers', 'abusive', 'spam', 'bigotry', 'political', 'offtopic', 'duplicate', 'other'];
-const MEDIA = [
-  'duplicate',
-  'remove',
-  'data_refresh',
-  'metadata',
-  'adult',
-  'runtime',
-  'language',
-  'spam',
-  'tmdb',
-  'other',
-];
-const PERSON = ['duplicate', 'remove', 'data_refresh', 'metadata', 'adult', 'language', 'spam', 'tmdb', 'other'];
-const LIST = ['duplicate', 'remove', 'metadata', 'adult', 'language', 'spam', 'other'];
 const USER = ['spam', 'adult', 'language', 'other'];
 
 // trakt-web's `reasonsFor`: a reason outside the type's own list reports as `other`.
-const REASONS: Readonly<Record<string, ReadonlyArray<string>>> = {
+const REASONS: Readonly<Record<ReportTarget['type'], ReadonlyArray<string>>> = {
   comment: COMMENT,
-  movie: MEDIA,
-  show: MEDIA,
-  season: MEDIA,
-  episode: MEDIA,
-  person: PERSON,
-  list: LIST,
   user: USER,
 };
 
@@ -50,7 +30,7 @@ export function toReportTracking({
 }) {
   return {
     type,
-    reason: REASONS[type]?.includes(reason) ? reason : 'other',
+    reason: REASONS[type].includes(reason) ? reason : 'other',
     outcome: toOutcome(result),
   } as const;
 }

@@ -13,10 +13,10 @@ type ListRowActionsParams = {
 };
 
 /**
- * Which icons a list row shows the viewer: the report flag and progress (its franchises when it's movies only) when signed in, the
+ * Which icons a list row shows the viewer: progress (its franchises when it's movies only) when signed in, the
  * owner's edit and (personal lists only) delete, a collaborator's "Stop collaborating", and share. The lists page
  * wires the clicks: edit opens the list editor, or the watchlist or favorites editor on theirs. A smart list is only
- * edited, deleted and shared: it can't be reported, and its progress has no page.
+ * edited, deleted and shared: its progress has no page.
  */
 export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowActionsParams): ListRowActions {
   const owner = viewer?.slug === row.owner.slug;
@@ -29,7 +29,6 @@ export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowA
     : undefined;
 
   return {
-    ...(viewer && { report: {} }),
     ...(owner && row.kind !== 'official' && { edit: {} }),
     ...(owner && row.kind === 'personal' && { delete: {} }),
     ...(!owner && isCollaborator && { leave: {} }),

@@ -2,10 +2,7 @@
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
   import SeoHead from '#lib/seo/SeoHead.svelte';
   import { toUserListsSeo } from '#lib/users/lists/toUserListsSeo.ts';
-  import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
-  import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
   import { leaveList } from '#lib/components/lists/leaveList.ts';
-  import { resolveRowListId } from '#lib/users/lists/resolveRowListId.ts';
   import { tick } from 'svelte';
   import { flip } from 'svelte/animate';
   import { prefersReducedMotion } from 'svelte/motion';
@@ -87,8 +84,6 @@ let shuffled = $state<readonly string[]>([]);
   let rowsElement = $state<HTMLDivElement>();
   let addButton = $state<HTMLButtonElement>();
   const left = new SvelteMap<number, boolean>();
-  let reportTarget = $state<ReportTarget | null>(null);
-  let reportOpen = $state(false);
   // A smart list renamed here: the API's cache can answer the reload with the old name, so the edit stands in.
   const smartEdits = new SvelteMap<string, SmartList>();
   const withSmartEdit = (row: UserListRow) => {
@@ -109,8 +104,6 @@ const allLists = $derived(
     void data.user;
     order = null;
     left.clear();
-    reportOpen = false;
-    reportTarget = null;
     reordering = false;
     dragging = null;
   });
@@ -340,24 +333,6 @@ const withPosters = (row: UserListRow): UserListRow =>
   };
 
   const viewer = $derived(data.user ? { slug: data.user.slug } : null);
-  async function report(row: UserListRow) {
-    const source = data;
-    try {
-      const id = await resolveRowListId({ fetch: viewerFetch(), row });
-      if (data !== source) return;
-      reportTarget = {
-        type: 'list',
-        id,
-        title: row.name,
-        href: row.href,
-        ownerSlug: row.kind === 'personal' ? row.owner.slug : undefined,
-        posters: row.posters.slice(0, 5).flatMap(({ image }) => image ? [image] : [])
-      };
-      reportOpen = true;
-    } catch {
-      if (data === source) toast.error('Doh! We could not open the list report. Please try again.');
-    }
-  }
   async function leave(row: UserListRow) {
     if (row.id === null || !data.user || left.has(row.id)) return;
     const source = data;
@@ -436,14 +411,6 @@ const withPosters = (row: UserListRow): UserListRow =>
         }
       },
 
-      ...result.report && {
-        report: {
-          onclick: () => {
-            void report(row);
-          }
-        }
-      },
-
       ...result.leave && {
         leave: {
           onclick: () => {
@@ -500,7 +467,6 @@ const withPosters = (row: UserListRow): UserListRow =>
   {/snippet}
 {/snippet}
 
-{#if reportTarget}<ReportDialog bind:open={reportOpen} target={reportTarget} />{/if}
 
 <SectionToolbar>
   {#snippet filters()}

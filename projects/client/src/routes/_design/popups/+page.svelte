@@ -33,10 +33,10 @@ import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
 import completeCheck from '#lib/icons/solid/check.svg?raw';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
-import { fightClub, reportTarget, watchNow } from './fixtures.ts';
+import { commentReportTarget, fightClub, userReportTarget, watchNow } from './fixtures.ts';
 
 const { data } = $props();
-const report = $derived({ ...reportTarget, fanart: data.fanart });
+const userReport = $derived({ ...userReportTarget, fanart: data.fanart });
 
 const sorts = ['Watched Date', 'Title', 'Released', 'Runtime'];
 const calendars = { my: ['Shows & Movies', 'Shows', 'Movies'], all: ['Premieres', 'New Shows', 'Finales', 'Movies'] };
@@ -53,7 +53,8 @@ let historySort = $state('votes');
 let calendar = $state({ group: 'my', name: 'Shows & Movies' });
 let movies = $state(true);
 let shows = $state(true);
-let reportOpen = $state(false);
+let commentReportOpen = $state(false);
+let userReportOpen = $state(false);
 let watchOpen = $state(false);
 const tasteTags = [{ text: '7 services' }, { text: '3 of 5 genres' }];
 // Lines break at \n, like OG's <br>.
@@ -155,9 +156,12 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
 </Specimen>
 
 <Specimen title="Dialog" row
-  note="The art dialogs: the item's fanart under glass, with the form below. Report sends to the stubbed API; Watch Now loads Fight Club's real offers, with shimmering tiles until they land, and lists favorites from Britain and Canada too, each badged with its country.">
-  <Variant label="md: Report">
-    <DemoButton onclick={() => (reportOpen = true)}>Report Fight Club</DemoButton>
+  note="The art dialogs: the item's fanart under glass, with the form below. Reporting is only for comments and profiles, and a comment's header has no art; Watch Now loads Fight Club's real offers, with shimmering tiles until they land, and lists favorites from Britain and Canada too, each badged with its country.">
+  <Variant label="md: Report a comment">
+    <DemoButton onclick={() => (commentReportOpen = true)}>Report a comment</DemoButton>
+  </Variant>
+  <Variant label="md: Report a profile">
+    <DemoButton onclick={() => (userReportOpen = true)}>Report a profile</DemoButton>
   </Variant>
   <Variant label="xl, click outside closes: Watch Now">
     <DemoButton onclick={() => (watchOpen = true)}>Watch Fight Club now</DemoButton>
@@ -339,7 +343,8 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
   </Variant>
 </Specimen>
 
-<ReportDialog bind:open={reportOpen} target={report} />
+<ReportDialog bind:open={commentReportOpen} target={commentReportTarget} />
+<ReportDialog bind:open={userReportOpen} target={userReport} />
 <WatchNowDialog bind:open={watchOpen} button={watchNow} title={fightClub.title} year={fightClub.year}
   fanart={data.fanart} />
 

@@ -97,8 +97,10 @@ let sidebarHeight = $state<number>();
 .phone-tools {
   display: none;
   @media (width < 768px) {
-    display: block;
-    margin-block: var(--gutter);
+    &:has(:global(*)) {
+      display: block;
+      margin-block: var(--gutter);
+    }
   }
 }
 

@@ -100,7 +100,7 @@ const sections = $derived([
 
 <SummaryFrame label={show.title}>
   {#snippet tools()}
-    <MediaTools target={{ type: 'show', id: show.id, title: show.title, year: show.year, href: show.href, tmdb: show.links.find((link) => link.label === 'TMDB')?.href, fanart: show.fanart }} />
+    <MediaTools target={{ type: 'show', id: show.id, title: show.title, year: show.year, fanart: show.fanart }} />
   {/snippet}
 
   {#snippet sidebar()}

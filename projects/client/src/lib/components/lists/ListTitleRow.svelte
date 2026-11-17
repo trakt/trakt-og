@@ -2,7 +2,7 @@
   A list page's title row, on a list and a smart list alike: the name as a link with its tags after it, and the
   viewer's actions on the right. The page passes its own tags (each in a `.tag`, or the collaborators chip in a
   `.title-chip`) and actions, which take this row's look by class: icons as `.action` buttons or links, with `.edit`,
-  `.report`, `.progress`, `.leave` or `.manage` (lit with `.active`), a `.delete` holding its ManageConfirm and a
+  `.progress`, `.leave` or `.manage` (lit with `.active`), a `.delete` holding its ManageConfirm and a
   `.share` holding its ShareButton, and outline text buttons from an `.action` with an `.action-text` label. Managing
   washes it green.
     <ListTitleRow id="list-title" name={list.name} href={list.href} {tags} {actions} />
@@ -170,16 +170,6 @@ h2 {
   font-weight: var(--font-weight-control);
 }
 
-/* OG faded the flag in while the pointer was over the title row. */
-.actions :global(.report) {
-  opacity: 0;
-}
-
-.title-row:hover .actions :global(.report),
-.actions :global(.report:focus-visible) {
-  opacity: 1;
-}
-
 .actions :global(.edit) {
   color: var(--color-list-edit);
 }
@@ -234,8 +224,7 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .title-row,
-  .actions :global(.manage svg),
-  .actions :global(.report) {
+  .actions :global(.manage svg) {
     transition: none;
   }
 }

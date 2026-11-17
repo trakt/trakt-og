@@ -235,7 +235,7 @@ const videos: readonly VideoCard[] = [
   </FanartHeader>
   <SummaryFrame label={noWayHome.title}>
     {#snippet tools()}
-      <MediaTools target={{ type: 'movie', id: noWayHome.id, title: noWayHome.title, year: noWayHome.year, href: noWayHome.href, tmdb: noWayHome.tmdb, fanart: noWayHome.fanart }} />
+      <MediaTools target={{ type: 'movie', id: noWayHome.id, title: noWayHome.title, year: noWayHome.year, fanart: noWayHome.fanart }} />
     {/snippet}
     {#snippet sidebar()}
       <SummaryPoster {ratingTarget} image={noWayHome.poster} alt={noWayHome.fullTitle} />

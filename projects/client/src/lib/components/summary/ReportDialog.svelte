@@ -1,9 +1,9 @@
 <!--
-  The report dialog for items from media summaries, lists, the user options menu and comments, in the notes and list
-  dialogs' art shell: the target's fanart, posters or stripes under glass with Report and type tags over its name and
-  the permalink, then a reason dropdown, the reason's instructions in a notice, a message whose placeholder follows the
-  reason, and Cancel and Send Report. Send stays off until the form is valid, and the footer says what's missing.
-  Cmd/Ctrl+Enter sends. A server error shows in a red notice and the dialog stays open.
+  The report dialog for a profile's options menu and for comments, in the notes and list dialogs' art shell: the
+  target's fanart or stripes under glass with Report and type tags over its name and the permalink, then a reason
+  dropdown, the reason's instructions in a notice, a message whose placeholder follows the reason, and Cancel and Send
+  Report. Send stays off until the form is valid, and the footer says what's missing. Cmd/Ctrl+Enter sends. A server
+  error shows in a red notice and the dialog stays open.
 -->
 <script lang="ts">
 import { page } from '$app/state';
@@ -36,14 +36,8 @@ interface Props {
 let { open = $bindable(), target }: Props = $props();
 const id = $props.id();
 const TYPES: Readonly<Record<ReportTarget['type'], string>> = {
-  movie: 'Movie',
-  show: 'Show',
-  season: 'Season',
-  episode: 'Episode',
-  person: 'Person',
   user: 'User',
   comment: 'Comment',
-  list: 'List',
 };
 const permalink = $derived(`${page.url.origin}${target.href}`);
 const heading = $derived(target.title || `Report ${target.type}`);
@@ -61,12 +55,8 @@ const missing = $derived(
   invalid.reason ? 'Pick a reason to send' : invalid.message ? 'Add a message to send' : undefined,
 );
 const instructions = $derived(
-  target.type === 'comment'
-    ? ['spoilers', 'duplicate', 'other'].includes(reason)
-    : (target.type !== 'user' || reason === 'other') &&
-      ['metadata', 'duplicate', 'remove', 'data_refresh', 'runtime', 'tmdb', 'other', 'adult'].includes(reason),
+  target.type === 'comment' ? ['spoilers', 'duplicate', 'other'].includes(reason) : reason === 'other',
 );
-const tmdb = $derived(target.tmdb ?? 'https://www.themoviedb.org');
 
 $effect(() => {
   if (!open) return;
@@ -108,8 +98,7 @@ async function submit() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <Dialog bind:open title={heading} size="md" variant="art">
   {#snippet header(titleId)}
-    <DialogArtHeader id={titleId} title={heading} year={target.year} fanart={target.fanart} posters={target.posters}
-      {tags}>
+    <DialogArtHeader id={titleId} title={heading} fanart={target.fanart} {tags}>
       <a class="permalink" href={permalink} target="_blank" rel="noopener"><Icon svg={link} /><span>{permalink}</span></a>
     </DialogArtHeader>
   {/snippet}
@@ -124,22 +113,8 @@ async function submit() {
       <DialogNotice role="status">
         {#if reason === 'spoilers'}
           If you've already seen this item, spoilers won't be hidden.
-        {:else if reason === 'duplicate' && target.type === 'comment'}
-          Please include Trakt links for the original comment and all duplicates.
-        {:else if reason === 'metadata'}
-          Please update <a href={tmdb} target="_blank" rel="noopener">TMDB</a> before reporting this item. Trakt will automatically refresh about <b>24 hours</b> after <a href={tmdb} target="_blank" rel="noopener">TMDB</a> is updated.
         {:else if reason === 'duplicate'}
-          Please report the duplicate item only <em>(not the correct item)</em> and include the Trakt link to the correct item.
-        {:else if reason === 'remove'}
-          Please check for duplicates first. Sometimes we actually need to merge duplicates and not simply remove the item. Please make sure the item has been removed from <a href={tmdb} target="_blank" rel="noopener">TMDB</a> before reporting it.
-        {:else if reason === 'data_refresh'}
-          Please update <a href={tmdb} target="_blank" rel="noopener">TMDB</a> before reporting this item. If the item hasn't been updated in 24 hours, we'll automatically queue it for a refresh.
-        {:else if reason === 'runtime'}
-          Please update <a href={tmdb} target="_blank" rel="noopener">TMDB</a> with the correct runtime before reporting this item. Trakt will auto refresh and grab the updated runtime.
-        {:else if reason === 'tmdb'}
-          Please make sure <a href={tmdb} target="_blank" rel="noopener">TMDB</a> is updated and the TMDB comparison page indicates we're ready to migrate.
-        {:else if reason === 'adult'}
-          Please make sure <a href={tmdb} target="_blank" rel="noopener">TMDB</a> has this item marked as <em>adult</em> before reporting it.
+          Please include Trakt links for the original comment and all duplicates.
         {:else}
           If possible, please select a built in reason. If not, please be as detailed as you can.
         {/if}
@@ -149,7 +124,7 @@ async function submit() {
       <FieldLabel text="Message" for="{id}-message">
         {#snippet aside()}{#if optional}<span class="optional">Optional</span>{/if}{/snippet}
       </FieldLabel>
-      <textarea id="{id}-message" bind:value={message} rows="4" placeholder={reportPlaceholder(target.type, reason)}
+      <textarea id="{id}-message" bind:value={message} rows="4" placeholder={reportPlaceholder(reason)}
         disabled={busy}></textarea>
     </div>
     {#if error}<DialogNotice tone="danger" role="alert">{error}</DialogNotice>{/if}

@@ -6,7 +6,6 @@ type TitleAction = { readonly onclick?: () => void };
 
 /** The icons on the right of a list page's title row, each set one shown. */
 export interface ListTitleActions {
-  readonly report?: TitleAction;
   readonly edit?: TitleAction;
   readonly delete?: TitleAction;
   readonly leave?: TitleAction;
@@ -28,10 +27,10 @@ type ListTitleActionsParams = {
 };
 
 /**
- * Which title row icons the viewer gets: the report flag when signed in, the owner's edit and (personal lists only)
+ * Which title row icons the viewer gets: the owner's edit and (personal lists only)
  * delete, a collaborator's "Stop collaborating", share, Manage for whoever can manage, and Progress (its franchises
- * when it's movies only). OG's Copy for everyone else is cut: og doesn't clone other people's lists. Report and leave are wired;
- * edit/delete/manage remain unimplemented. Subscribe is cut.
+ * when it's movies only). OG's Copy for everyone else is cut: og doesn't clone other people's lists. Leave is wired;
+ * edit/delete/manage remain unimplemented. Subscribe is cut. Lists can't be reported.
  */
 export function listTitleActions({
   list,
@@ -47,7 +46,6 @@ export function listTitleActions({
     : undefined;
 
   return {
-    ...(viewer && { report: {} }),
     ...(owner && { edit: {} }),
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(collaborator && { leave: {} }),

@@ -13,7 +13,7 @@ type ActionRow = ActionList & Pick<SummaryList, 'posters' | 'itemCount'>;
 type Editor = { readonly id: number; readonly posters: readonly string[]; readonly count: number };
 
 /**
- * The row icons for an item's lists, on its summary, its lists page and the search Lists tab: report, progress and share for everyone, and
+ * The row icons for an item's lists, on its summary, its lists page and the search Lists tab: progress and share for everyone, and
  * the owner's edit, which opens the list editor, and delete, which takes the row away. The page renders `editor` with
  * `ListEditor` and shows `visible(lists)`.
  */

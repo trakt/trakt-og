@@ -6,8 +6,6 @@ type ListRowAction = { readonly onclick?: () => void; readonly warning?: string;
  * set shows. The calendar subscribe icon is cut.
  */
 export interface ListRowActions {
-  /** The report flag, for signed-in viewers. It fades in while the pointer is over the row. */
-  readonly report?: ListRowAction;
   /** The owner's pencil. */
   readonly edit?: ListRowAction;
   /** The owner's delete icon, on personal lists only. `question` asks something other than "Delete this list?". */

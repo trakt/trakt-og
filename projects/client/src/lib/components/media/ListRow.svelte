@@ -9,7 +9,6 @@
   itself to where it sits: a smaller fan in a tablet column, the posters whole across the top in a narrow one.
 -->
 <script lang="ts">
-import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
 import ListCount from '#lib/components/lists/ListCount.svelte';
 import ListLikeButton from '#lib/components/lists/ListLikeButton.svelte';
 import ListTag from '#lib/components/lists/ListTag.svelte';
@@ -30,7 +29,6 @@ import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
 import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
 import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
 import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
-import flag from '#lib/icons/regular/flag.svg?raw';
 import listIcon from '#lib/icons/regular/list.svg?raw';
 import pencil from '#lib/icons/regular/pen.svg?raw';
 import heart from '#lib/icons/solid/heart.svg?raw';
@@ -112,13 +110,6 @@ const relation = $derived(
   mine || kind === 'official' ? undefined : memberRelation(overlay.slices().network, owner.href.split('/users/')[1]),
 );
 
-let reportOpen = $state(false);
-let reportMounted = $state(false);
-const reportScope = $derived(`${likeTarget?.id}:${likeTarget?.viewer}`);
-$effect(() => {
-  void reportScope;
-  reportOpen = false;
-});
 // An empty list shows one striped panel; any other fills its missing slots, so every fan has the same width.
 // Official lists are Trakt's own, so their owner wears the site's logo.
 const avatar = $derived(kind === 'official' ? ogLogo : owner.avatar);
@@ -145,10 +136,6 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
     {/snippet}
   </Tooltip>
 {/snippet}
-
-{#if reportMounted && likeTarget && actions?.report && !actions.report.onclick}<ReportDialog bind:open={reportOpen}
-  target={{ type: 'list', id: likeTarget.id, ownerSlug: likeTarget.ownerSlug, title: name, href,
-    posters: posters.flatMap(({ image }) => (image ? [image] : [])).slice(0, 5) }} />{/if}
 
 <article class="list-row">
   <div class="card">
@@ -213,7 +200,6 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
         </div>
         {#if actions}
           <div class="tools">
-            {#if actions.report}{@render action('Report List', flag, 'report', actions.report.onclick ? actions.report : { onclick: likeTarget?.viewer ? () => { reportMounted = true; reportOpen = true; } : undefined })}{/if}
             {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
             {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>{actions.delete.question ?? 'Delete this list?'}</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
@@ -553,16 +539,6 @@ h3 {
 
 .action {
   color: var(--color-stat-noun);
-}
-
-/* OG faded the flag in while the pointer was over the row. */
-.report {
-  opacity: 0;
-
-  .card:hover &,
-  &:focus-visible {
-    opacity: 1;
-  }
 }
 
 .edit {

@@ -19,14 +19,10 @@ export async function writeMediaTool({ fetch, action }: { fetch: typeof globalTh
   const errors = validateReport({ type: target.type, reason: action.reason, message: action.message });
   if (errors.reason || errors.message) return { ok: false, message: 'Please choose a reason and type in a message.' };
 
-  const plural = target.type === 'person' ? 'people' : `${target.type}s`;
   try {
     const response = await rawApiFetch({
       fetch,
-      path:
-        target.type === 'list' && target.ownerSlug
-          ? `/users/${encodeURIComponent(target.ownerSlug)}/lists/${encodeURIComponent(target.id)}/report`
-          : `/${plural}/${encodeURIComponent(target.id)}/report`,
+      path: `/${target.type}s/${encodeURIComponent(target.id)}/report`,
       init: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

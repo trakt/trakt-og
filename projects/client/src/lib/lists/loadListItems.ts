@@ -9,6 +9,7 @@ import type { ListQuery } from './ListQuery.ts';
 import { type ListSort, resolveListSort } from './resolveListSort.ts';
 import { type ListItemCard, toListItemCard } from './toListItemCard.ts';
 import { toListItemsSearch } from './toListItemsSearch.ts';
+import type { ListStatsRead } from './ListStatsRead.ts';
 import { type ListStats, toListStats } from './toListStats.ts';
 import { isBrowserSort } from './viewerSort.ts';
 
@@ -50,10 +51,10 @@ export function urlListSort(query: ListQuery): ListSort | undefined {
 }
 
 // The worker's largest page, and enough of them for a VIP's 5,000-item watchlist (`TRAKT_WATCHLIST_ITEM_LIMIT_VIP`).
-const STATS_PAGE = 250;
-const MAX_STATS_PAGES = 20;
+export const STATS_PAGE = 250;
+export const MAX_STATS_PAGES = 20;
 const MAX_WHOLE_LIST = STATS_PAGE * MAX_STATS_PAGES;
-const RANKED: ListSort = { by: 'rank', how: 'asc' };
+export const RANKED: ListSort = { by: 'rank', how: 'asc' };
 
 const itemCount = (items: ListItems) => Number(items.headers.get('x-pagination-item-count')) || items.rows.length;
 const tooLongToHide = (items: ListItems) => items.status === 200 && itemCount(items) > MAX_WHOLE_LIST;
@@ -76,30 +77,6 @@ async function fetchWholeList({ query, sort, ...request }: ItemsRequest & { sort
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => read(i + 2)));
   const failed = rest.find(({ status }) => status !== 200);
   return failed ?? { ...first, rows: [...first.rows, ...rest.flatMap(({ rows }) => rows)] };
-}
-
-type StatsRequest = Omit<ItemsRequest, 'sort'> & { total: number; withItems: boolean };
-
-/**
- * The stats bar counts every item that matches the filters, and the worker pages them, so this reads every page at
- * once, in rank order so the pages don't shift under each other. A list too big for that, or a failed page, leaves
- * the bar without its computed stats.
- */
-async function fetchListStats({ total, withItems, query, ...request }: StatsRequest): Promise<ListStats | null> {
-  const pages = Math.ceil(total / STATS_PAGE);
-  if (pages > MAX_STATS_PAGES) return null;
-  const read = (page: number) =>
-    fetchListItems({
-      ...request,
-      query: { ...query, page, limit: STATS_PAGE },
-      sort: RANKED,
-    });
-  const results = await Promise.all(Array.from({ length: pages }, (_, i) => read(i + 1))).catch(() => null);
-  if (!results || results.some(({ status }) => status !== 200)) return null;
-  return toListStats(
-    results.flatMap(({ rows }) => rows),
-    { withItems },
-  );
 }
 
 type LoadListItemsParams = {
@@ -201,12 +178,14 @@ export async function loadListItems({
     ? { type: 'paginated', current: query.page, total: Math.max(1, Math.ceil(cards.length / query.limit)) }
     : listPageMeta({ headers: items.headers, current: query.page, limit: query.limit, received: items.rows.length });
   const total = wholeList ? cards.length : Number(items.headers.get('x-pagination-item-count')) || cards.length;
-  // Most lists fit on their first page, so the stats come from it and render with the page. Longer ones stream in.
+  // Most lists fit on their first page, so the stats come from it and render with the page. Longer ones are read by
+  // the browser, which counts every page of the list.
   const complete = wholeList || (query.page === 1 && (items.rows.length < query.limit || items.rows.length >= total));
   const withItems = viewerSignedIn;
-  const stats: ListStats | Promise<ListStats | null> = complete
-    ? toListStats(items.rows, { withItems })
-    : fetchListStats({ fetch, token: viewerToken, base, query, total, withItems });
+  const stats: ListStats | null = complete ? toListStats(items.rows, { withItems }) : null;
+  const statsRead: ListStatsRead | null = complete
+    ? null
+    : { base, query, total, withItems, viewer: viewerToken !== null };
 
   return {
     sort,
@@ -217,8 +196,10 @@ export async function loadListItems({
     cards,
     page,
     total,
-    /** The stats bar's whole-list numbers, streamed when they take more reads. */
+    /** The stats bar's whole-list numbers, when the page's own items give them. */
     stats,
+    /** What the browser needs to count the whole list when `stats` can't: the bar shimmers until it does. */
+    statsRead,
     /** The list is longer than the page can read whole, so its hides are off. */
     hideLimited,
     /** Read by the profile frame (`routes/users/[id]/+layout.svelte`). */

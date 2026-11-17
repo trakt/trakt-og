@@ -1,14 +1,13 @@
-import { lastActivitiesResponseSchema } from '@trakt/api';
-import { contractSchema } from '../api/contractSchema.ts';
+import type { ReadLastActivities } from '../activity/createLastActivities.ts';
 import type { SliceName, SliceRecord } from './overlayStorage.ts';
 import { SLICE_NAMES } from './sliceNames.ts';
 import { type ApiGet, sliceSources } from './sliceSources.ts';
 import { staleSlices } from './staleSlices.ts';
 
-const activitiesSchema = contractSchema(lastActivitiesResponseSchema);
-
 type CheckActivitiesParams = {
   get: ApiGet;
+  /** The shared `last_activities` reader. */
+  activities: ReadLastActivities;
   known: () => Readonly<Partial<Record<SliceName, string>>>;
   /** False once the user it runs for signed out or switched. */
   isCurrent: () => boolean;
@@ -21,18 +20,19 @@ type CheckActivitiesParams = {
  * Fetches every slice whose `last_activities` key moved. A failed check or slice keeps the cached copy, and reports
  * each slice it couldn't fetch: on a failed check, every one never fetched.
  */
-export async function checkActivities({ get, known, isCurrent, onSlice, onFailed }: CheckActivitiesParams) {
+export async function checkActivities({
+  get,
+  activities: readActivities,
+  known,
+  isCurrent,
+  onSlice,
+  onFailed,
+}: CheckActivitiesParams) {
   const failUnknown = () => SLICE_NAMES.filter((name) => known()[name] === undefined).forEach(onFailed);
-  const response = await get('/sync/last_activities').catch(() => null);
+  const activities = await readActivities().catch(() => null);
   if (!isCurrent()) return;
-  // Keep the cached slices as they are. The next visibility check retries.
-  if (!response?.ok) return failUnknown();
-
-  const parsed = activitiesSchema.safeParse(await response.json().catch(() => null));
-  // A body that doesn't match the contract is a failed check too.
-  if (!parsed.success) return failUnknown();
-
-  const activities = parsed.data;
+  // A failed read, or a body that doesn't match the contract, keeps the cached slices. The next visibility check retries.
+  if (!activities) return failUnknown();
   const stale = staleSlices(known(), activities);
   const fetchAll = (names: SliceName[]) =>
     Promise.allSettled(

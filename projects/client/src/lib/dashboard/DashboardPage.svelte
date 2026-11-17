@@ -27,6 +27,8 @@ import { fetchRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import { fetchSchedule } from '#lib/dashboard/fetchSchedule.ts';
 import { fetchRecentlyWatched } from '#lib/dashboard/fetchRecentlyWatched.ts';
 import { fetchUpNext } from '#lib/dashboard/fetchUpNext.ts';
+import { lastActivities } from '#lib/activity/lastActivities.ts';
+import { cachedComputedStats } from '#lib/stats/cachedComputedStats.ts';
 import { fetchComputedStats } from '#lib/stats/fetchComputedStats.ts';
 import type { UserStats } from '#lib/stats/userStatsSchema.ts';
 import { refreshOnReturn } from '#lib/dashboard/refreshOnReturn.ts';
@@ -86,14 +88,20 @@ $effect(() => {
   if (ended) untrack(refreshPlays);
 });
 
-// Without the API's stats, the browser counts them from your whole watched lists, starting from the loader's counts.
-// The server renders the panel's placeholder, and effects only run in the browser.
+// Without the API's stats, the browser counts them from your whole watched lists, starting from the loader's counts,
+// and keeps them until your activity moves. The server renders the panel's placeholder; effects only run in the browser.
 const PENDING = new Promise<never>(() => {});
 let countedStats = $state<Promise<UserStats> | null>(null);
 $effect(() => {
   const counts = data.countedStats;
+  const fetch = viewerFetch();
   countedStats = counts
-    ? fetchComputedStats({ fetch: viewerFetch(), token: null, id: 'me', isSelf: true, counts: Promise.resolve(counts) })
+    ? cachedComputedStats({
+        activities: lastActivities.read,
+        user: username,
+        counts,
+        read: () => fetchComputedStats({ fetch, token: null, id: 'me', isSelf: true, counts: Promise.resolve(counts) }),
+      })
     : null;
 });
 const stats = $derived(data.stats ?? (data.countedStats ? (countedStats ?? PENDING) : null));

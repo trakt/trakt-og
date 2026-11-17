@@ -1,3 +1,4 @@
+import { createLastActivities, type ReadLastActivities } from '../activity/createLastActivities.ts';
 import type { CollectedItem } from './CollectedItem.ts';
 import { collectedDetails } from './collectedDetails.ts';
 import type { CollectionMetadata } from '../components/collection/CollectionMetadata.ts';
@@ -60,6 +61,8 @@ export type SeasonOf = { show: number; number: number; episode?: number };
 type CreateOverlayParams = {
   get: ApiGet;
   storage: OverlayStorage;
+  /** The shared `last_activities` reader; by default one of its own over `get`. */
+  activities?: ReadLastActivities;
   now?: () => number;
 };
 
@@ -267,7 +270,12 @@ function memoizedStateOf(slices: Partial<OverlaySlices>, type: MediaType, id: nu
  * The signed-in user's library state for posters. Reads are synchronous against memory and reactive, because the
  * slices live in `$state`. `start` loads the cache and checks `last_activities`; `stop` forgets the user.
  */
-export function createOverlay({ get, storage, now = Date.now }: CreateOverlayParams) {
+export function createOverlay({
+  get,
+  storage,
+  now = Date.now,
+  activities = createLastActivities({ get, now }).read,
+}: CreateOverlayParams) {
   let slices = $state.raw<Partial<OverlaySlices>>({});
   let user: string | null = null;
   // The `last_activities` key each in-memory slice was fetched at.
@@ -312,6 +320,7 @@ export function createOverlay({ get, storage, now = Date.now }: CreateOverlayPar
 
     await loaded.checkActivities({
       get,
+      activities,
       known: () => known,
       isCurrent: () => user === forUser,
       onSlice: (record) => saveSlice(forUser, record),

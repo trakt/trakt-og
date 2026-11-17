@@ -1,3 +1,4 @@
+import { lastActivities } from '../activity/lastActivities.ts';
 import { apiQueue } from '../api/apiQueue.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import { createOverlay } from './createOverlay.svelte.ts';
@@ -8,4 +9,5 @@ import { viewerFetch } from '../auth/viewerFetch.ts';
 export const overlay = createOverlay({
   get: (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path })),
   storage: overlayStorage(),
+  activities: lastActivities.read,
 });

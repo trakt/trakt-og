@@ -1,4 +1,6 @@
 import type { User, UserManager } from 'oidc-client-ts';
+import { lastActivities } from '../activity/lastActivities.ts';
+import { activityCacheStorage } from '../activity/activityCacheStorage.ts';
 import { overlay } from './overlay.ts';
 
 /**
@@ -6,11 +8,18 @@ import { overlay } from './overlay.ts';
  * A failed renewal removes the user, which lands in `stop`. Returns a cleanup for the listeners.
  */
 export function startOverlay(manager: UserManager): () => void {
+  let followed: string | undefined;
   const follow = (user: User | null) => {
     const sub = user?.profile.sub;
+    // Another user's activity never answers for this one.
+    if (sub !== followed) lastActivities.forget();
+    followed = sub;
     return (sub ? overlay.start(sub) : overlay.stop()).catch(() => {});
   };
-  const onUnloaded = () => follow(null);
+  const onUnloaded = () => {
+    activityCacheStorage().forget();
+    return follow(null);
+  };
   const onVisible = () => {
     if (document.visibilityState === 'visible') overlay.recheck().catch(() => {});
   };

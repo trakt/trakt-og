@@ -179,13 +179,22 @@ describe('loadDashboard', () => {
       ['an empty 204', () => new HttpResponse(null, { status: 204 })],
       ['a 404', () => new HttpResponse(null, { status: 404 })],
       ['all zeros', () => HttpResponse.json({ ...dashboardFrameFixture.newStats, ...zeroed })],
-    ])('should count them itself after %s, streaming the panel', async (_, stats) => {
-      server.use(http.get(`${API}/users/me/stats`, stats), watchedMovies, moviePlays);
+    ])('should read only the counts after %s, leaving the watched lists to the browser', async (_, stats) => {
+      const listReads: string[] = [];
+      server.use(http.get(`${API}/users/me/stats`, stats), moviePlays, watchedMovies);
+      server.events.on('request:start', ({ request }) => {
+        const url = new URL(request.url);
+        if (/^\/users\/me\/watched\/(movies|shows)$/.test(url.pathname) && url.searchParams.get('limit') !== '1') {
+          listReads.push(url.pathname);
+        }
+      });
       const data = await load();
       await Promise.all(panels(data));
+      server.events.removeAllListeners('request:start');
 
-      expect(data.stats).toBeInstanceOf(Promise);
-      expect((await data.stats)?.movies).toMatchObject({ watched: 12, plays: 20, minutes: 200 });
+      expect(data.stats).toBeNull();
+      expect(data.countedStats).toMatchObject({ watched: { movies: 12 }, plays: { movies: 20 } });
+      expect(listReads).toEqual([]);
       expect(data.watched).toBe(12);
       expect(data.firstNight).toBeNull();
     });
@@ -199,6 +208,7 @@ describe('loadDashboard', () => {
       await Promise.all(panels(data));
 
       expect(data.stats).toBeNull();
+      expect(data.countedStats).toBeNull();
     });
   });
 });

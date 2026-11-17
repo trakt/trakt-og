@@ -81,7 +81,7 @@ describe('toScheduleDays', () => {
       expect(today?.items.at(0)?.network?.href).toBe('/shows/popular?networks=Prime%20Video');
     });
 
-    it('should write a plus in a network as -plus in the link', () => {
+    it('should keep a plus in a network as the API filters on it', () => {
       const rows = scheduleFixture
         .rows(TODAY)
         .map((row) =>
@@ -91,7 +91,7 @@ describe('toScheduleDays', () => {
       const [today] = toScheduleDays({ ...base, days: plusDays });
       const severance = today?.items.find((entry) => entry.title === 'Severance');
 
-      expect(severance?.network?.href).toBe('/shows/popular?networks=Apple%20TV-plus');
+      expect(severance?.network?.href).toBe('/shows/popular?networks=Apple%20TV%2B');
     });
   });
 

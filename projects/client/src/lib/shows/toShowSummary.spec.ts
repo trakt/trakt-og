@@ -125,6 +125,12 @@ describe('toShowSummary', () => {
       expect(facts.network).toBeUndefined();
     });
 
+    it('should link a network with a plus by the name the API filters on', () => {
+      const { facts } = toShowSummary({ ...base, show: show({ status: 'ended', network: 'Disney+' }) });
+
+      expect(facts.network?.href).toBe('/shows/popular?networks=Disney%2B');
+    });
+
     it('should give an upcoming show its status and premiere', () => {
       const { facts } = toShowSummary({
         ...base,

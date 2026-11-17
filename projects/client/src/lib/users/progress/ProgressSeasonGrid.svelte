@@ -37,8 +37,8 @@ import eye from '#lib/icons/regular/eye.svg?raw';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import caretDown from '#lib/icons/solid/caret-down.svg?raw';
 import heart from '#lib/icons/solid/heart.svg?raw';
-import check from '#lib/icons/trakt/check-thick.svg?raw';
-import lightBan from '#lib/icons/light/ban.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
+import regularBan from '#lib/icons/regular/ban.svg?raw';
 import angleRight from '#lib/icons/solid/angle-right.svg?raw';
 import plus from '#lib/icons/solid/plus.svg?raw';
 import ban from '#lib/icons/thin/ban.svg?raw';
@@ -163,16 +163,17 @@ const library = (square: EpisodeSquare, season: number) =>
 
 <!-- The menu's ban, Drop's weight, with a small badge for the rows that reach past the season. -->
 {#snippet banIcon(badge?: string)}
-  <span class="ban"><Icon svg={lightBan} fixedWidth />{#if badge}<span class="badge"><Icon svg={badge} /></span>{/if}</span>
+  <span class="ban"><Icon svg={regularBan} fixedWidth />{#if badge}<span class="badge"><Icon svg={badge} /></span>{/if}</span>
 {/snippet}
 
 {#snippet stats(season: ProgressSeason)}
   <span class="stats">
     {#if season.announced === undefined}
-      <Stat svg={check} tone="watched" value={season.count} noun="watched" />
+      <Stat svg={pieSvg(season.done / season.aired)} tone="watched" value={season.count} noun="watched" />
       {#if season.timeLeft}
         {@const left = season.aired - season.done}
-        <Stat svg={hourglass} value={season.timeLeft} noun="left" aside="({left} {left === 1 ? 'ep' : 'eps'})" />
+        <Stat svg={hourglass} iconScale="var(--stat-hourglass-scale)" value={season.timeLeft} noun="left"
+          aside="({left} {left === 1 ? 'ep' : 'eps'})" />
       {/if}
     {:else}
       <Stat svg={calendar} value={String(season.announced)} noun="announced" />

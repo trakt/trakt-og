@@ -32,7 +32,10 @@ import Pagination from '#lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
 import WatchNowFilter from '#lib/components/watchnow/WatchNowFilter.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
+import circlePlay from '#lib/icons/regular/circle-play.svg?raw';
+import posters from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import type { ViewerSettings } from '#lib/settings/ViewerSettings.ts';
@@ -65,6 +68,7 @@ type Props = {
 };
 
 const { data }: Props = $props();
+const uniqueIcons: Record<string, string> = { episode: circlePlay, show: tvRetro, movie: clapperboard };
 let days = $derived(data.days);
 // A new loader result clears the journal. It is read when each affected card leaves the grid.
 const removal = $derived<{ source: Props['data']; keys: readonly number[] }>({ source: data, keys: [] });
@@ -187,13 +191,14 @@ const country = $derived(watchNowCountry(data.settings));
   {/snippet}
   {#snippet stats()}
     <span class="counts">
-      {#if data.counts.unique}
-        {@const { count, noun } = data.counts.unique}
-        <SubnavCount svg={file} {count} {noun} tooltip={capitalize(`${noun}s`)} />
-      {/if}
       {#if data.counts.plays !== undefined}
         <SubnavCount svg={check} count={data.counts.plays} noun="play" tooltip={plural(data.counts.plays, 'Play')}
-          tone="watched" />
+          tone="watched" iconShift="var(--quick-icon-trakt-shift)" iconScale="var(--stat-check-scale)" />
+      {/if}
+      {#if data.counts.unique}
+        {@const { count, noun } = data.counts.unique}
+        <SubnavCount svg={uniqueIcons[noun] ?? posters} {count} {noun} tooltip={capitalize(`${noun}s`)}
+          iconShift={noun === 'show' ? 'var(--stat-tv-icon-shift)' : undefined} />
       {/if}
     </span>
   {/snippet}

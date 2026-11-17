@@ -51,7 +51,7 @@
   import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
   import ListTransfer from '#lib/components/lists/ListTransfer.svelte';
   import clone from '#lib/icons/regular/clone.svg?raw';
-  import file from '#lib/icons/regular/file.svg?raw';
+  import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
   import fileExport from '#lib/icons/regular/file-export.svg?raw';
   import ListItemEdit from '#lib/components/lists/ListItemEdit.svelte';
   import OfficialListHeader from '#lib/components/lists/OfficialListHeader.svelte';
@@ -87,6 +87,8 @@
   import { listCardHidden, listHideReady, unavailableHides } from '#lib/lists/listHide.ts';
   import type { PageMeta } from '#lib/api/PageMeta.ts';
   import { listTypeOptions } from '#lib/lists/listTypeOptions.ts';
+  import { type MediaTypeIcon, mediaTypeIcons } from '#lib/icons/mediaTypeIcons.ts';
+  import { capitalize } from '#lib/utils/capitalize.ts';
   import type { loadBuiltInList } from '#lib/lists/loadBuiltInList.ts';
   import type { loadOfficialList } from '#lib/lists/loadOfficialList.ts';
   import type { loadList } from '#lib/lists/loadList.ts';
@@ -204,6 +206,11 @@ const listOwner = $derived(
   }
   const vip = $derived(data.user?.isVip ?? false);
   const typeOptions = $derived(listTypeOptions(data.kind));
+  // One media type picked, the item count takes its icon and name.
+  const itemType = $derived.by(() => {
+    const [only, ...rest] = data.query.types;
+    return only && rest.length === 0 && only in mediaTypeIcons ? (only as MediaTypeIcon) : undefined;
+  });
 const typeLabel = $derived(
   data.query.types.length > 0
     ? data.query.types.map((type) => typeOptions.find((option) => option.type === type)?.label ?? type).join(', ')
@@ -733,9 +740,9 @@ const draggable = $derived(
 
   <SectionToolbar
     statsChip={{
-      svg: file,
+      svg: itemType ? mediaTypeIcons[itemType] : postersIcon,
       value: itemTotal.toLocaleString('en-US'),
-      label: 'Items'
+      label: itemType ? `${capitalize(itemType)}s` : 'Items'
     }}
   >
     {#snippet filters()}
@@ -765,6 +772,7 @@ const draggable = $derived(
     {#snippet stats()}
       <ListStats
         itemCount={itemTotal}
+        {itemType}
         stats={hiding ? hiddenStats ?? statsPending : data.stats}
         progress={data.user !== null}
         likeTarget={{ id: list.id, ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, viewer: data.user?.slug ?? null }}

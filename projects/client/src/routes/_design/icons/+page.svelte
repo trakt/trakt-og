@@ -11,6 +11,7 @@ import flag from '#lib/icons/regular/flag.svg?raw';
 import gear from '#lib/icons/thin/gear.svg?raw';
 import imdb from '#lib/icons/sites/imdb.svg?raw';
 import justwatch from '#lib/icons/kit/justwatch.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
 import lockKeyhole from '#lib/icons/solid/lock-keyhole.svg?raw';
 import twitter from '#lib/icons/brands/twitter.svg?raw';
 
@@ -80,6 +81,13 @@ const shelf: readonly { label: string; badges: CollectionBadges }[] = [
   </div>
 </Specimen>
 
+<Specimen title="Watched pie" row
+  note="pieSvg draws OG's ring icon filled to a share, clockwise from 12 o'clock, floored to whole percents like the progress numbers. The progress pages put it beside each watched ratio.">
+  {#each [0, 0.1, 0.25, 0.52, 0.79, 0.99, 1] as share (share)}
+    <Variant label="{Math.round(share * 100)}%"><span class="large pie"><Icon svg={pieSvg(share)} /></span></Variant>
+  {/each}
+</Specimen>
+
 <Specimen title="Library logos" row
   note="Logos reach the site through CollectionLogoRow, one row with the resolution, HDR and channels as tags. The collection demo shows it under the library button and in the library tooltip.">
   {#each shelf as item (item.label)}
@@ -110,5 +118,9 @@ td {
 /* Big enough to see each glyph's detail. */
 .large {
   font-size: calc(var(--font-size-h1) * 2);
+}
+
+.pie {
+  color: var(--color-stat-watched);
 }
 </style>

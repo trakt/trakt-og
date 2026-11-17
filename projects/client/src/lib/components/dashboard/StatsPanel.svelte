@@ -12,9 +12,9 @@ import Stat from '#lib/components/stats/Stat.svelte';
 import type { PanelCount, PanelTime, StatsPanel } from '#lib/dashboard/StatsPanel.ts';
 import ban from '#lib/icons/regular/ban.svg?raw';
 import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
-import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
-import play from '#lib/icons/regular/play.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
 import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import circlePlay from '#lib/icons/regular/circle-play.svg?raw';
 import clock from '#lib/icons/regular/clock.svg?raw';
 import listCheck from '#lib/icons/regular/list-check.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
@@ -27,7 +27,7 @@ const loading = [
   { svg: clock, label: 'All Time' },
   { svg: listCheck, label: 'Shows Finished' },
   { svg: tvRetro, label: 'Watched Shows' },
-  { svg: cameraMovie, label: 'Watched Movies' },
+  { svg: clapperboard, label: 'Watched Movies' },
 ];
 </script>
 
@@ -38,8 +38,13 @@ const loading = [
   </a>
 {/snippet}
 
-{#snippet stat(svg: string, { text, word }: PanelCount, href: string, tone?: 'watched')}
-  <a {href}><Stat {svg} value={text} noun={word} {tone} /></a>
+{#snippet stat(svg: string, { text, word }: PanelCount, href: string, iconShift?: string)}
+  <a {href}><Stat {svg} value={text} noun={word} {iconShift} /></a>
+{/snippet}
+
+{#snippet plays({ text, word }: PanelCount, href: string)}
+  <a {href}><Stat svg={check} value={text} noun={word} tone="watched" iconShift="var(--quick-icon-trakt-shift)"
+    iconScale="var(--stat-check-scale)" /></a>
 {/snippet}
 
 <div class="stats">
@@ -64,7 +69,7 @@ const loading = [
         {panel.allTime.value}<small class="word">{panel.allTime.unit}</small>
       </a>
       {#if fresh}<p class="next">Next up: your first hour</p>{:else}
-      <p class="counts">{@render stat(play, panel.allTime.plays, `${user}/history`)}</p>{/if}
+      <p class="counts">{@render plays(panel.allTime.plays, `${user}/history`)}</p>{/if}
     </div>
     {#if panel.finished}
       {@const finished = panel.finished}
@@ -90,18 +95,18 @@ const loading = [
       {@render time(panel.shows.time, `${user}/history/episodes`)}
       {#if fresh}<p class="next">Mark an episode to start the clock</p>{:else}
       <p class="counts">
-        {@render stat(play, panel.shows.plays, `${user}/history/episodes`)}
-        {@render stat(check, panel.shows.episodes, `${user}/history/episodes`, 'watched')}
-        {@render stat(tvRetro, panel.shows.shows, `${user}/history/shows`, 'watched')}
+        {@render plays(panel.shows.plays, `${user}/history/episodes`)}
+        {@render stat(circlePlay, panel.shows.episodes, `${user}/history/episodes`)}
+        {@render stat(tvRetro, panel.shows.shows, `${user}/history/shows`, 'var(--stat-tv-icon-shift)')}
       </p>{/if}
     </div>
     <div class="cell">
-      <p class="label"><HeadingMark svg={cameraMovie} /><a href="{user}/history/movies">Watched Movies</a></p>
+      <p class="label"><HeadingMark svg={clapperboard} /><a href="{user}/history/movies">Watched Movies</a></p>
       {@render time(panel.movies.time, `${user}/history/movies`)}
       {#if fresh}<p class="next">Mark a movie to start the clock</p>{:else}
       <p class="counts">
-        {@render stat(play, panel.movies.plays, `${user}/history/movies`)}
-        {@render stat(cameraMovie, panel.movies.movies, `${user}/history/movies`, 'watched')}
+        {@render plays(panel.movies.plays, `${user}/history/movies`)}
+        {@render stat(clapperboard, panel.movies.movies, `${user}/history/movies`)}
       </p>{/if}
     </div>
   </div>

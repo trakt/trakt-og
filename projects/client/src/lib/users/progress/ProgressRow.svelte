@@ -33,9 +33,9 @@ import ban from '#lib/icons/thin/ban.svg?raw';
 import completeCheck from '#lib/icons/solid/check.svg?raw';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import history from '#lib/icons/regular/clock-rotate-left.svg?raw';
-import play from '#lib/icons/regular/play.svg?raw';
 import caretDown from '#lib/icons/solid/caret-down.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { countLabel } from '#lib/utils/countLabel.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
@@ -166,8 +166,8 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
         {#snippet band()}
           <TooltipBar percent={season.percent} />
           {#if !season.complete && season.timeLeft}
-            <span class="tip-left"><Stat svg={hourglass} value={season.timeLeft} noun="left"
-                aside="({left} {plural(left, 'ep')})" /></span>
+            <span class="tip-left"><Stat svg={hourglass} iconScale="var(--stat-hourglass-scale)"
+                value={season.timeLeft} noun="left" aside="({left} {plural(left, 'ep')})" /></span>
           {/if}
         {/snippet}
         {#snippet detail()}
@@ -222,14 +222,14 @@ const changeSeasons = (hide: boolean) => (seasons: readonly number[]) => {
       label={`${row.title}: ${row.percent}% watched`} overlay={row.seasons ? sections : undefined} />
 
     <p class="stats">
-      <Stat svg={check} tone="watched" value="{count(row.completed)} / {count(row.aired)}" noun="watched"
-        label="Episodes watched" />
-      <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays"
-        under="Rewatches included" />
+      <Stat svg={pieSvg(row.completed / row.aired)} tone="watched" value="{count(row.completed)} / {count(row.aired)}"
+        noun="watched" label="Episodes watched" />
+      <Stat svg={check} tone="watched" iconShift="var(--quick-icon-trakt-shift)" iconScale="var(--stat-check-scale)"
+        value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays" under="Rewatches included" />
       <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
       {#if row.left > 0}
-        <Stat svg={hourglass} value={row.leftTime} noun="left" label="Left to watch"
-          aside="({count(row.left)} {plural(row.left, 'ep')})" />
+        <Stat svg={hourglass} iconScale="var(--stat-hourglass-scale)" value={row.leftTime} noun="left"
+          label="Left to watch" aside="({count(row.left)} {plural(row.left, 'ep')})" />
       {/if}
     </p>
 

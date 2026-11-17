@@ -44,7 +44,7 @@ import DemoButton from '#lib/design/DemoButton.svelte';
 import DemoToggle from '#lib/design/DemoToggle.svelte';
 import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import heartOutline from '#lib/icons/regular/heart.svg?raw';
 import heart from '#lib/icons/solid/heart.svg?raw';
 import { creditHideOptions } from '#lib/people/creditHideOptions.ts';
@@ -191,7 +191,8 @@ function showOverlay() {
   </Dropdown>
 {/snippet}
 {#snippet toolbarStats()}
-  <SubnavCount svg={file} count={cards.length} noun="show" tooltip="Shows" />
+  <SubnavCount svg={tvRetro} count={cards.length} noun="show" tooltip="Shows" />
+  <SubnavCount svg={heart} count={12} noun="rating" tooltip="Ratings" tone="rated" />
 {/snippet}
 {#snippet filterIcons()}
   <span class="filter-icons">

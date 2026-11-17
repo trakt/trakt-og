@@ -7,7 +7,7 @@
 <script lang="ts">
 import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
 import Icon from '#lib/icons/Icon.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import type { Snippet } from 'svelte';
 import resetIcon from '#lib/icons/regular/arrow-down-arrow-up.svg?raw';
 import trashXmark from '#lib/icons/regular/trash-xmark.svg?raw';
@@ -25,7 +25,7 @@ const items = $derived(`${count.toLocaleString('en-US')} item${count === 1 ? '' 
 </script>
 
 <div class="manage" role="group" aria-label="Manage items" aria-busy={busy}>
-  <p class="count"><span class="icon-slot"><Icon svg={file} /></span><span><strong>{count.toLocaleString('en-US')}</strong>
+  <p class="count"><span class="icon-slot"><Icon svg={postersIcon} /></span><span><strong>{count.toLocaleString('en-US')}</strong>
     selected</span></p>
   <ManageConfirm name="reset" svg={resetIcon} label="Reset ranks" yes="Yes" {busy} onconfirm={onreset}>
     Set the current order as the ranks of <b>{items}</b>?
@@ -45,7 +45,7 @@ const items = $derived(`${count.toLocaleString('en-US')} item${count === 1 ? '' 
   gap: var(--space-list-manage-actions);
 }
 
-/* The count in a blue pill, the items stat's blue, so it stands apart from the icons: the file icon, the number in
+/* The count in a blue pill, the items stat's blue, so it stands apart from the icons: the poster stack, the number in
    bold and the word. */
 .count {
   display: inline-flex;

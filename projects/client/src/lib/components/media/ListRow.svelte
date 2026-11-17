@@ -29,7 +29,7 @@ import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
 import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
 import ManageConfirm from '#lib/components/comments/ManageConfirm.svelte';
 import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
-import document from '#lib/icons/regular/file.svg?raw';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import flag from '#lib/icons/regular/flag.svg?raw';
 import listIcon from '#lib/icons/regular/list.svg?raw';
 import pencil from '#lib/icons/regular/pen.svg?raw';
@@ -202,7 +202,7 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
       {/if}
       <footer class="foot">
         <div class="counts">
-          {#if itemCount !== undefined}<ListCount svg={document} value={itemCount} word="item" {href} />{/if}
+          {#if itemCount !== undefined}<ListCount svg={postersIcon} value={itemCount} word="item" {href} />{/if}
           {#if actions?.chart}<ListCount svg={filtersIcon} iconColor="var(--color-list-open-chart)"
               label={actions.chart.label} href={actions.chart.href} />{/if}
           {#if likeCount !== undefined}

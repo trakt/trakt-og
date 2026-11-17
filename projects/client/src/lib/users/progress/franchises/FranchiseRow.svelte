@@ -22,9 +22,9 @@ import { overlay } from '#lib/overlay/overlay.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
 import history from '#lib/icons/regular/clock-rotate-left.svg?raw';
-import play from '#lib/icons/regular/play.svg?raw';
 import caretDown from '#lib/icons/solid/caret-down.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
 import type { Franchise } from './Franchise.ts';
 import { franchiseHref } from './franchiseHref.ts';
 import type { FranchiseRow } from './FranchiseRow.ts';
@@ -82,14 +82,14 @@ const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
         overlay={row.released > 0 ? sections : undefined} />
 
       <p class="stats">
-        <Stat svg={check} tone="watched" value="{count(row.watched)} / {count(row.released)}" noun="watched"
-          label="Movies watched" />
-        <Stat svg={play} value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays"
-          under="Rewatches included" />
+        <Stat svg={pieSvg(row.watched / row.released)} tone="watched"
+          value="{count(row.watched)} / {count(row.released)}" noun="watched" label="Movies watched" />
+        <Stat svg={check} tone="watched" iconShift="var(--quick-icon-trakt-shift)" iconScale="var(--stat-check-scale)"
+          value={count(row.plays)} noun={plural(row.plays, 'play')} label="Plays" under="Rewatches included" />
         <Stat svg={history} value={row.watchedTime} noun="watched" label="Time watched" />
         {#if row.left > 0}
-          <Stat svg={hourglass} value={row.leftTime} noun="left" label="Left to watch"
-            aside="({count(row.left)} {plural(row.left, 'movie')})" />
+          <Stat svg={hourglass} iconScale="var(--stat-hourglass-scale)" value={row.leftTime} noun="left"
+            label="Left to watch" aside="({count(row.left)} {plural(row.left, 'movie')})" />
         {/if}
       </p>
 

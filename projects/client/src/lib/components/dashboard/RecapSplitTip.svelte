@@ -11,8 +11,7 @@ import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import TooltipFooter from '#lib/components/tooltip/TooltipFooter.svelte';
 import type { RecapSplitState, RecapTally } from '#lib/dashboard/RecapSplit.ts';
 import Icon from '#lib/icons/Icon.svelte';
-import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
-import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import { mediaTypeIcons } from '#lib/icons/mediaTypeIcons.ts';
 
 interface Props {
   heading: string;
@@ -51,8 +50,8 @@ const count = (n: number, one: string, many: string) => `${exact(n)} ${n === 1 ?
     {#if state.status === 'failed'}
       <EmptyNote action={{ onclick: onretry, text: 'Try again' }}>The split didn't load.</EmptyNote>
     {:else}
-      {@render row(tvRetro, 'episode', split?.episodes, 'show', 'shows')}
-      {@render row(cameraMovie, 'movie', split?.movies, 'movie', 'movies')}
+      {@render row(mediaTypeIcons.episode, 'episode', split?.episodes, 'show', 'shows')}
+      {@render row(mediaTypeIcons.movie, 'movie', split?.movies, 'movie', 'movies')}
     {/if}
   </TooltipFooter>
 </span>

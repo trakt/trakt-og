@@ -84,7 +84,7 @@ const sections = $derived([
 </FanartHeader>
 <SummaryFrame label={season.fullTitle}>
   {#snippet tools()}
-    <MediaTools target={{ type: 'season', id: season.id, title: season.fullTitle, href: season.href, fanart: season.fanart }} />
+    <MediaTools target={{ type: 'season', id: season.id, title: season.fullTitle }} />
   {/snippet}
   {#snippet subnav()}<SeasonLinks label="Season" links={season.seasonLinks} source="seasons" />{/snippet}
   {#snippet sidebar()}

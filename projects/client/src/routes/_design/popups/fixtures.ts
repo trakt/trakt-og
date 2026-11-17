@@ -4,13 +4,18 @@ import type { WatchNowButton } from '../../../lib/components/watchnow/watchNow.t
 /** Fight Club as a movie page passes it; the page adds its fanart from the API. */
 export const fightClub = { title: 'Fight Club', year: 1999, href: '/movies/fight-club-1999' } as const;
 
-export const reportTarget: ReportTarget = {
-  type: 'movie',
+export const commentReportTarget: ReportTarget = {
+  type: 'comment',
   id: 1,
-  title: fightClub.title,
-  year: fightClub.year,
-  href: fightClub.href,
-  tmdb: 'https://www.themoviedb.org/movie/550',
+  title: 'Comment by Tyler Durden',
+  href: `${fightClub.href}/comments/1`,
+};
+
+export const userReportTarget: ReportTarget = {
+  type: 'user',
+  id: 'tyler_durden',
+  title: 'Tyler Durden',
+  href: '/users/tyler_durden',
 };
 
 const logo = (slug: string) => `https://media.trakt.tv/watchnow/sources/${slug}.webp`;

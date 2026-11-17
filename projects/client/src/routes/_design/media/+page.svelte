@@ -370,7 +370,7 @@ const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
     collaborators={[collaborator('Kendal Hagenes', 'kendal_hagenes_1'), collaborator('Sean', 'sean')]}
     description={weekendNotes}
     rank={2}
-    actions={{ report: {}, edit: {}, delete: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/og_tester/lists/watch-next-weekend' }}
+    actions={{ edit: {}, delete: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/og_tester/lists/watch-next-weekend' }}
   />
   <p>A collaborator's row: "Stop collaborating" instead of edit and delete.</p>
   <ListRow
@@ -382,7 +382,7 @@ const seasonRuns: { label: string; runs: readonly WatchedProgress[] }[] = [
     likeCount={0}
     pills={['Following']}
     collaborators={[collaborator('OG Tester', 'og_tester')]}
-    actions={{ report: {}, leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
+    actions={{ leave: {}, progressHref: 'https://app.trakt.tv/vip', shareUrl: 'https://og.trakt.tv/users/kendal_hagenes_1/lists/heist-night' }}
   />
   <p>Loading: a liked list, its posters shimmering until they're read (the liked lists come without them).</p>
   <ListRow

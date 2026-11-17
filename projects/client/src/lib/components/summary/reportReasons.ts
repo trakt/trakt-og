@@ -1,15 +1,9 @@
 import type { ReportTarget } from './ReportTarget.ts';
 
-const reasons = [
-  { value: 'duplicate', label: 'Duplicate' },
-  { value: 'remove', label: 'Data Removal' },
-  { value: 'data_refresh', label: 'Data Refresh' },
-  { value: 'metadata', label: 'Invalid Metadata' },
+const userReasons = [
   { value: 'adult', label: 'Adult' },
-  { value: 'runtime', label: 'Runtime' },
   { value: 'language', label: 'Not English' },
   { value: 'spam', label: 'Spam' },
-  { value: 'tmdb', label: 'TMDB Migration' },
   { value: 'other', label: 'Other' },
 ] as const;
 
@@ -28,9 +22,7 @@ const commentReasons = [
   { value: 'other', label: 'Other' },
 ] as const;
 
-/** API accepts fewer reasons for people and users, and its own list for comments. */
+/** Members get fewer reasons than comments do. */
 export function reportReasons(type: ReportTarget['type']): ReadonlyArray<{ value: string; label: string }> {
-  if (type === 'comment') return commentReasons;
-  if (type === 'user') return reasons.filter(({ value }) => ['spam', 'adult', 'language', 'other'].includes(value));
-  return reasons.filter(({ value }) => type !== 'person' || value !== 'runtime');
+  return type === 'comment' ? commentReasons : userReasons;
 }

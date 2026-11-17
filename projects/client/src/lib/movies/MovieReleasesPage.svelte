@@ -106,7 +106,7 @@ const clear = () => {
 </FanartHeader>
 <SummaryFrame label={movie.title} fullWidth subnav={releases.countries.length > 0 ? subnav : undefined}>
   {#snippet tools()}
-    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.title, year: movie.year, href: movie.href, tmdb: movie.links.find((link) => link.label === 'TMDB')?.href, fanart: movie.fanart }} />
+    <MediaTools target={{ type: 'movie', id: movie.id, title: movie.title, year: movie.year, fanart: movie.fanart }} />
   {/snippet}
 
   {#snippet sidebar()}

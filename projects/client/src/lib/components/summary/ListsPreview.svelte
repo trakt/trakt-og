@@ -26,7 +26,7 @@ interface Props {
 
 const { tabs, count, href }: Props = $props();
 const viewer = $derived(page.data.user ? { slug: page.data.user.slug } : null);
-// Report, progress and share, and the owner's edit and delete, as on the lists page.
+// Progress and share, and the owner's edit and delete, as on the lists page.
 const own = createItemListActions({ viewer: () => viewer, origin: () => page.url.origin });
 let picked = $state<ListTab['id']>();
 const current = $derived(tabs.find(({ id }) => id === picked) ?? tabs.at(0));

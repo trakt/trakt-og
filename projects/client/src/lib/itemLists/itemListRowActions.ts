@@ -17,9 +17,8 @@ type Params = {
 };
 
 /**
- * The icons a row on an item's lists page shows: the report flag and progress (its franchises when it's movies only) when signed
- * in, the owner's edit and (personal lists only) delete, and share. The page wires edit and delete; the row opens
- * the report dialog itself. The calendar icon is cut, and the collaborator's "Stop collaborating" needs a
+ * The icons a row on an item's lists page shows: progress (its franchises when it's movies only) when signed
+ * in, the owner's edit and (personal lists only) delete, and share. The page wires edit and delete. The calendar icon is cut, and the collaborator's "Stop collaborating" needs a
  * collaborators read per row, which this page leaves out.
  */
 export function itemListRowActions({ list, viewer, origin }: Params): ListRowActions {
@@ -29,7 +28,6 @@ export function itemListRowActions({ list, viewer, origin }: Params): ListRowAct
     : undefined;
 
   return {
-    ...(viewer && { report: {} }),
     ...(owner && list.kind !== 'official' && { edit: {} }),
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(progressHref && { progressHref }),

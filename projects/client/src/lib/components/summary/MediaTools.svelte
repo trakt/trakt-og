@@ -1,31 +1,33 @@
 <!--
   The sidebar tools, stacked as the outlined buttons comments and list rows use: Set as cover image (movies, shows and
-  episodes), Report, and for directors Moderate, which opens the page in Trakt's admin.
+  episodes), and for directors Moderate, which opens the page in Trakt's admin. With neither, nothing renders.
 -->
 <script lang="ts">
 import { page } from '$app/state';
 import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
-import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
-import type { ReportTarget } from '#lib/components/summary/ReportTarget.ts';
 import gear from '#lib/icons/regular/gear.svg?raw';
 import image from '#lib/icons/regular/image.svg?raw';
-import flag from '#lib/icons/solid/flag.svg?raw';
 import { traktUrls } from '#lib/traktUrls.ts';
 import CoverDialog from './CoverDialog.svelte';
 import { type CoverType, isCoverOf } from './coverImage.ts';
 
 interface Props {
-  target: ReportTarget;
+  target: {
+    readonly type: 'movie' | 'show' | 'season' | 'episode' | 'person';
+    readonly id: number;
+    readonly title: string;
+    readonly year?: number | null;
+    readonly fanart?: string;
+  };
 }
 const { target }: Props = $props();
-let reporting = $state(false);
 let covering = $state(false);
 let chosen = $state(false);
 
 const COVER_TYPES: readonly string[] = ['movie', 'show', 'episode'] satisfies CoverType[];
 const settings = $derived(page.data.settings?.user);
 const cover = $derived(
-  typeof target.id === 'number' && COVER_TYPES.includes(target.type)
+  COVER_TYPES.includes(target.type)
     ? { type: target.type as CoverType, id: target.id, title: target.title, year: target.year, fanart: target.fanart }
     : undefined,
 );
@@ -37,7 +39,7 @@ const isCover = $derived(
 <!-- Trakt's admin is another site, and resolve() only takes this app's routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-{#if page.data.user}
+{#if page.data.user && (cover || settings?.director)}
   <ul class="media-tools" aria-label="{target.title} tools">
     {#if cover}
       <li>
@@ -46,7 +48,6 @@ const isCover = $derived(
         </GlassAction>
       </li>
     {/if}
-    <li><GlassAction card glass icon={flag} onclick={() => (reporting = true)}>Report {target.type}</GlassAction></li>
     {#if settings?.director}
       <li>
         <GlassAction card glass icon={gear} href="{traktUrls.admin}{page.url.pathname}" target="_blank"
@@ -55,7 +56,6 @@ const isCover = $derived(
     {/if}
   </ul>
 {/if}
-<ReportDialog bind:open={reporting} {target} />
 {#if cover}
   <CoverDialog bind:open={covering} item={cover} onset={() => (chosen = true)} />
 {/if}

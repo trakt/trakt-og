@@ -88,7 +88,7 @@ const sections = $derived([
     <SectionNav {sections} label="{safeTitle} sections" />
     <ExternalLinks links={episode.links} share={{ href: episode.href, title: safeTitle }} />
   {/snippet}
-  {#snippet tools()}<MediaTools target={{...ratingTarget,href:episode.href,fanart:episode.fanart}} />{/snippet}
+  {#snippet tools()}<MediaTools target={{...ratingTarget,fanart:episode.fanart}} />{/snippet}
   {#snippet details()}
     <WatchNow button={data.watchNow} title={episode.fullTitle} year={episode.year} fanart={episode.fanart} phone />
     <AdditionalStats>

@@ -21,7 +21,6 @@
   import SortLabel from '#lib/components/sort/SortLabel.svelte';
   import { memberRelation } from '#lib/components/comments/memberRelation.ts';
   import { convertToSmartList } from '#lib/lists/smart/convertToSmartList.ts';
-  import ReportDialog from '#lib/components/summary/ReportDialog.svelte';
   import { leaveList } from '#lib/components/lists/leaveList.ts';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
@@ -69,7 +68,6 @@
   import userXmark from '#lib/icons/regular/user-xmark.svg?raw';
   import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
   import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
-  import flag from '#lib/icons/regular/flag.svg?raw';
   import move from '#lib/icons/regular/up-down-left-right.svg?raw';
   import check from '#lib/icons/solid/check.svg?raw';
   import pencil from '#lib/icons/regular/pen.svg?raw';
@@ -155,7 +153,6 @@ const tiles = $derived(
     })
     : [],
 );
-let reportOpen = $state(false);
 let left = $state(false);
 let leaving = $state(false);
 $effect(() => {
@@ -163,7 +160,6 @@ $effect(() => {
   void data.user;
   left = false;
   leaving = false;
-  reportOpen = false;
 });
 // Once the viewer stops collaborating, they leave the chip and its panel.
 const collaborators = $derived(
@@ -732,8 +728,6 @@ const draggable = $derived(
   {/snippet}
 
 
-  <ReportDialog bind:open={reportOpen} target={{ type: 'list', id: list.id, title: list.name, href: list.href,
-    ownerSlug: list.kind === 'personal' ? list.ownerSlug : undefined, posters: listPosters }} />
   {#if data.kind === 'official'}
     <OfficialListHeader image={data.listCover} />
   {/if}
@@ -880,7 +874,6 @@ const draggable = $derived(
                 {/snippet}
               </ListManageBar>
             {:else}
-            {#if actions.report}{@render action('Report List', flag, 'report', undefined, () => { reportOpen = true; })}{/if}
             {#if actions.edit && data.kind !== 'personal'}{@render action('Edit', pencil, 'edit', undefined, owner ? editBuiltIn : undefined)}{:else if actions.edit}<Tooltip text="Edit">{#snippet trigger(tooltip)}<button type="button" class="action edit" aria-label="Edit" {...tooltip} onclick={() => { editing = true; }}><Icon svg={pencil} /></button>{/snippet}</Tooltip>{/if}
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false}

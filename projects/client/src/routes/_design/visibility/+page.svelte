@@ -16,11 +16,11 @@ import type { Recommendation } from '#lib/dashboard/Recommendation.ts';
 import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
 import Icon from '#lib/icons/Icon.svelte';
-import backward from '#lib/icons/light/backward.svg?raw';
-import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
+import backward from '#lib/icons/solid/backward.svg?raw';
+import circleMinus from '#lib/icons/regular/circle-minus.svg?raw';
 import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
 import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
-import check from '#lib/icons/trakt/check.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import { breakingBad, noWayHome } from '../summary/fixtures.ts';
@@ -180,7 +180,7 @@ const recommendation: Recommendation = {
       <WatchPopover label="50% watched" variant="summary" fill={0.5} selected plural datePreferences={dates}
         onopen={(force) => Promise.resolve(force ? 'date' : 'partial')} onwatch={() => {}}
         onremaining={() => Promise.resolve(false)} oninvalid={() => {}}
-        summary={{ icon: check, text: 'watched', percent: '50%', detail: watchedDetail }} more={historyMenu} />
+        summary={{ icon: check, iconShift: 'var(--quick-icon-trakt-shift)', text: 'watched', percent: '50%', detail: watchedDetail }} more={historyMenu} />
     </div>
   </Variant>
 </Specimen>

@@ -15,7 +15,7 @@
 import Caret from '#lib/components/dropdown/Caret.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { Snippet } from 'svelte';
 
 interface Props {

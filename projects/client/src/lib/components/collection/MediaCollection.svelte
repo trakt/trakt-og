@@ -18,7 +18,6 @@ import { LIBRARY_ADDING } from '#lib/components/collection/libraryAdding.ts';
 import { librarySourceIcon } from '#lib/components/collection/librarySourceIcon.ts';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import Icon from '#lib/icons/Icon.svelte';
-import collection from '#lib/icons/trakt/collection.svg?raw';
 import collectionThick from '#lib/icons/trakt/collection-thick.svg?raw';
 import { formatDate } from '#lib/utils/formatDate.ts';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
@@ -121,7 +120,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   removeNote={source && `${plural ? 'They' : 'It'} may come back on the next ${source.name} sync.`}
   onopen={open} onwatch={collect} onremaining={() => Promise.resolve(false)}
   oninvalid={() => toast.error('Invalid date format, please use the date picker.')}
-  summary={{ icon: source?.svg ?? collection, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, footer: badges && fill.collected > 0 ? logos : undefined }}>
+  summary={{ icon: source?.svg ?? collectionThick, text: percent ? 'in library' : label, percent, detail: fill.collected > 0 ? detail : undefined, footer: badges && fill.collected > 0 ? logos : undefined }}>
   {#snippet trigger()}<span class="trakt-glyph"><Icon svg={source?.svg ?? collectionThick} /></span>{/snippet}
   {#snippet metadata(done, saving)}
     <CollectionMetadataFields value={draft ?? {}} {saving} onsave={(value) => { draft = value; done(); if (saving) void collect(undefined); }} />

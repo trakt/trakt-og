@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
 import Icon from '#lib/icons/Icon.svelte';
-import xmark from '#lib/icons/light/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { HTMLLiAttributes } from 'svelte/elements';
 
 interface Props extends HTMLLiAttributes {

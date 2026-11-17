@@ -10,7 +10,7 @@ import { recentSearchType } from '#lib/components/header/recentSearchType.ts';
 import RecentClearAll from '#lib/components/header/RecentClearAll.svelte';
 import SearchTermRow from '#lib/components/header/SearchTermRow.svelte';
 import SidebarSection from '#lib/components/sidebar/SidebarSection.svelte';
-import clockRotateLeft from '#lib/icons/light/clock-rotate-left.svg?raw';
+import clockRotateLeft from '#lib/icons/regular/clock-rotate-left.svg?raw';
 
 interface Props {
   terms: ReadonlyArray<RecentSearch>;

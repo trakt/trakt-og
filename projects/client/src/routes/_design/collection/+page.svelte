@@ -13,7 +13,6 @@ import LibraryTip from '#lib/components/collection/LibraryTip.svelte';
 import MediaCollection from '#lib/components/collection/MediaCollection.svelte';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import Icon from '#lib/icons/Icon.svelte';
-import collection from '#lib/icons/trakt/collection.svg?raw';
 import collectionThick from '#lib/icons/trakt/collection-thick.svg?raw';
 import { formatDate } from '#lib/utils/formatDate.ts';
 import { breakingBad, noWayHome } from '../summary/fixtures.ts';
@@ -55,7 +54,7 @@ const removed = () => toast.success('Removed from library.');
           onopen={() => Promise.resolve('remove')} onwatch={removed} onremaining={() => Promise.resolve(false)}
           oninvalid={() => {}}
           summary={{
-            icon: source?.svg ?? collection,
+            icon: source?.svg ?? collectionThick,
             text: 'In Library',
             detail: collectedAt,
             footer: badges ? logos : undefined,

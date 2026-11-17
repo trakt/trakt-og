@@ -9,9 +9,8 @@ import { checkin } from '#lib/components/checkin/checkin.svelte.ts';
 import { toast } from '#lib/components/toast/toast.svelte.ts';
 import VisibilityControl from '#lib/components/visibility/VisibilityControl.svelte';
 import SummaryActionMenu from '#lib/components/summary/SummaryActionMenu.svelte';
-import lightBackward from '#lib/icons/light/backward.svg?raw';
-import arrowRotateLeft from '#lib/icons/light/arrow-rotate-left.svg?raw';
-import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
+import arrowRotateLeft from '#lib/icons/solid/arrow-rotate-left.svg?raw';
+import circleMinus from '#lib/icons/regular/circle-minus.svg?raw';
 import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
 import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
 import WatchPopover from '#lib/components/history/WatchPopover.svelte';
@@ -30,7 +29,6 @@ import PlaysTip from '#lib/components/media/PlaysTip.svelte';
 import { playsHistoryHref } from '#lib/components/media/playsHistoryHref.ts';
 import ProgressTip from '#lib/components/media/ProgressTip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
-import check from '#lib/icons/trakt/check.svg?raw';
 import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
 import backward from '#lib/icons/solid/backward.svg?raw';
 import { countLabel } from '#lib/utils/countLabel.ts';
@@ -214,7 +212,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
   fill={onremove ? 1 : fill.watched} selected={Boolean(onremove) || started}
   datePreferences={dates}
   tooltip={variant === 'card' ? fill.tips.watched || fill.tips.plays ? watchedTip : fill.titles.watched ?? (onremove ? 'Remove from history' : 'Add to watched history') : undefined}
-  summary={{ icon: viewerState.rewatching ? lightBackward : check, text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
+  summary={{ icon: viewerState.rewatching ? backward : checkThick, iconShift: viewerState.rewatching ? undefined : 'var(--quick-icon-trakt-shift)', text: percent ? rewatching ? 'rewatched' : 'watched' : label, percent, detail: started ? detail : undefined }}
   more={hasHistory || dropped ? more : undefined}
   onremovePlay={removePlay ? () => void watch(null, false, removePlay) : undefined}
   onopen={open} onwatch={(at, force, many) => watch(at, force, undefined, many)} upTo={upToSummary}
@@ -242,7 +240,7 @@ async function open(force: boolean): Promise<'date' | 'remove' | 'partial' | nul
         </VisibilityControl>
       {:else if showActions}
         <VisibilityControl target={{ ...target, type: 'show' }} action="rewatch" variant="menu" onsaving={close}>
-          <Icon svg={lightBackward} fixedWidth />Rewatch
+          <Icon svg={backward} fixedWidth />Rewatch
         </VisibilityControl>
       {/if}
       {#if dropped}

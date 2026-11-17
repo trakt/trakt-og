@@ -26,6 +26,8 @@ import type { TooltipContent } from '#lib/components/tooltip/TooltipContent.ts';
 interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnchorAttributes, 'target' | 'rel'> {
   color: string;
   icon: string;
+  /** Nudges the icon down to center a glyph that sits high (Trakt-font glyphs: the check, the check-in logo). */
+  iconShift?: string;
   /** The uppercase line. */
   text: string;
   /** Set larger before `text` ("95%" in library). */
@@ -51,6 +53,7 @@ interface Props extends Omit<HTMLAttributes<HTMLElement>, 'title'>, Pick<HTMLAnc
 let {
   color,
   icon,
+  iconShift,
   text,
   percent,
   detail,
@@ -92,7 +95,7 @@ const measure: Attachment<HTMLElement> = (node) => {
     {#snippet trigger(tip)}
       <svelte:element this={tag} bind:this={element} class="main" {href} type={tag === 'button' ? 'button' : undefined}
         disabled={tag === 'button' ? disabled : undefined} {...rest} {...tip}>
-        <span class="icon"><Icon svg={icon} /></span>
+        <span class="icon" style:--icon-shift={iconShift}><Icon svg={icon} /></span>
         <span class="text">
           <span class="title">{#if percent}<b class="percent">{percent}</b>&nbsp;{/if}{text}</span>
           {#if typeof detail === 'string'}<span class="detail" {@attach clippedTooltip ? measure : undefined}>{detail}</span>{:else if detail}<span class="detail" {@attach clippedTooltip ? measure : undefined}>{@render detail()}</span>{/if}

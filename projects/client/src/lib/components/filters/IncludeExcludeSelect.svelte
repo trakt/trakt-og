@@ -14,7 +14,7 @@ import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import heart from '#lib/icons/regular/heart.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import plusIcon from '#lib/icons/regular/circle-plus.svg?raw';
 import minusIcon from '#lib/icons/regular/circle-minus.svg?raw';
 import plusSolid from '#lib/icons/solid/circle-plus.svg?raw';

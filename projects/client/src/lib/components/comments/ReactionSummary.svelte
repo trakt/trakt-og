@@ -13,7 +13,7 @@ import Icon from '#lib/icons/Icon.svelte';
 import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
 import smile from '#lib/icons/solid/face-smile-plus.svg?raw';
 import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import { reactionPickLabel } from './reactionPickLabel.ts';
 import type { ReactionCount, ReactionSummary } from './reactionSummary.ts';
 import type { ReactionType } from './ReactionType.ts';

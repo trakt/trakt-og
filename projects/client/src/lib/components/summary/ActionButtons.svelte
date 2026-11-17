@@ -26,12 +26,12 @@ import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte'
 import SummaryWatching from '#lib/components/summary/SummaryWatching.svelte';
 import { isWatchingHere } from '#lib/components/summary/isWatchingHere.ts';
 import { viewerWatching } from '#lib/users/viewerWatching.svelte.ts';
-import circlePlus from '#lib/icons/light/circle-plus.svg?raw';
-import star from '#lib/icons/thin/star.svg?raw';
-import check from '#lib/icons/trakt/check.svg?raw';
-import collection from '#lib/icons/trakt/collection.svg?raw';
-import comment from '#lib/icons/trakt/comment.svg?raw';
-import list from '#lib/icons/light/list.svg?raw';
+import circlePlus from '#lib/icons/solid/circle-plus.svg?raw';
+import star from '#lib/icons/solid/star.svg?raw';
+import check from '#lib/icons/trakt/check-thick.svg?raw';
+import collection from '#lib/icons/trakt/collection-thick.svg?raw';
+import comment from '#lib/icons/solid/comment.svg?raw';
+import list from '#lib/icons/solid/list.svg?raw';
 import trakt from '#lib/icons/trakt/trakt-v2.svg?raw';
 
 interface Props {
@@ -122,7 +122,7 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
 <div class="action-buttons" data-refocus>
   {#if progress}
     {#each [['watch', check, progress.watched, 'watched', 'var(--brand-tertiary)'], ['collect', collection, progress.collected, 'in library', 'var(--brand-quaternary)']] as const as [kind, icon, count, label, color] (kind)}
-      <SummaryAction readonly {color} {icon} percent={percentOf(count)} text={label} selected={count > 0}
+      <SummaryAction readonly {color} {icon} iconShift={kind === 'watch' ? 'var(--quick-icon-trakt-shift)' : undefined} percent={percentOf(count)} text={label} selected={count > 0}
         detail="{count} / {progress.total} {progress.total === 1 ? 'item' : 'items'}" />
     {/each}
   {/if}
@@ -138,7 +138,7 @@ const percentOf = (count: number) => `${progress?.visible ? Math.trunc(count / p
     {:else if kind === 'checkin'}
       {#snippet checkinButton()}
         {#if checkin}
-          <SummaryAction {color} {icon} text={label} selected busy={opening ? 'Opening check in' : undefined}
+          <SummaryAction {color} {icon} iconShift="var(--quick-icon-trakt-shift)" text={label} selected busy={opening ? 'Opening check in' : undefined}
             aria-haspopup="dialog" aria-busy={opening} onclick={() => openCheckin(checkin)} />
         {/if}
       {/snippet}

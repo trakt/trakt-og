@@ -9,7 +9,7 @@ import PromptPopover from '#lib/components/prompt/PromptPopover.svelte';
 import PromptRow from '#lib/components/prompt/PromptRow.svelte';
 import { anchorNames } from '#lib/components/tooltip/anchorNames.ts';
 import deleteIcon from '#lib/icons/regular/trash-xmark.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 
 interface Props {
   id: string;

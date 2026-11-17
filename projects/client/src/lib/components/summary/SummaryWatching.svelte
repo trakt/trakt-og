@@ -11,7 +11,7 @@ import { prefersReducedMotion } from 'svelte/motion';
 import { cancelViewerCheckin } from '#lib/components/checkin/cancelViewerCheckin.ts';
 import StatusDot from '#lib/components/status/StatusDot.svelte';
 import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte';
-import circleXmark from '#lib/icons/light/circle-xmark.svg?raw';
+import circleXmark from '#lib/icons/solid/circle-xmark.svg?raw';
 import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 import { watchingProgress } from '#lib/users/watchingProgress.ts';
 import { holdFocus } from '#lib/utils/holdFocus.ts';

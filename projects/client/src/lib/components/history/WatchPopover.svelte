@@ -1,12 +1,12 @@
 <script lang="ts">
 import { type Snippet, tick } from 'svelte';
-import plus from '#lib/icons/light/circle-plus.svg?raw';
-import disc from '#lib/icons/light/compact-disc.svg?raw';
+import plus from '#lib/icons/solid/circle-plus.svg?raw';
+import disc from '#lib/icons/solid/compact-disc.svg?raw';
 import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
 import clock from '#lib/icons/regular/clock.svg?raw';
 import play from '#lib/icons/regular/play.svg?raw';
 import trash from '#lib/icons/regular/trash-xmark.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import question from '#lib/icons/solid/question.svg?raw';
 import check from '#lib/icons/trakt/check-thick.svg?raw';
 import PromptDateForm from '#lib/components/prompt/PromptDateForm.svelte';
@@ -29,6 +29,7 @@ type Mode = 'date' | 'remove' | 'partial';
 /** What a summary button shows (`SummaryAction`'s icon, text, percent and detail). */
 interface SummaryContent {
   icon: string;
+  iconShift?: string;
   text: string;
   percent?: string;
   detail?: Snippet | string;
@@ -252,7 +253,7 @@ const press = longPress({
 {#if variant === 'summary' && summary}
   <div class="watch-control summary" style:anchor-name="--watch-{id}" aria-busy={busy}>
   <SummaryAction bind:element={button} color={collection ? 'var(--brand-quaternary)' : 'var(--brand-tertiary)'}
-    icon={summary.icon} text={summary.text} percent={summary.percent} detail={summary.detail} footer={summary.footer}
+    icon={summary.icon} iconShift={summary.iconShift} text={summary.text} percent={summary.percent} detail={summary.detail} footer={summary.footer}
     tooltip={locked ?? summary.tooltip} locked={Boolean(locked)}
     {selected}
     busy={busy ? collection ? 'Saving collection' : 'Saving watched history' : undefined}

@@ -21,7 +21,7 @@ import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
 import { fetchFollowingWatching } from '#lib/dashboard/fetchFollowingWatching.ts';
 import type { LiveWatch } from '#lib/dashboard/fetchWatching.ts';
 import { pollWatching } from '#lib/dashboard/pollWatching.ts';
-import userIcon from '#lib/icons/regular/user.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import type { ViewerRelation } from '#lib/users/ViewerRelation.ts';
 import type { loadNetwork } from './loadNetwork.ts';
@@ -106,7 +106,7 @@ const followedWatch = (relation: ViewerRelation | null, user: ProfileUser) =>
     </Dropdown>
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={userIcon} count={data.itemCount} noun="person" plural="people" tooltip="People" />
+    <SubnavCount svg={userGroup} count={data.itemCount} noun="person" plural="people" tooltip="People" />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

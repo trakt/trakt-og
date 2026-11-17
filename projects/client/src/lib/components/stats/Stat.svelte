@@ -21,16 +21,20 @@ interface Props {
   aside?: string;
   tone?: 'count' | 'watched' | 'collected' | 'done';
   bare?: boolean;
+  /** Nudges the icon down to center a glyph that sits high (the Trakt-font check). */
+  iconShift?: string;
+  /** Scales the icon for a glyph that fills its whole box (the hourglass). */
+  iconScale?: string;
 }
 
-const { svg, value, noun, label, under, aside, tone = 'count', bare = false }: Props = $props();
+const { svg, value, noun, label, under, aside, tone = 'count', bare = false, iconShift, iconScale }: Props = $props();
 </script>
 
 {#snippet body(props: Record<string | symbol, unknown> = {})}
   <!-- A focus stop so the tooltip shows from the keyboard too. -->
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['stat', tone]} tabindex={label ? 0 : undefined} {...props}>
-    <span class="icon-slot"><Icon {svg} /></span><span><strong>{value}{#if aside}{` ${aside}`}{/if}</strong> <span class={['noun', { 'visually-hidden': bare }]}>{noun}</span></span>
+    <span class="icon-slot" style:--icon-shift={iconShift} style:--icon-scale={iconScale}><Icon {svg} /></span><span><strong>{value}{#if aside}{` ${aside}`}{/if}</strong> <span class={['noun', { 'visually-hidden': bare }]}>{noun}</span></span>
   </span>
 {/snippet}
 

@@ -42,8 +42,8 @@ import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
 import grid2 from '#lib/icons/regular/grid-2.svg?raw';
 import bookmark from '#lib/icons/solid/bookmark.svg?raw';
-import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
-import file from '#lib/icons/regular/file.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import { settingsRequest } from '#lib/settings/settingsRequest.ts';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
@@ -188,8 +188,8 @@ $effect(() => {
 const totals = $derived(shown ? sumProgressTotals(shown) : null);
 const statsChip = $derived(
   totals
-    ? { svg: checkThick, value: `${totals.percent}%`, label: 'Watched', tone: 'watched' as const }
-    : { svg: file, value: (shown?.length ?? 0).toLocaleString('en-US'), label: 'Shows' },
+    ? { svg: pieSvg(totals.percent / 100), value: `${totals.percent}%`, label: 'Watched', tone: 'watched' as const }
+    : { svg: tvRetro, value: (shown?.length ?? 0).toLocaleString('en-US'), label: 'Shows' },
 );
 const meta = $derived({ type: 'paginated' as const, current, total: pageCount });
 

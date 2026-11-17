@@ -6,9 +6,9 @@
 -->
 <script lang="ts">
 import Stat from '#lib/components/stats/Stat.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import hourglass from '#lib/icons/regular/hourglass-half.svg?raw';
-import check from '#lib/icons/trakt/check-thick.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import type { ProgressTotals } from './ProgressTotals.ts';
 
@@ -26,13 +26,15 @@ const plural = (n: number, word: string) => `${word}${n === 1 ? '' : 's'}`;
 
 <div class="progress-summary">
   {#if totals}
-          <Stat label="Watched" svg={check} tone="watched" value="{totals.percent}%" noun="watched"
-        under="{number(totals.completed)} / {number(totals.aired)} {plural(totals.aired, 'episode')}" bare />
-      <Stat label="Time left to watch" svg={hourglass}
+          <Stat label="Watched" svg={pieSvg(totals.percent / 100)} tone="watched" value="{totals.percent}%"
+        noun="watched" under="{number(totals.completed)} / {number(totals.aired)} {plural(totals.aired, 'episode')}"
+        bare />
+      <Stat label="Time left to watch" svg={hourglass} iconScale="var(--stat-hourglass-scale)"
         value="{totals.exact ? '' : '~'}{formatRuntime(totals.minutesLeft)}" noun="left"
         under="{number(totals.left)} {plural(totals.left, 'episode')}" bare />
   {/if}
-  <Stat label={plural(shows, 'Show')} svg={file} value={number(shows)} noun={plural(shows, 'show')} bare />
+  <Stat label={plural(shows, 'Show')} svg={tvRetro} value={number(shows)} noun={plural(shows, 'show')} bare
+    iconShift="var(--stat-tv-icon-shift)" />
 </div>
 
 <style>

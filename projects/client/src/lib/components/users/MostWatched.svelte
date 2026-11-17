@@ -14,7 +14,7 @@ import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import PosterCard from '#lib/components/media/PosterCard.svelte';
 import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
-import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
 import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
@@ -38,7 +38,7 @@ const TABS = [{ id: 'lastMonth', label: 'Last 30 Days' }, { id: 'allTime', label
 
 const columns = [
   { type: 'shows', mode: 'show', title: 'Most Watched Shows', icon: tvRetro },
-  { type: 'movies', mode: 'movie', title: 'Most Watched Movies', icon: cameraMovie },
+  { type: 'movies', mode: 'movie', title: 'Most Watched Movies', icon: clapperboard },
 ] as const;
 
 const data = $derived({ shows, movies });

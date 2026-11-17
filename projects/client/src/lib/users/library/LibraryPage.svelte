@@ -28,7 +28,10 @@ import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
 import Pagination from '#lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
-import collection from '#lib/icons/trakt/collection-thick.svg?raw';
+import circlePlay from '#lib/icons/regular/circle-play.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
+import posters from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import { findAction } from '#lib/users/findAction.ts';
@@ -53,6 +56,7 @@ function remove(item: LibraryCard) {
 const seo = $derived(toLibrarySeo({ profile: data.profile, type: data.type }));
 const title = $derived(seo.title);
 const noun = $derived(data.type === 'all' ? 'item' : data.type.replace(/s$/, ''));
+const typeIcons: Record<string, string> = { episode: circlePlay, show: tvRetro, movie: clapperboard };
 const base = $derived(`/users/${data.profile.slug}/library`);
 const screenshots = $derived(data.type === 'episodes');
 const menuSorts = $derived(withTraktSorts(librarySorts[data.type].map((by) => ({ by, label: sortLabels[by] }))));
@@ -143,7 +147,8 @@ const flipped = $derived(data.sort.how === 'desc');
       datePreferences={data.datePreferences} />
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={collection} count={data.total} {noun} tone="collected" tooltip={`${capitalize(noun)}s`} />
+    <SubnavCount svg={typeIcons[noun] ?? posters} count={data.total} {noun}
+      tooltip={`${capitalize(noun)}s`} iconShift={noun === 'show' ? 'var(--stat-tv-icon-shift)' : undefined} />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

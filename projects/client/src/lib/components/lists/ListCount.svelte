@@ -4,7 +4,7 @@
   as written ("204k"), `plural` a plural that isn't the word plus s, and `iconColor` the blue (plays' purple). A
   `label` in place of a count is the same pill with words only, a smart list's "Open on Popular". The rest (a
   tooltip's attributes) goes on the button.
-    <ListCount svg={file} value={330} word="item" href="/lists/7" />
+    <ListCount svg={postersIcon} value={330} word="item" href="/lists/7" />
 -->
 <script lang="ts">
 import Icon from '#lib/icons/Icon.svelte';

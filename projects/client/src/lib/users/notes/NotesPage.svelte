@@ -8,7 +8,7 @@ import Container from '#lib/components/container/Container.svelte';
 import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
 import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
-import { tick } from 'svelte';
+import { type ComponentProps, tick } from 'svelte';
 import { removeNote } from '#lib/components/notes/removeNote.ts';
 import NoteManage from '#lib/components/notes/NoteManage.svelte';
 import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
@@ -19,7 +19,12 @@ import NoteRow from '#lib/components/notes/NoteRow.svelte';
 import Pagination from '#lib/components/pagination/Pagination.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
-import memo from '#lib/icons/regular/memo.svg?raw';
+import { mediaTypeIconShift, mediaTypeIcons } from '#lib/icons/mediaTypeIcons.ts';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
+import userGroup from '#lib/icons/regular/user-group.svg?raw';
+import heart from '#lib/icons/solid/heart.svg?raw';
+import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
+import collection from '#lib/icons/trakt/collection-thick.svg?raw';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import type { loadNotes } from '#lib/users/notes/loadNotes.ts';
@@ -84,6 +89,20 @@ async function save(note: NoteView, text: string) {
 const seo = $derived(toNotesSeo({ profile: data.profile, type: data.type }));
 const title = $derived(seo.title);
 type NoteType = keyof typeof noteTypes;
+// The count takes the filtered type's icon and meaning color; All takes the poster stack.
+const TRAKT_SHIFT = 'var(--quick-icon-trakt-shift)';
+type TypeStat = Pick<ComponentProps<typeof SubnavCount>, 'svg' | 'tone' | 'iconShift' | 'iconScale'>;
+const typeStats: Record<NoteType, TypeStat> = {
+  all: { svg: postersIcon },
+  movies: { svg: mediaTypeIcons.movie },
+  shows: { svg: mediaTypeIcons.show, iconShift: mediaTypeIconShift('show') },
+  seasons: { svg: mediaTypeIcons.season },
+  episodes: { svg: mediaTypeIcons.episode },
+  people: { svg: userGroup },
+  history: { svg: historyIcon, tone: 'watched' },
+  collection: { svg: collection, tone: 'collected', iconShift: TRAKT_SHIFT },
+  ratings: { svg: heart, tone: 'rated' },
+};
 // The type menu's sections: All alone, the media items, then the profile's own activities.
 const noteGroups = $derived<readonly { header?: string; types: readonly NoteType[] }[]>([
   { types: ['all'] },
@@ -118,7 +137,7 @@ const filterHref = (type: string) => {
     </Dropdown>
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={memo} count={Math.max(0, data.itemCount - removed)} noun="note" tooltip="Notes" />
+    <SubnavCount {...typeStats[data.type]} count={Math.max(0, data.itemCount - removed)} noun="note" tooltip="Notes" />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

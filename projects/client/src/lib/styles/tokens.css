@@ -305,6 +305,7 @@
   --quick-icons-row-cell: 32px; /* a list row's icon square, inside its group's 1px border: a 34px control */
   --quick-icons-row-rating-padding: 10px;
   --quick-icon-trakt-shift: 0.085em; /* Trakt-font glyphs (check, library) sit this far above center */
+  --stat-tv-icon-shift: -0.06em; /* the retro TV's antennas pull its eye-center low; this lifts it level */
   --glass-action-icon-shift: 0.025em; /* a glass action's icon, level with its label's capitals */
   --font-size-quick-icon-favorite: 0.85em; /* the solid star, down to the other glyphs' height */
   --font-size-quick-icon-why: 0.8em; /* the bullseye, down to the other glyphs' height */
@@ -1329,12 +1330,15 @@
   --space-stat: 6px;
   --space-stat-noun: 4px; /* a stat's number to its word, where they aren't flex siblings */
   --font-size-stat-icon: 16px;
+  --stat-hourglass-scale: 0.9375; /* the hourglass fills its whole box, so 15px reads level with the 16px icons */
+  --stat-check-scale: 1.0625; /* the Trakt-font plays check reads small at 16px, so it takes 17px */
   --font-size-stat-number: 15px;
   --font-size-stat-noun: 13px;
   --color-stat-number: light-dark(#111, #fff);
   --color-stat-noun: light-dark(#777, #8c8c8c);
   --color-stat-watched: light-dark(var(--brand-tertiary), #9b59b6);
   --color-stat-collected: var(--brand-quaternary);
+  --color-stat-rated: var(--brand-primary); /* the ratings heart's red */
   --color-stat-count: var(--brand-secondary); /* counts, time, likes, comments */
   /* Edit, delete and share, wherever an item offers them. */
   --color-action-edit: var(--brand-success);

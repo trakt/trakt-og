@@ -24,7 +24,11 @@ import RatingLine from '#lib/components/rating/RatingLine.svelte';
 import { RATING_LABELS } from '#lib/components/rating/ratingPrompt.ts';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
 import SubnavCount from '#lib/components/toolbar/SubnavCount.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import circlePlay from '#lib/icons/regular/circle-play.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
+import seasons from '#lib/icons/regular/rectangle-history.svg?raw';
+import posters from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
+import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import { findAction } from '#lib/users/findAction.ts';
@@ -41,6 +45,7 @@ const { data }: { data: Awaited<ReturnType<typeof loadRatings>> & { profile: Pro
 const seo = $derived(toRatingsSeo({ profile: data.profile, type: data.query.type }));
 const title = $derived(seo.title);
 const noun = $derived(data.query.type === 'all' ? 'item' : data.query.type.replace(/s$/, ''));
+const typeIcons: Record<string, string> = { episode: circlePlay, show: tvRetro, season: seasons, movie: clapperboard };
 const screenshots = $derived(data.query.type === 'episodes');
 let dividers = $derived(data.dividers);
 let fadeHide = $derived<FadeHide>(data.fadeHide);
@@ -131,7 +136,8 @@ const count = $derived(data.total - (data.cards.length - cards.length));
     </Dropdown>
   {/snippet}
   {#snippet stats()}
-    <SubnavCount svg={file} {count} {noun} tooltip={`${capitalize(noun)}s`} />
+    <SubnavCount svg={typeIcons[noun] ?? posters} {count} {noun} tooltip={`${capitalize(noun)}s`}
+      iconShift={noun === 'show' ? 'var(--stat-tv-icon-shift)' : undefined} />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

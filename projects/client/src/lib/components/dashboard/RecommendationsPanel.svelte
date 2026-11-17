@@ -23,8 +23,8 @@ import SeeMore from '#lib/components/see-more/SeeMore.svelte';
 import type { DashboardRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import type { Recommendation } from '#lib/dashboard/Recommendation.ts';
 import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
-import cameraMovie from '#lib/icons/regular/camera-movie.svg?raw';
-import thumbsUp from '#lib/icons/regular/thumbs-up.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
+import bullseyeArrow from '#lib/icons/regular/bullseye-arrow.svg?raw';
 import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
 import { overlay } from '#lib/overlay/overlay.ts';
 import PanelHeading from './PanelHeading.svelte';
@@ -44,9 +44,9 @@ interface Props {
 const { recommendations, type, onpick }: Props = $props();
 
 const TYPES = [
-  { id: 'media', label: 'Shows & Movies', icon: thumbsUp },
+  { id: 'media', label: 'Shows & Movies', icon: bullseyeArrow },
   { id: 'show', label: 'Shows', icon: tvRetro },
-  { id: 'movie', label: 'Movies', icon: cameraMovie },
+  { id: 'movie', label: 'Movies', icon: clapperboard },
 ] as const;
 const LINKS = {
   media: [

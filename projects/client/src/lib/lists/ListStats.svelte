@@ -14,12 +14,14 @@ import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import clock from '#lib/icons/regular/clock.svg?raw';
-import file from '#lib/icons/regular/file.svg?raw';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import thumbsUp from '#lib/icons/regular/thumbs-up.svg?raw';
-import checkThick from '#lib/icons/trakt/check-thick.svg?raw';
+import { pieSvg } from '#lib/icons/pieSvg.ts';
+import { type MediaTypeIcon, mediaTypeIconShift, mediaTypeIcons } from '#lib/icons/mediaTypeIcons.ts';
 import collectionThick from '#lib/icons/trakt/collection-thick.svg?raw';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import { overlay } from '#lib/overlay/overlay.ts';
+import { capitalize } from '#lib/utils/capitalize.ts';
 import { formatRuntime } from '#lib/utils/formatRuntime.ts';
 import { listProgress, type ListProgressStat } from './listProgress.ts';
 import type { ListStats } from './toListStats.ts';
@@ -38,10 +40,25 @@ interface Props {
   comments?: { readonly count: number; readonly href: string };
   /** The viewer's library. The design demo passes its own. */
   stateOf?: typeof overlay.state;
+  /** The one media type the list is filtered to: the item count takes its icon and name. */
+  itemType?: MediaTypeIcon;
 }
 
-const { itemCount, stats, progress = false, likeCount, likeTarget, comments, stateOf = overlay.state }: Props =
-  $props();
+const {
+  itemCount,
+  stats,
+  progress = false,
+  likeCount,
+  likeTarget,
+  comments,
+  stateOf = overlay.state,
+  itemType,
+}: Props = $props();
+const itemStat = $derived(
+  itemType
+    ? { svg: mediaTypeIcons[itemType], label: `${capitalize(itemType)}s`, word: itemType }
+    : { svg: postersIcon, label: 'Items', word: 'item' },
+);
 
 const plural = (count: number, word: string) => `${word}${count === 1 ? '' : 's'}`;
 const number = (count: number) => count.toLocaleString('en-US');
@@ -67,12 +84,13 @@ const number = (count: number) => count.toLocaleString('en-US');
   </span>
 {/snippet}
 
-{#snippet count(label: string, svg: string, value: number, word: string, kind: string)}
+{#snippet count(label: string, svg: string, value: number, word: string, kind: string, shift?: string)}
   <Tooltip text={label}>
     {#snippet trigger(tooltip)}
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <span class={['stat', kind]} tabindex="0" {...tooltip}>
-        <span class="icon-slot"><Icon {svg} /></span><strong>{number(value)}</strong><span class="hidden">
+        <span class="icon-slot"
+          style:--icon-shift={shift}><Icon {svg} /></span><strong>{number(value)}</strong><span class="hidden">
           {plural(value, word)}</span>
       </span>
     {/snippet}
@@ -85,11 +103,11 @@ const number = (count: number) => count.toLocaleString('en-US');
   <div class="list-stats" aria-busy={resolved === undefined}>
     <!-- Pending, the percentages and the time shimmer; a failed count drops them. -->
     {#if progress && resolved === undefined}
-      {@render counting(checkThick, 'var(--list-stat-shimmer-percent-width)', 'watched')}
+      {@render counting(pieSvg(0), 'var(--list-stat-shimmer-percent-width)', 'watched')}
       {@render counting(collectionThick, 'var(--list-stat-shimmer-percent-width)', 'collected')}
     {:else if progress && items}
       {@const { watched, collected } = listProgress(items, stateOf)}
-      {@render percentage('Watched', checkThick, watched, total, 'watched')}
+      {@render percentage('Watched', pieSvg(watched.percent / 100), watched, total, 'watched')}
       {@render percentage('Collected', collectionThick, collected, total, 'collected')}
     {/if}
     {#if resolved === undefined}
@@ -105,7 +123,8 @@ const number = (count: number) => count.toLocaleString('en-US');
         {/snippet}
       </Tooltip>
     {/if}
-    {@render count('Items', file, resolved?.count ?? itemCount, 'item', 'items')}
+    {@render count(itemStat.label, itemStat.svg, resolved?.count ?? itemCount, itemStat.word, 'items',
+      mediaTypeIconShift(itemType))}
     <!-- Like and Comments, as the list rows' buttons with only their numbers: Comments opens the comments page. -->
     {#if likeCount !== undefined}
       {#if likeTarget}<span class="likes"><ListLikeButton {...likeTarget} count={likeCount} button /></span>

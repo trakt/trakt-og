@@ -15,7 +15,7 @@ import ListCount from '#lib/components/lists/ListCount.svelte';
 import ListLikeButton from '#lib/components/lists/ListLikeButton.svelte';
 import listIcon from '#lib/icons/regular/list.svg?raw';
 import { stripStatIcons } from '#lib/components/summary/stripStatIcons.ts';
-import file from '#lib/icons/regular/file.svg?raw';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import { sortThemeLists } from './sortThemeLists.ts';
 import type { ThemeList } from './ThemeList.ts';
 import { themeListSorts } from './themeListSorts.ts';
@@ -116,7 +116,7 @@ const oneRow: Attachment<HTMLElement> = (node) => {
                 </p>
               </div>
               <div class="counts" {@attach oneRow}>
-                <ListCount svg={file} value={tile.items} word="item" href={tile.href} />
+                <ListCount svg={postersIcon} value={tile.items} word="item" href={tile.href} />
                 <ListLikeButton id={tile.id} ownerSlug={tile.owner.slug} viewer={page.data.user?.slug ?? null}
                   count={tile.likes} button />
                 {#if tile.comments !== undefined}

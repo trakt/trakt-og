@@ -31,7 +31,7 @@ import SortLabel from '#lib/components/sort/SortLabel.svelte';
 import SortMenu from '#lib/components/sort/SortMenu.svelte';
 import Stat from '#lib/components/stats/Stat.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
-import file from '#lib/icons/regular/file.svg?raw';
+import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
 import grid2 from '#lib/icons/regular/grid-2.svg?raw';
 import { settingsRequest } from '#lib/settings/settingsRequest.ts';
 import { viewerFetch } from '#lib/auth/viewerFetch.ts';
@@ -226,12 +226,12 @@ function clearFilters() {
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 <SeoHead {title} description="Check out {data.profile.firstName}'s franchise progress." />
 
-<SectionToolbar statsChip={{ svg: file, value: count, label: 'Franchises' }}>
+<SectionToolbar statsChip={{ svg: clapperboard, value: count, label: 'Franchises' }}>
   {#snippet filters()}
     <ProgressTypeMenu type="franchises" {href} />
   {/snippet}
   {#snippet stats()}
-    <Stat label={noun} svg={file} value={count} {noun} bare />
+    <Stat label={noun} svg={clapperboard} value={count} {noun} bare />
   {/snippet}
   {#snippet summary()}
     <span class="sort">

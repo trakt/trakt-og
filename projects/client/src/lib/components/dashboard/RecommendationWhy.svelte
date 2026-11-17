@@ -21,7 +21,7 @@ import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import { fetchRecommendationReasons } from '#lib/dashboard/fetchRecommendationReasons.ts';
 import type { Recommendation, RecommendationPerson, RecommendationSource } from '#lib/dashboard/Recommendation.ts';
 import Icon from '#lib/icons/Icon.svelte';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import heart from '#lib/icons/solid/heart.svg?raw';
 import bullseyeArrow from '#lib/icons/solid/bullseye-arrow.svg?raw';
 import checkThick from '#lib/icons/trakt/check-thick.svg?raw';

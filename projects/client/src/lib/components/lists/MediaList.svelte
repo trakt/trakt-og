@@ -29,14 +29,13 @@ import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
 import type { PickerList } from '#lib/components/lists/PickerList.ts';
 import { listRowIcon } from '#lib/components/lists/listRowIcon.ts';
 import Icon from '#lib/icons/Icon.svelte';
-import listLight from '#lib/icons/light/list.svg?raw';
-import listRegular from '#lib/icons/regular/list.svg?raw';
-import pen from '#lib/icons/regular/pen.svg?raw';
-import plus from '#lib/icons/light/circle-plus.svg?raw';
+import listIcon from '#lib/icons/solid/list.svg?raw';
+import pen from '#lib/icons/solid/pen.svg?raw';
+import plus from '#lib/icons/solid/circle-plus.svg?raw';
 import add from '#lib/icons/trakt/add-thick.svg?raw';
-import close from '#lib/icons/regular/xmark.svg?raw';
+import close from '#lib/icons/solid/xmark-large.svg?raw';
 import search from '#lib/icons/regular/magnifying-glass.svg?raw';
-import arrow from '#lib/icons/light/angle-right.svg?raw';
+import arrow from '#lib/icons/regular/angle-right.svg?raw';
 import spinner from '#lib/icons/solid/arrows-rotate.svg?raw';
 import { viewerFetch } from '../../auth/viewerFetch.ts';
 interface Props {
@@ -311,7 +310,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
   {#if variant === 'summary'}
     <!-- The names only get a tooltip when they don't fit, and the picker shows them while it's open, so neither
          tooltip does then. -->
-    <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={selected ? listRegular : listLight}
+    <SummaryAction bind:element={triggerButton} color="var(--brand-secondary)" icon={listIcon}
       text={label} detail={subtitle || undefined} {selected} busy={busy ? 'Saving lists' : undefined}
       clippedTooltip={selected && !expanded ? namesTip : undefined} tooltipPlacement="left"
       aria-haspopup="dialog"
@@ -332,7 +331,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
           aria-keyshortcuts="ArrowDown" onpointerdown={press.down} onpointerup={press.release}
           onpointerleave={press.release} onpointercancel={press.release}
           oncontextmenu={(event) => event.preventDefault()} onkeydown={pickerKey} onclick={press.click} {...tooltip}>
-          <Icon svg={listRegular} fixedWidth />
+          <Icon svg={listIcon} fixedWidth />
           {#if busy}<span class="spinner"><Icon svg={spinner} /></span>{/if}
         </button>
       {/snippet}

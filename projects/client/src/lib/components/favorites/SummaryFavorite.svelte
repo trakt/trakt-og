@@ -13,7 +13,6 @@ import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte'
 import type { FavoriteTarget } from '#lib/favorites/FavoriteTarget.ts';
 import memo from '#lib/icons/regular/memo.svg?raw';
 import filledMemo from '#lib/icons/solid/memo.svg?raw';
-import filledStar from '#lib/icons/solid/star.svg?raw';
 
 interface Props {
   target: FavoriteTarget;
@@ -39,7 +38,7 @@ let asking = $state(false);
         aria-busy={noteBusy} onclick={() => { if (!noteBusy) editNote(); }} />
     {/snippet}
     <div bind:this={row} class="summary-favorite">
-      <SummaryAction bind:element={button} {color} icon={selected ? filledStar : icon}
+      <SummaryAction bind:element={button} {color} {icon}
         text={selected ? date ? 'Favorited on' : 'Favorited' : label} detail={selected ? date : undefined} {selected}
         busy={busy ? 'Saving favorite' : undefined} aria-pressed={selected}
         aria-label={selected ? 'Remove from favorites' : label} aria-haspopup={selected ? 'dialog' : undefined}

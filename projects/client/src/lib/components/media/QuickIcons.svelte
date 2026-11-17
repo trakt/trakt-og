@@ -44,10 +44,9 @@ import type { QuickIconFill } from './quickIconFill.ts';
 import type { QuickIconMore } from './QuickIconMore.ts';
 import SummaryActionMenu from '#lib/components/summary/SummaryActionMenu.svelte';
 import ellipsis from '#lib/icons/regular/ellipsis.svg?raw';
-import circleMinus from '#lib/icons/light/circle-minus.svg?raw';
+import circleMinus from '#lib/icons/regular/circle-minus.svg?raw';
 import progressIcon from '#lib/icons/solid/bars-progress.svg?raw';
 import historyIcon from '#lib/icons/solid/clock-rotate-left.svg?raw';
-import lightBackward from '#lib/icons/light/backward.svg?raw';
 import { ratingPercent } from '../../utils/ratingPercent.ts';
 import RecommendationWhy from '#lib/components/dashboard/RecommendationWhy.svelte';
 import bullseyeArrow from '#lib/icons/solid/bullseye-arrow.svg?raw';
@@ -284,7 +283,7 @@ const ratingLevel = $derived(rating === undefined ? 1 : Math.min(Math.max(Math.t
               {/if}
             {:else}
               <button type="button" onclick={() => { close(); void prompts[row.kind]?.openPrompt(); }}>
-                <Icon svg={row.kind === 'rewatch' ? lightBackward : circleMinus} fixedWidth />{row.kind === 'rewatch'
+                <Icon svg={row.kind === 'rewatch' ? backward : circleMinus} fixedWidth />{row.kind === 'rewatch'
                   ? 'Rewatch'
                   : 'Drop'}
               </button>

@@ -21,7 +21,7 @@ import traktLogo from '#lib/assets/sites/trakt.png';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import resetIcon from '#lib/icons/regular/arrow-rotate-left.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import type { AdvancedFiltersConfig } from './AdvancedFiltersConfig.ts';
 import { type AdvancedFilters, emptyFilters, type ListFilterKey, type RangeFilterKey } from './advancedFilters.ts';
 import { fetchFilterBody } from './fetchFilterBody.ts';

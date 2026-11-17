@@ -8,7 +8,7 @@
 import Icon from '#lib/icons/Icon.svelte';
 import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
 import smile from '#lib/icons/solid/face-smile-plus.svg?raw';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 import GlassAction from '#lib/components/glass-action/GlassAction.svelte';
 import { reactionOptions } from '#lib/components/comments/reactionOptions.ts';
 import type { ReactionType } from './ReactionType.ts';

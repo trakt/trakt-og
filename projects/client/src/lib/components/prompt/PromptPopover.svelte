@@ -16,7 +16,7 @@
 import DialogNotice from '#lib/components/dialog/DialogNotice.svelte';
 import type { Snippet } from 'svelte';
 import Icon from '#lib/icons/Icon.svelte';
-import xmark from '#lib/icons/regular/xmark.svg?raw';
+import xmark from '#lib/icons/solid/xmark.svg?raw';
 
 interface Props {
   /** The popover element's id, for the trigger's `aria-controls` or `popovertarget`. */

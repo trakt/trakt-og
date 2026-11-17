@@ -7,7 +7,7 @@
 import { nextNudge, type Nudge, type NudgeCounts, nudgeCounts, nudgeMemory, welcomeBack } from '#lib/firstNight/nudges.ts';
   import { overlay } from '#lib/overlay/overlay.ts';
   import Icon from '#lib/icons/Icon.svelte';
-  import xmark from '#lib/icons/regular/xmark.svg?raw';
+  import xmark from '#lib/icons/solid/xmark.svg?raw';
   import CtaLink from './CtaLink.svelte';
 
   interface Props {

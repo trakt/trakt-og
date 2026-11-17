@@ -5,6 +5,7 @@
     <ReleaseTrack country={releases.featured} />
 -->
 <script lang="ts">
+import { certificationPill } from '#lib/components/labels/certificationPill.ts';
 import TagPills from '#lib/components/labels/TagPills.svelte';
 import type { TagPill } from '#lib/components/labels/TagPill.ts';
 import CountryFlag from '#lib/components/table/CountryFlag.svelte';
@@ -30,7 +31,7 @@ const countdown = (days: number): TagPill =>
     : { lead: days.toLocaleString('en-US'), text: 'days', tint: 'var(--color-release-countdown)' };
 const tags: readonly TagPill[] = $derived([
   { text: country.tag, kind: 'primary' },
-  ...(country.certification ? [{ text: country.certification, kind: 'badge' as const }] : []),
+  ...(country.certification ? [certificationPill(country.certification, country.code)] : []),
 ]);
 </script>
 

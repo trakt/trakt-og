@@ -15,7 +15,7 @@ describe('mediaTags', () => {
     ).toEqual([
       { text: 'Movie', kind: 'primary' },
       { text: '2026' },
-      { text: 'R', kind: 'badge' },
+      { text: 'R', kind: 'badge', tip: 'Mature Audiences\nAges 17+ Recommended' },
       { segments: ['1h 36m'] },
       { segments: ['Horror', 'Comedy'] },
     ]);

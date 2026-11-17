@@ -21,7 +21,11 @@ describe('mapper: toBoxOfficeRow', () => {
       title: 'Verity',
       year: 2026,
       poster: 'https://media.trakt.tv/movies/1043653/thumb/poster.webp',
-      tags: [{ text: 'R', kind: 'badge' }, { text: '1h 54m' }, { text: 'Thriller' }, { text: 'Science Fiction' }],
+      tags: [
+        { text: 'R', kind: 'badge', tip: 'Mature Audiences\nAges 17+ Recommended' },
+        { text: '1h 54m' },
+        { segments: ['Thriller', 'Science Fiction'] },
+      ],
       run: { kind: 'opening', label: 'Opening' },
       revenue: 33000000,
       totalGross: null,

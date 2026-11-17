@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
 import AirsTip from '#lib/components/media/AirsTip.svelte';
+import TipLines from '#lib/components/tooltip/TipLines.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import type { TagPill } from './TagPill.ts';
@@ -24,19 +25,28 @@ const { tags, large = false }: { tags: readonly TagPill[]; large?: boolean } = $
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span class={['pill', 'segments', tag.kind]} tabindex={tag.airs ? 0 : undefined} {...tooltip}
   >{#each tag.segments as segment, s (s)}<span class="segment">{segment}</span>{/each}</span>{/snippet}
+{#snippet plain(tag: Exclude<TagPill, { segments: unknown }>, tooltip: Record<PropertyKey, unknown> = {})}
+  <svelte:element
+    this={tag.href ? 'a' : 'span'}
+    href={tag.href}
+    target={tag.href ? '_blank' : undefined}
+    rel={tag.href ? 'noopener' : undefined}
+    class={[
+      'pill',
+      tag.kind,
+      { lead: tag.lead, colored: tag.color, iconed: tag.icon, tinted: tag.tint, link: tag.href, tipped: tag.tip },
+    ]}
+    style:--pill-color={tag.color}
+    style:--pill-tint={tag.tint}
+    aria-label={tag.label}
+    tabindex={tag.tip && !tag.href ? 0 : undefined}
+    {...tooltip}
+  >{#if tag.icon}<Icon svg={tag.icon} />{/if}{#if tag.lead}<b>{tag.lead}</b>{tag.text ? ` ${tag.text}` : ''}{:else}{tag.text}{/if}</svelte:element>{/snippet}
 
 <span class={['tag-pills', { large }]}>
   {#each tags as tag, i (`${i}:${'segments' in tag ? tag.segments.join() : tag.text}`)}{#if 'segments' in tag}{#if tag.airs}<Tooltip
-          >{#snippet trigger(tooltip)}{@render segmented(tag, tooltip)}{/snippet}<AirsTip {...tag.airs} /></Tooltip>{:else}{@render segmented(tag)}{/if}{:else}<svelte:element
-        this={tag.href ? 'a' : 'span'}
-        href={tag.href}
-        target={tag.href ? '_blank' : undefined}
-        rel={tag.href ? 'noopener' : undefined}
-        class={['pill', tag.kind, { lead: tag.lead, colored: tag.color, iconed: tag.icon, tinted: tag.tint, link: tag.href }]}
-        style:--pill-color={tag.color}
-        style:--pill-tint={tag.tint}
-        aria-label={tag.label}
-      >{#if tag.icon}<Icon svg={tag.icon} />{/if}{#if tag.lead}<b>{tag.lead}</b>{tag.text ? ` ${tag.text}` : ''}{:else}{tag.text}{/if}</svelte:element>{/if}{/each}
+          >{#snippet trigger(tooltip)}{@render segmented(tag, tooltip)}{/snippet}<AirsTip {...tag.airs} /></Tooltip>{:else}{@render segmented(tag)}{/if}{:else if tag.tip}<Tooltip
+          >{#snippet trigger(tooltip)}{@render plain(tag, tooltip)}{/snippet}<TipLines text={tag.tip} /></Tooltip>{:else}{@render plain(tag)}{/if}{/each}
 </span>
 
 <style>
@@ -152,6 +162,19 @@ const { tags, large = false }: { tags: readonly TagPill[]; large?: boolean } = $
   color: var(--color-frame-ink);
   font-weight: var(--font-weight-headings-heavy);
   letter-spacing: var(--letter-spacing-tag-badge);
+}
+
+/* A certificate with its meaning fills white on hover, like a summary's certification. */
+.badge.tipped {
+  cursor: default;
+  transition: background-color var(--transition-card), color var(--transition-card), box-shadow var(--transition-card);
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--color-certification-hover-bg);
+    box-shadow: inset 0 0 0 1px var(--color-certification-hover-bg);
+    color: var(--color-certification-hover-text);
+    outline: none;
+  }
 }
 
 .colored {

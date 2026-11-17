@@ -21,5 +21,7 @@ export type TagPill =
       readonly href?: string;
       /** What a screen reader hears, for a pill that's only an icon and a number. */
       readonly label?: string;
+      /** A tooltip, one line per `\n`, like a certification's meaning; the pill takes keyboard focus to show it. */
+      readonly tip?: string;
     }
   | { readonly segments: readonly string[]; readonly kind?: 'primary'; readonly airs?: AirsTip };

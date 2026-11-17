@@ -22,7 +22,7 @@ describe('chartHeroTags', () => {
     expect(chartHeroTags(card)).toEqual([
       { text: '11,688 watchers', kind: 'primary' },
       { text: '2026' },
-      { text: 'TV-14', kind: 'badge' },
+      { text: 'TV-14', kind: 'badge', tip: 'Parents Strongly Cautioned\nAges 14+ Recommended' },
       { segments: ['4 episodes'] },
       { segments: ['Fantasy', 'Science Fiction'] },
       { text: 'Disney+' },

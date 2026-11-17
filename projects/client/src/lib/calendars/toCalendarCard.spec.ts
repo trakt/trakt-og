@@ -46,7 +46,7 @@ describe('toCalendarCard', () => {
 
     it("should pill the show's certificate, the episode's runtime and the network", () => {
       expect(toCalendarCard(episode({ runtime: 58 }, { certification: 'TV-MA', runtime: 60 }), UTC).pills).toEqual([
-        { text: 'TV-MA', kind: 'badge' },
+        { text: 'TV-MA', kind: 'badge', tip: 'Mature Audiences\nAges 17+ Recommended' },
         { segments: ['58m'] },
         { text: 'FX' },
       ]);
@@ -144,7 +144,10 @@ describe('toCalendarCard', () => {
         },
       } as unknown as CalendarItem;
 
-      expect(toCalendarCard(movie, UTC).pills).toEqual([{ text: 'R', kind: 'badge' }, { segments: ['1h 44m'] }]);
+      expect(toCalendarCard(movie, UTC).pills).toEqual([
+        { text: 'R', kind: 'badge', tip: 'Mature Audiences\nAges 17+ Recommended' },
+        { segments: ['1h 44m'] },
+      ]);
       expect(toCalendarCard(movie, UTC).runtime).toBe(104);
     });
   });

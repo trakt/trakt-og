@@ -29,6 +29,7 @@ import WatchNow from '#lib/components/watchnow/WatchNow.svelte';
 import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { browserSectionsClient } from '#lib/summary/browserSectionsClient.ts';
 import { countLabel } from '#lib/utils/countLabel.ts';
+import { createViewerShowProgress } from './createViewerShowProgress.svelte.ts';
 import type { loadShow } from './loadShow.ts';
 import RecentEpisodes from './RecentEpisodes.svelte';
 import SeasonsGrid from './SeasonsGrid.svelte';
@@ -40,6 +41,14 @@ type Props = {
 
 const { data }: Props = $props();
 const show = $derived(data.show);
+// A signed-in viewer's progress comes from the browser; until then Up Next holds its place.
+const viewerProgress = createViewerShowProgress(() => ({
+  showId: show.id,
+  base: show.progressBase,
+  datePreferences: data.datePreferences,
+}));
+const progress = $derived(viewerProgress.view);
+const recent = $derived(progress?.recent ?? show.recent);
 const parental = $derived({ page: `${show.href}/parental-guide`, guide: data.parentalGuide });
 // The GIF picker's header, in every comment box on the page.
 gifArtContext.set(() => show.fanart);
@@ -104,7 +113,7 @@ const sections = $derived([
   {/snippet}
 
   {#snippet sidebar()}
-    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={show.lastSeen} />
+    <SummaryPoster {ratingTarget} image={show.poster} alt={show.fullTitle} lastSeen={progress?.lastSeen} />
     <WatchNow button={data.watchNow} title={show.title} year={show.year} fanart={show.fanart} />
     <SectionNav {sections} label="{show.title} sections" />
     <ExternalLinks links={show.links} share={{ href: show.href, title: show.fullTitle }} />
@@ -116,7 +125,7 @@ const sections = $derived([
 
   {#snippet actions()}
     <WatchNow button={data.watchNow} title={show.title} year={show.year} fanart={show.fanart} phone />
-    <ActionButtons checkin={show.checkin} show={show.id} listTarget={ratingTarget} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
+    <ActionButtons checkin={progress?.checkin} show={show.id} listTarget={ratingTarget} favorites favoriteTarget={{ ...ratingTarget, title: show.title, year: show.year, fanart: show.fanart }} historyTarget={{ ...ratingTarget, airedEpisodes: show.airedEpisodes, runtime: show.runtime, episodeIds: show.episodeIds }} />
   {/snippet}
 
   <!-- Keyed on the item: moving to another movie or show keeps this page, so the lazy sections start over. -->
@@ -128,9 +137,10 @@ const sections = $derived([
     </LazySection>
   {/key}
   <RecentEpisodes
-    upNext={show.recent.upNext}
-    next={show.recent.next}
-    aired={show.recent.aired}
+    upNext={recent.upNext}
+    pending={progress === undefined}
+    next={recent.next}
+    aired={recent.aired}
     allHref={allEpisodes}
     datePreferences={data.datePreferences}
   />

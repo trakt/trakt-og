@@ -30,6 +30,7 @@ const sections = $derived([
 <ShowSubpage
   watchNow={data.watchNow}
   privateNotes={data.privateNotes}
+  datePreferences={data.datePreferences}
   show={data.show}
   heading="All Episodes"
   years={episodes.years}

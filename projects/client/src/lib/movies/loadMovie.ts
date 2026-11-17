@@ -4,7 +4,6 @@ import { api } from '../api/api.ts';
 import { assertOk } from '../api/assertOk.ts';
 import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadWatchNow } from '../components/watchnow/loadWatchNow.ts';
-import { loadPrivateNote } from '../notes/loadPrivateNote.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import { toRelatedSource } from '../summary/toRelatedSource.ts';
@@ -15,7 +14,7 @@ import { OFFICIAL_LISTS_LIMIT, pickCollectionList } from '../lists/pickCollectio
 
 type LoadMovieParams = {
   fetch: typeof fetch;
-  /** Only for the viewer's private note. */
+  /** Only for the parental guide, the one call here that needs the viewer. */
   token: string | null;
   /** The layout's data, for the viewer's watch-now country, rating settings and note dates. */
   parent: () => Promise<{ settings: ViewerSettings | null; user: HeaderUser | null; datePreferences: DatePreferences }>;
@@ -24,8 +23,9 @@ type LoadMovieParams = {
 
 /**
  * Loads `/movies/:id` for SSR: the summary, the layout data and everything else in parallel, with the 404 and canonical
- * redirect checked before the rest is used. The collection's items wait on the collection itself. Every call but the private note
- * is public and goes without the user's token: a stale cookie token would get a 401 for data that doesn't need it.
+ * redirect checked before the rest is used. The collection's items wait on the collection itself. Every call but the parental guide
+ * is public and goes without the user's token: a stale cookie token would get a 401 for data that doesn't need it. The viewer's
+ * private note is read in the browser.
  */
 export async function loadMovie({ fetch, token, parent, id: requested }: LoadMovieParams) {
   const client = api({ fetch });
@@ -59,15 +59,6 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     ),
     collection,
     layout.then(({ user }) => fetchParentalGuide({ fetch, token: user ? token : null, type: 'movie', id })),
-    Promise.all([summaryRead, layout]).then(([summary, { user }]) =>
-      summary.status === 200
-        ? loadPrivateNote({
-            fetch,
-            token: user ? token : null,
-            item: { type: 'movie', id: summary.body.ids.trakt, slug: summary.body.ids.slug } as const,
-          })
-        : null,
-    ),
   ]);
   extras.catch(() => {});
 
@@ -78,7 +69,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   if (requested !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}`);
   const notable = { type: 'movie', id: movie.ids.trakt, slug: movie.ids.slug } as const;
 
-  const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide, note] = await extras;
+  const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide] = await extras;
 
   const view = toMovieSummary({
     movie,
@@ -100,7 +91,6 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     parentalGuide,
     privateNotes: {
       item: { ...notable, title: movie.title, year: movie.year, fanart: view.fanart },
-      note,
       signedIn: user !== null,
       datePreferences,
     },

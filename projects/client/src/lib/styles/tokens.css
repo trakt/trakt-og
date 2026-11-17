@@ -2678,6 +2678,7 @@
   --related-fingerprint-gap: 2px;
   --radius-related-fingerprint: 1px;
   --related-fingerprint-ring: 1px; /* around the picked chip's block */
+  --related-fingerprint-hit: 6px; /* how far a block's hover reaches above and below it */
   --space-related-fingerprint: 6px; /* the title, the strip and the note under it */
   --color-related-fingerprint-off: light-dark(#d4d4d4, #3d3d3d);
   --color-related-fingerprint-on: light-dark(#6b6b6b, #cfcfcf);

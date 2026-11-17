@@ -262,52 +262,45 @@ describe('loadList', () => {
     expect(paths().filter((path) => path.includes('/items'))).toHaveLength(2);
   });
 
-  it('should stream the stats of a longer list from every page of it', async () => {
-    const statsPages: URL[] = [];
+  it('should leave the stats of a longer list to the browser, without reading its other pages', async () => {
+    const limits: (string | null)[] = [];
     server.use(
       http.get(`${API}/users/sean/lists/heist-night/items*`, ({ request }) => {
         const url = new URL(request.url);
         record(request);
-        const page = Number(url.searchParams.get('page'));
-        const limit = Number(url.searchParams.get('limit'));
-        if (limit === 250) statsPages.push(url);
-        const first = (page - 1) * limit + 1;
-        const rows = Array.from({ length: Math.max(0, Math.min(limit, 600 - first + 1)) }, (_, i) =>
-          movie(first + i, `Movie ${first + i}`),
-        );
-        return HttpResponse.json(rows, {
-          headers: { ...pageHeaders('rank', 'asc'), 'X-Pagination-Item-Count': '600', 'X-Pagination-Page-Count': '5' },
-        });
-      }),
-    );
-    const result = await loaded({ query: '?display=movie', viewer: { slug: 'kim', isVip: false } });
-    expect(result.cards).toHaveLength(120);
-    const stats = await result.stats;
-    expect(stats).toMatchObject({ count: 600, runtime: 600 * 90 });
-    expect(stats?.items).toHaveLength(600);
-    expect(statsPages.map((url) => `${url.pathname}?${url.searchParams}`)).toEqual(
-      [1, 2, 3].map(
-        (page) => `/users/sean/lists/heist-night/items/movie/rank/asc?extended=full&page=${page}&limit=250`,
-      ),
-    );
-  });
-
-  it('should leave the stats out when a page of them fails', async () => {
-    server.use(
-      http.get(`${API}/users/sean/lists/heist-night/items*`, ({ request }) => {
-        if (new URL(request.url).searchParams.get('limit') === '250') {
-          return new HttpResponse(null, { status: 500 });
-        }
+        limits.push(url.searchParams.get('limit'));
         return HttpResponse.json(
           Array.from({ length: 120 }, (_, i) => movie(i + 1, `Movie ${i + 1}`)),
           {
-            headers: { ...pageHeaders('added', 'desc'), 'X-Pagination-Item-Count': '300' },
+            headers: {
+              ...pageHeaders('rank', 'asc'),
+              'X-Pagination-Item-Count': '600',
+              'X-Pagination-Page-Count': '5',
+            },
           },
         );
       }),
     );
-    const result = await loaded();
-    expect(await result.stats).toBeNull();
+    const result = await loaded({ query: '?display=movie', viewer: { slug: 'kim', isVip: false } });
+    expect(result.cards).toHaveLength(120);
+    expect(result.stats).toBeNull();
+    expect(result.statsRead).toMatchObject({ total: 600, withItems: true, viewer: false });
+    expect(result.statsRead?.base).toBe('/users/sean/lists/heist-night/items');
+    expect(limits).not.toContain('250');
+  });
+
+  it('should ask the browser to send the viewer for a list only they can read', async () => {
+    privacy = 'private';
+    server.use(
+      http.get(`${API}/users/sean/lists/heist-night/items*`, () =>
+        HttpResponse.json(
+          Array.from({ length: 120 }, (_, i) => movie(i + 1, `Movie ${i + 1}`)),
+          { headers: { ...pageHeaders('added', 'desc'), 'X-Pagination-Item-Count': '300' } },
+        ),
+      ),
+    );
+    const result = await loaded({ token: 'abc', viewer: { slug: 'kim', isVip: false } });
+    expect(result.statsRead).toMatchObject({ total: 300, viewer: true });
   });
 
   // The worker answers Watched Date in rank order: #408.
@@ -337,7 +330,8 @@ describe('loadList', () => {
     expect(result.cards.map(({ rank }) => rank)).toEqual(Array.from({ length: 300 }, (_, i) => i + 1));
     expect(result.page).toEqual({ type: 'paginated', current: 2, total: 3 });
     expect(result.total).toBe(300);
-    expect(await result.stats).toMatchObject({ count: 300 });
+    expect(result.stats).toMatchObject({ count: 300 });
+    expect(result.statsRead).toBeNull();
     const whole = seen.filter(
       ({ url }) => url.searchParams.get('limit') === '250' && url.pathname.endsWith('/rank/asc'),
     );

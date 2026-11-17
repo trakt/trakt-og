@@ -41,15 +41,15 @@ function progress(shows: readonly ShowRow[], dropped: ReadonlySet<number> | null
 }
 
 /**
- * `/users/:id/stats` counted by og, for an account the API keeps no stats for. The counts are exact. Minutes are plays
- * times runtime, which for shows is the show's typical episode length, so they run a little off the API's. Progress
- * needs the shows' episodes and your dropped shows, so it's your own only. Nothing counts collections or the network.
+ * `/users/:id/stats` counted by og, for an account the API keeps no stats for. The counts and plays are exact. Minutes
+ * are plays times runtime, which for shows is the show's typical episode length, so they run a little off the API's.
+ * Progress needs the shows' episodes and your dropped shows, so it's your own only. Nothing counts collections or the
+ * network.
  */
 export function computeUserStats({ counts, watched, dropped }: Params): UserStats {
   const shows = watched.shows.filter(isShow);
   const movies = watched.movies.filter(isMovie);
-  const episodePlays = sum(shows.map(({ plays }) => plays));
-  const moviePlays = sum(movies.map(({ plays }) => plays));
+  const { movies: moviePlays, episodes: episodePlays } = counts.plays;
   const episodeMinutes = minutes(shows.map(({ plays, show }) => ({ plays, runtime: show.runtime ?? 0 })));
   const movieMinutes = minutes(movies.map(({ plays, movie }) => ({ plays, runtime: movie.runtime ?? 0 })));
   const { ratings, comments } = counts;

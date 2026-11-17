@@ -24,6 +24,7 @@ import { type HistoryRow, historyRowsSchema, watchedMoviesSchema, watchedShowsSc
 import { type HistorySort, historyPath, historySort } from './historySort.ts';
 import { type HistoryType, isHistoryType } from './historyTypes.ts';
 import { toChartCard, toHistoryCard, toHistoryDays } from './toHistoryCard.ts';
+import { EVERY_PLAY } from './EVERY_PLAY.ts';
 import { historyItemBand, type HistoryItemBand } from './historyItemBand.ts';
 import { seasonDetails } from './seasonDetails.ts';
 import { positiveInt } from '../../utils/positiveInt.ts';
@@ -74,10 +75,6 @@ function query(filters: HistoryFilters, page: number, limit: number) {
     ...(filters.watchnow && { watchnow: filters.watchnow }),
   });
 }
-
-// The API counts the plays it pages only when a read has a start date. Without one it sums a per-show counter that can
-// run far over, so the counter is off and the last pages come up empty. MySQL's earliest date keeps every play.
-const EVERY_PLAY = '1000-01-01T00:00:00.000Z';
 
 const historyQuery = (filters: HistoryFilters, page: number, limit: number) =>
   query({ ...filters, startAt: filters.startAt ?? EVERY_PLAY }, page, limit);

@@ -1,4 +1,5 @@
 import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { EVERY_PLAY } from '../users/history/EVERY_PLAY.ts';
 import type { StatsCounts } from './StatsCounts.ts';
 
 type Params = {
@@ -11,7 +12,7 @@ const TYPES = ['movies', 'shows', 'seasons', 'episodes'] as const;
 const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 /**
- * The counts `/users/:id/stats` would have sent, each from a one-row page's `X-Pagination-Item-Count`: watched,
+ * The counts `/users/:id/stats` would have sent, each from a one-row page's `X-Pagination-Item-Count`: watched, plays,
  * ratings by type and by score, comments by type, and lists. About twenty small reads, all at once. One that fails
  * fails them all, since a missing count would read as zero.
  */
@@ -28,8 +29,9 @@ export async function fetchStatsCounts({ fetch, token, id }: Params): Promise<St
   };
   const counts = (paths: readonly string[]) => Promise.all(paths.map(count));
 
-  const [watched, rated, scores, comments, [lists = 0]] = await Promise.all([
+  const [watched, [moviePlays = 0, episodePlays = 0], rated, scores, comments, [lists = 0]] = await Promise.all([
     counts(['watched/movies', 'watched/shows', 'watched/episodes']),
+    counts(['movies', 'episodes'].map((type) => `history/${type}?start_at=${EVERY_PLAY}`)),
     counts(TYPES.map((type) => `ratings/${type}`)),
     counts(SCORES.map((score) => `ratings/all/${score}`)),
     // The API's counts take in replies.
@@ -45,6 +47,7 @@ export async function fetchStatsCounts({ fetch, token, id }: Params): Promise<St
 
   return {
     watched: { movies, shows, episodes },
+    plays: { movies: moviePlays, episodes: episodePlays },
     ratings: {
       ...perType(rated),
       distribution: {

@@ -179,7 +179,7 @@ const limitToast = (limit: Parameters<typeof listItemLimitFailure>[0]) => {
 </Specimen>
 
 <Specimen title="Watch Now" bleed
-  note="The block under a summary poster, at the sidebar's width. Its button opens the Watch Now dialog.">
+  note="The block under a summary poster, at the sidebar's width. Hover a logo for its service's name. Its button opens the Watch Now dialog.">
   <Container>
     <div class="summary-sidebar">
       <WatchNow button={watchNow} title={fightClub.title} year={fightClub.year} fanart={data.fanart} />

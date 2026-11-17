@@ -11,9 +11,10 @@
   import { prefersReducedMotion } from 'svelte/motion';
   import { SvelteMap } from 'svelte/reactivity';
   import { slide } from 'svelte/transition';
-  import { invalidateAll, goto } from '$app/navigation';
+  import { invalidateAll } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import { replaceQuery } from '#lib/utils/replaceQuery.ts';
   import Container from '#lib/components/container/Container.svelte';
   import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
   import SortDirection from '#lib/components/dropdown/SortDirection.svelte';
@@ -299,13 +300,7 @@ const searchedOut = $derived(
     if (query.sort === 'random' && shuffled.length === 0) shuffle();
   });
 
-  $effect(() => {
-    const search = toListsSearch(query, data.mode);
-    if (search === page.url.search) return;
-     
-    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
-    goto(`${page.url.pathname}${search}${page.url.hash}`, { shallow: true, replace: true, state: page.state });
-  });
+  $effect(() => replaceQuery(toListsSearch(query, data.mode)));
 
   // A new sort starts in its own direction.
   const pick = (sort: ListsQuery['sort']) => {

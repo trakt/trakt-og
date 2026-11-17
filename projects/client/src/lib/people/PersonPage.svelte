@@ -2,9 +2,9 @@
   import SeoHead from '#lib/seo/SeoHead.svelte';
   import { toPersonSeo } from '#lib/seo/pages/toPersonSeo.ts';
   import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate } from '$app/navigation';
   import { tick } from 'svelte';
-  import { page } from '$app/state';
+  import { replaceQuery } from '#lib/utils/replaceQuery.ts';
   import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
   import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
   import SortLabel from '#lib/components/sort/SortLabel.svelte';
@@ -193,12 +193,7 @@ const filtered = $derived(
   });
 
   $effect(() => {
-    if (!ready) return;
-    const search = toCreditsSearch(query);
-    if (search === page.url.search) return;
-     
-    // eslint-disable-next-line svelte/no-navigation-without-resolve -- the same page, with only its query changed
-    goto(`${page.url.pathname}${search}${page.url.hash}`, { shallow: true, replace: true, state: page.state });
+    if (ready) replaceQuery(toCreditsSearch(query));
   });
 
 const episodesLabel = (credit: PersonCredit) =>

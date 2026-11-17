@@ -7,7 +7,6 @@ import type FanartCard from '../components/media/FanartCard.svelte';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { NamedLink } from '../components/summary/NamedLink.ts';
 import { countryName, languageName, titleize } from '../components/summary/names.ts';
-import { networkSlug } from '../utils/networkSlug.ts';
 import { type StreamingRank, toExternalRatings } from '../components/summary/toExternalRatings.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -152,9 +151,7 @@ type Facts = Pick<ShowSummaryParams, 'show' | 'studios' | 'people' | 'now'> & {
 // with the last air date and the network. Then Premiered and the shared facts.
 function facts({ show, studios, people, now, day, airs }: Facts) {
   const upcoming = !!show.first_aired && new Date(show.first_aired) > now;
-  const network = show.network
-    ? { name: show.network, href: popular('networks', networkSlug(show.network)) }
-    : undefined;
+  const network = show.network ? { name: show.network, href: popular('networks', show.network) } : undefined;
   const slot = airsAt(show.airs, now);
   const airing =
     !upcoming && !['ended', 'canceled', 'pilot'].includes(show.status ?? '') && !!show.first_aired && !!slot;

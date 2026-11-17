@@ -2,7 +2,6 @@ import type { EpisodeResponse, PeopleResponse, RatingsResponse, ShowResponse } f
 import type { z } from 'zod/v4';
 import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
-import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import { toCrewNames } from '../components/summary/toCrewNames.ts';
 import { toExternalRatings } from '../components/summary/toExternalRatings.ts';
@@ -122,7 +121,7 @@ export function toEpisodeSummary(params: Params) {
             date: formatDate(episode.first_aired, { ...params.datePreferences, format: 'LL', time: true }),
           }
         : undefined,
-      network: show.network ? { name: show.network, href: popular('networks', networkSlug(show.network)) } : undefined,
+      network: show.network ? { name: show.network, href: popular('networks', show.network) } : undefined,
       runtime: (episode.runtime ?? show.runtime) ? formatRuntime(episode.runtime ?? show.runtime ?? 0) : undefined,
       ...toCrewNames(params.people),
       country: show.country ? { name: countryName(show.country), href: popular('countries', show.country) } : undefined,

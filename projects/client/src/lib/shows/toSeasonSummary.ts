@@ -4,7 +4,6 @@ import { previewArt } from '../images/previewArt.ts';
 import type { z } from 'zod/v4';
 import type { ItemStats } from './ItemStats.ts';
 import { countryName, languageName } from '../components/summary/names.ts';
-import { networkSlug } from '../utils/networkSlug.ts';
 import { toCastMembers } from '../components/summary/toCastMembers.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import { countLabel } from '../utils/countLabel.ts';
@@ -57,7 +56,7 @@ export function toSeasonSummary(params: Params) {
   const premiered = !!first && new Date(first) <= now;
   const network = season.network ?? show.network;
   const popular = (key: string, value: string) => `/shows/popular?${key}=${encodeURIComponent(value)}`;
-  const networkLink = network ? { name: network, href: popular('networks', networkSlug(network)) } : undefined;
+  const networkLink = network ? { name: network, href: popular('networks', network) } : undefined;
   const aired = episodes.filter((episode) => hasEpisodeAired(episodeReleasedAt(episode), now.getTime()));
   const total = season.total_runtime ?? aired.reduce((sum, episode) => sum + (episode.runtime ?? show.runtime ?? 0), 0);
 

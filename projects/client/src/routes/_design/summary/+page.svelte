@@ -165,8 +165,24 @@ const listTabs: readonly ListTab[] = [
   { id: 'me', label: 'Mine', total: 1, lists: [list(6, 'Rewatch pile', { owner: { ...list(6, '').owner, slug: 'og_tester' } })] },
 ];
 
-// Eighteen picks, so more opens a second row and a third. Heat's crime subgenres spread over them, and two share its people.
+// Eighteen picks, so more opens a second row and a third. Heat's crime subgenres spread over them, and two share its
+// people: one all thirteen, past the ten its tooltip names.
 const relatedSubgenres = ['heist', 'organized-crime', 'neo-noir', 'police-detective', 'los-angeles'];
+const heatPeople = [
+  'Al Pacino',
+  'Robert De Niro',
+  'Val Kilmer',
+  'Jon Voight',
+  'Tom Sizemore',
+  'Diane Venora',
+  'Amy Brenneman',
+  'Ashley Judd',
+  'Mykelti Williamson',
+  'Wes Studi',
+  'Ted Levine',
+  'Danny Trejo',
+  'Michael Mann',
+].map((name, i) => ({ id: i + 1, name }));
 const related: readonly RelatedCard[] = Array.from({ length: 18 }, (_, i) => ({
   type: 'movie',
   id: 900 + i,
@@ -177,13 +193,13 @@ const related: readonly RelatedCard[] = Array.from({ length: 18 }, (_, i) => ({
   rating: 8 - i / 6,
   subgenres: relatedSubgenres.filter((_, j) => (i + j) % 3 !== 0),
 }));
-const relatedSource = { subgenres: relatedSubgenres, people: [1, 2, 3] };
+const relatedSource = { subgenres: relatedSubgenres, people: heatPeople.map(({ id }) => id) };
 const relatedPeople = (card: RelatedCard) =>
   Promise.resolve(
     card.id === 901
-      ? [{ id: 1, name: 'Al Pacino' }, { id: 2, name: 'Robert De Niro' }, { id: 3, name: 'Michael Mann' }]
+      ? heatPeople
       : card.id === 904
-      ? [{ id: 3, name: 'Michael Mann' }]
+      ? heatPeople.filter(({ name }) => name === 'Michael Mann')
       : [],
   );
 
@@ -347,7 +363,7 @@ const videos: readonly VideoCard[] = [
 </Specimen>
 
 <Specimen title="Related" bleed
-  note="Eighteen picks, so More opens a second row and a third. Two share Heat's people. A row of shimmering posters holds their place while they load.">
+  note="Eighteen picks, so More opens a second row and a third. Two share Heat's people. Hover a block under a poster for its topic; Related Movie 2's red block names ten people and counts the rest. A row of shimmering posters holds their place while they load.">
   <Variant label="Loaded">
     <RelatedItems title="Heat" source={relatedSource} load={() => Promise.resolve(related)} loadPeople={relatedPeople}
       datePreferences={page.data.datePreferences} />

@@ -39,7 +39,13 @@ const prices = (...rows: ['Rent' | 'Buy', string, boolean][]) => ({
 const sources = new Map<string, Source>(
   ['netflix', 'apple_tv', 'amazon_video', 'youtube', 'starz_amazon_channel', 'amc_theatres'].map((slug) => [
     slug,
-    { name: slug === 'starz_amazon_channel' ? 'Starz (on Amazon)' : slug.toUpperCase(), color: '#000' },
+    slug === 'starz_amazon_channel'
+      ? {
+          name: 'Starz (on Amazon)',
+          color: '#000',
+          channel: 'https://media.trakt.tv/watchnow/badges/amazon-channel.webp',
+        }
+      : { name: slug.toUpperCase(), color: '#000' },
   ]),
 );
 
@@ -118,6 +124,28 @@ describe('toWatchNowSections', () => {
       { kind: 'note', title: 'Included', detail: 'with Starz subscription' },
     ]);
     expect(sections[2]?.links[0]?.terms).toEqual(prices(['Rent', '$3.99', false], ['Buy', '$19.99', false]));
+  });
+
+  it('names the subscription a channel needs from its store badge, whatever its slug', () => {
+    const badge = (name: string) => `https://media.trakt.tv/watchnow/badges/${name}.webp`;
+    const channels = new Map<string, Source>([
+      ['amazonhbomax', { name: 'HBO Max (on Amazon)', color: '#000', channel: badge('amazon-channel') }],
+      ['amazon_mgm_plus', { name: 'MGM+ (on Amazon)', color: '#000', channel: badge('amazon-channel') }],
+      ['arthaus_plus_apple_tv_channel', { name: 'Arthaus+ (on Apple TV)', color: '#000', channel: badge('apple-tv') }],
+      ['netflix_standard_with_ads', { name: 'Netflix Standard with Ads', color: '#000', channel: badge('ads') }],
+    ]);
+    const [section] = toWatchNowSections({
+      offers: { de: offers({ subscription: [...channels.keys()] }) },
+      country: 'de',
+      sources: { de: channels },
+      favorites: [],
+    });
+    expect(section?.links.map(({ terms }) => terms.kind === 'note' && terms.detail)).toEqual([
+      'with HBO Max subscription',
+      'with MGM+ subscription',
+      'with Arthaus+ subscription',
+      'with subscription',
+    ]);
   });
 
   describe('for stores', () => {

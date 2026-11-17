@@ -4,10 +4,6 @@ import { toReportTracking } from './toReportTracking.ts';
 describe('toReportTracking', () => {
   it.each([
     ['comment', 'spoilers'],
-    ['movie', 'data_refresh'],
-    ['episode', 'tmdb'],
-    ['person', 'metadata'],
-    ['list', 'remove'],
     ['user', 'language'],
   ] as const)('should keep a %s report for %s', (type, reason) => {
     expect(toReportTracking({ type, reason, result: { ok: true } }).reason).toBe(reason);
@@ -18,13 +14,12 @@ describe('toReportTracking', () => {
     ['comment', 'too_short'],
     ['comment', 'tmdb'],
     ['user', 'duplicate'],
-    ['list', 'runtime'],
   ] as const)('should send a %s report for %s as other, like trakt-web', (type, reason) => {
     expect(toReportTracking({ type, reason, result: { ok: true } }).reason).toBe('other');
   });
 
   it.each(['', 'nonsense', 'Spam'])('should send %j as other', (reason) => {
-    expect(toReportTracking({ type: 'movie', reason, result: { ok: true } }).reason).toBe('other');
+    expect(toReportTracking({ type: 'comment', reason, result: { ok: true } }).reason).toBe('other');
   });
 
   it.each([
@@ -35,8 +30,8 @@ describe('toReportTracking', () => {
     [{ ok: false, status: 500 }, 'unknown'],
     [{ ok: false }, 'unknown'],
   ])('should give %j the %s outcome', (result, outcome) => {
-    expect(toReportTracking({ type: 'list', reason: 'spam', result })).toEqual({
-      type: 'list',
+    expect(toReportTracking({ type: 'user', reason: 'spam', result })).toEqual({
+      type: 'user',
       reason: 'spam',
       outcome,
     });

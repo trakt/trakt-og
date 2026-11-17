@@ -28,7 +28,7 @@ describe('listRowActions', () => {
     });
   });
 
-  it("should give a smart list's owner edit, delete and share, and no report or progress", () => {
+  it("should give a smart list's owner edit, delete and share, and no progress", () => {
     const smart = row({ kind: 'smart', id: null, href: '/users/owner/smart-lists/hbo' });
     const actions = listRowActions({ row: smart, viewer: { slug: 'owner' }, isCollaborator: false, origin });
     expect(icons(actions)).toEqual(['delete', 'edit', 'shareUrl']);
@@ -54,7 +54,7 @@ describe('listRowActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(icons(actions)).toEqual(['delete', 'edit', 'progressHref', 'report', 'shareUrl']);
+    expect(icons(actions)).toEqual(['delete', 'edit', 'progressHref', 'shareUrl']);
     expect(actions.progressHref).toBe('/users/owner/progress?list=42');
   });
 
@@ -66,7 +66,7 @@ describe('listRowActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(icons(actions)).toEqual(['edit', 'progressHref', 'report', 'shareUrl']);
+    expect(icons(actions)).toEqual(['edit', 'progressHref', 'shareUrl']);
     expect(actions.progressHref).toBe('/users/owner/progress?list=owner/watchlist');
   });
 
@@ -75,7 +75,6 @@ describe('listRowActions', () => {
     expect(icons(listRowActions({ row: row(), viewer, isCollaborator: true, origin }))).toEqual([
       'leave',
       'progressHref',
-      'report',
       'shareUrl',
     ]);
     expect(

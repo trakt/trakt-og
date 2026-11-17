@@ -22,9 +22,8 @@ describe('itemListRowActions', () => {
     });
   });
 
-  it("should give the owner report, edit and delete, and the list's progress", () => {
+  it("should give the owner edit and delete, and the list's progress", () => {
     expect(itemListRowActions({ list: list(), viewer: { slug: 'sean' }, origin })).toEqual({
-      report: {},
       edit: {},
       delete: {},
       progressHref: '/users/sean/progress?list=7',

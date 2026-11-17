@@ -14,13 +14,13 @@ describe('listTitleActions', () => {
 
   it('should give the owner edit, delete and manage', () => {
     const actions = listTitleActions({ list, viewer: { slug: 'sean' }, isCollaborator: false, origin });
-    expect(keys(actions)).toEqual(['delete', 'edit', 'manage', 'progressHref', 'report', 'shareUrl']);
+    expect(keys(actions)).toEqual(['delete', 'edit', 'manage', 'progressHref', 'shareUrl']);
     expect(actions.progressHref).toBe('/users/sean/progress?list=7');
   });
 
   it('should give a collaborator leave and manage', () => {
     const actions = listTitleActions({ list, viewer: { slug: 'kim' }, isCollaborator: true, origin });
-    expect(keys(actions)).toEqual(['leave', 'manage', 'progressHref', 'report', 'shareUrl']);
+    expect(keys(actions)).toEqual(['leave', 'manage', 'progressHref', 'shareUrl']);
   });
 
   it('should give official lists no management or copy, even for the owner', () => {
@@ -32,10 +32,9 @@ describe('listTitleActions', () => {
       origin,
     });
     expect(actions.progressHref).toBe('/users/sean/progress?list=7');
-    expect(keys(actions)).toEqual(['progressHref', 'report', 'shareUrl']);
+    expect(keys(actions)).toEqual(['progressHref', 'shareUrl']);
     expect(keys(listTitleActions({ list: official, viewer: { slug: 'kim' }, isCollaborator: true, origin }))).toEqual([
       'progressHref',
-      'report',
       'shareUrl',
     ]);
   });
@@ -69,7 +68,7 @@ describe('listTitleActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(keys(actions)).toEqual(['edit', 'manage', 'progressHref', 'report', 'shareUrl']);
+    expect(keys(actions)).toEqual(['edit', 'manage', 'progressHref', 'shareUrl']);
     expect(actions.shareUrl).toBe('https://og.trakt.tv/users/sean/watchlist');
   });
 });

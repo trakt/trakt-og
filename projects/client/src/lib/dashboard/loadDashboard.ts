@@ -8,7 +8,6 @@ import { toWatchingNow } from '../users/toWatchingNow.ts';
 import { formatDate } from '../utils/formatDate.ts';
 import { dashboardPrefs } from './dashboardPrefs.ts';
 import { apiUserStats } from '../stats/apiUserStats.ts';
-import { fetchComputedStats } from '../stats/fetchComputedStats.ts';
 import { fetchStatsCounts } from '../stats/fetchStatsCounts.ts';
 import { dashboardProfileSchema } from './dashboardProfileSchema.ts';
 import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
@@ -34,21 +33,6 @@ type Params = {
   parent: () => Promise<{ user: HeaderUser | null; settings: ViewerSettings | null; datePreferences: DatePreferences }>;
   now?: Date;
 };
-
-/**
- * Your stats when the API keeps none for you: the counts are quick reads, awaited for the welcome wall, and the rest
- * streams, since it reads your whole watched lists. Counts that fail leave the greeting without its panel.
- */
-type OwnStatsParams = { fetch: typeof globalThis.fetch; panelFetch: typeof globalThis.fetch; token: string };
-
-async function readOwnStats({ fetch, panelFetch, token }: OwnStatsParams) {
-  const counts = await fetchStatsCounts({ fetch, token, id: 'me' }).catch(() => null);
-  if (!counts) return { panel: null, watched: null };
-  return {
-    panel: fetchComputedStats({ fetch: panelFetch, token, id: 'me', isSelf: true, counts: Promise.resolve(counts) }),
-    watched: counts.watched.movies + counts.watched.shows,
-  };
-}
 
 // A hidden panel isn't fetched at all, and the page leaves it out.
 const unless = <T>(hidden: boolean, load: () => Promise<T>) => (hidden ? null : load());
@@ -82,9 +66,12 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   const dashboard = toDashboardSettings({ settings: layout.settings, prefs });
   const { hidden } = dashboard;
   const known = apiUserStats(stats);
-  const { panel, watched } = known
-    ? { panel: known, watched: known.movies.watched + known.shows.watched }
-    : await readOwnStats({ fetch, panelFetch, token });
+  // Without the API's stats only the counts are read here, quick reads the welcome wall waits on. The browser counts
+  // the rest from your whole watched lists, so the Worker never pages through them.
+  const counts = known ? null : await fetchStatsCounts({ fetch, token, id: 'me' }).catch(() => null);
+  const watched = known
+    ? known.movies.watched + known.shows.watched
+    : counts && counts.watched.movies + counts.watched.shows;
   const welcome = watched !== null && isNewAccount(watched) && !prefs.hide_first_night;
   const panelClient = api({ fetch: panelFetch, token });
   // The Social Feed skips its request at zero: the stats strip's read has the count.
@@ -92,8 +79,10 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   return {
     profile: user,
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
-    /** The API's stats, or og's own count of them streaming in. Null when even the counts failed. */
-    stats: panel,
+    /** The API's stats, when it keeps them for you. */
+    stats: known,
+    /** Without the API's stats, the counts the browser starts its own stats from. Null when they failed too. */
+    countedStats: counts,
     /** Movies and shows watched, for the welcome wall. */
     watched: watched ?? 0,
     viewerWatching: watching.status === 200 ? toWatchingNow(watching.body) : null,

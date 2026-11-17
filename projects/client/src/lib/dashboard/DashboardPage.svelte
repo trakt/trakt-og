@@ -27,6 +27,8 @@ import { fetchRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import { fetchSchedule } from '#lib/dashboard/fetchSchedule.ts';
 import { fetchRecentlyWatched } from '#lib/dashboard/fetchRecentlyWatched.ts';
 import { fetchUpNext } from '#lib/dashboard/fetchUpNext.ts';
+import { fetchComputedStats } from '#lib/stats/fetchComputedStats.ts';
+import type { UserStats } from '#lib/stats/userStatsSchema.ts';
 import { refreshOnReturn } from '#lib/dashboard/refreshOnReturn.ts';
 import { toStatsPanel } from '#lib/dashboard/toStatsPanel.ts';
 import type { loadDashboard } from '#lib/dashboard/loadDashboard.ts';
@@ -84,6 +86,18 @@ $effect(() => {
   if (ended) untrack(refreshPlays);
 });
 
+// Without the API's stats, the browser counts them from your whole watched lists, starting from the loader's counts.
+// The server renders the panel's placeholder, and effects only run in the browser.
+const PENDING = new Promise<never>(() => {});
+let countedStats = $state<Promise<UserStats> | null>(null);
+$effect(() => {
+  const counts = data.countedStats;
+  countedStats = counts
+    ? fetchComputedStats({ fetch: viewerFetch(), token: null, id: 'me', isSelf: true, counts: Promise.resolve(counts) })
+    : null;
+});
+const stats = $derived(data.stats ?? (data.countedStats ? (countedStats ?? PENDING) : null));
+
 // A recap month's hover card splits its plays from the browser, the first time it opens.
 const loadRecapSplit = (span: RecapSpan) => fetchRecapSplit({ client: api({ fetch: viewerFetch() }), span });
 
@@ -115,9 +129,9 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
   named={!!data.settings?.user.name?.trim()} avatarUrl={data.profile.avatarUrl} />
 {:else}
   <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={viewerWatching.latest(data.viewerWatching)}>
-  {#if data.stats}
-    <!-- The API's stats render at once; og's own count streams in. -->
-    {#await data.stats}
+  {#if stats}
+    <!-- The API's stats render at once; og's own count loads in the browser. -->
+    {#await stats}
       <StatsPanel panel={null} slug={username} />
     {:then stats}
       <StatsPanel panel={toStatsPanel(stats)} slug={username} fresh={stats.movies.plays + stats.episodes.plays === 0} />

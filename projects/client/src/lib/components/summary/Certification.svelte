@@ -13,6 +13,7 @@
 import { parentalCategoryLabels, parentalLevelLabels } from '#lib/components/filters/parentalGuide.ts';
 import ParentalBars from '#lib/components/parental/ParentalBars.svelte';
 import ParentalGuideTip from '#lib/components/parental/ParentalGuideTip.svelte';
+import TipLines from '#lib/components/tooltip/TipLines.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import type { ParentalGuide } from '#lib/parental/ParentalGuide.ts';
 import { certificationTip } from './certificationTip.ts';
@@ -40,10 +41,12 @@ const spoken = $derived(
 <!-- The page's path is built from the title's slug; resolve() only takes literal routes. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
+{#snippet tipLines()}<TipLines text={tip ?? ''} />{/snippet}
+
 {#if certification || levels}
   <span class={['badge', { joined: certification && levels }]}>
     {#if certification}
-      <Tooltip text={tip}>
+      <Tooltip content={tip ? tipLines : undefined}>
         {#snippet trigger(tooltip)}
           {#if page}
             <a class="certification" href="{page}#certifications" {...tooltip}>{certification}</a>

@@ -25,7 +25,7 @@ describe('searchResultTags', () => {
     });
     expect(searchResultTags(movie)).toEqual([
       { text: 'Movie', kind: 'primary' },
-      { text: 'PG-13', kind: 'badge' },
+      { text: 'PG-13', kind: 'badge', tip: 'Parents Strongly Cautioned\nAges 13+ Recommended' },
       { segments: ['2h 56m'] },
       { segments: ['Crime', 'Superhero'] },
     ]);

@@ -1,5 +1,6 @@
 import { countLabel } from '../../utils/countLabel.ts';
 import { formatRuntime } from '../../utils/formatRuntime.ts';
+import { certificationPill } from './certificationPill.ts';
 import type { TagPill } from './TagPill.ts';
 
 type MediaTagsParams = {
@@ -22,7 +23,7 @@ export function mediaTags(item: MediaTagsParams): TagPill[] {
   return [
     ...(item.mixed ? [{ text: item.type === 'show' ? 'Show' : 'Movie', kind: 'primary' as const }] : []),
     ...(item.year ? [{ text: String(item.year) }] : []),
-    ...(item.certification ? [{ text: item.certification, kind: 'badge' as const }] : []),
+    ...(item.certification ? [certificationPill(item.certification)] : []),
     ...segments([
       ...(item.runtime ? [formatRuntime(item.runtime)] : []),
       ...(item.airedEpisodes ? [countLabel(item.airedEpisodes, 'episode')] : []),

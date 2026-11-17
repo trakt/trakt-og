@@ -20,7 +20,11 @@ describe('mapper: toOpeningRow', () => {
       href: '/movies/verity-2026',
       title: 'Verity',
       poster: 'https://media.trakt.tv/movies/1043653/thumb/poster.webp',
-      tags: [{ text: 'R', kind: 'badge' }, { text: '1h 54m' }, { text: 'Thriller' }],
+      tags: [
+        { text: 'R', kind: 'badge', tip: 'Mature Audiences\nAges 17+ Recommended' },
+        { text: '1h 54m' },
+        { segments: ['Thriller'] },
+      ],
     });
   });
 });

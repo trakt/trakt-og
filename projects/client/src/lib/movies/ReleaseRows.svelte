@@ -6,6 +6,7 @@
     <ReleaseRows columns={releases.columns} ticks={releases.ticks} today={releases.today} countries={shown} />
 -->
 <script lang="ts">
+import { certificationPill } from '#lib/components/labels/certificationPill.ts';
 import TagPills from '#lib/components/labels/TagPills.svelte';
 import CountryFlag from '#lib/components/table/CountryFlag.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
@@ -62,7 +63,7 @@ const END_LABEL_AT = 97;
             {#if country.original}<TagPills tags={[{ text: 'Original Country', kind: 'primary' }]} />{/if}
           </span>
           <span class="rating">
-            {#if country.certification}<TagPills tags={[{ text: country.certification, kind: 'badge' }]} />{/if}
+            {#if country.certification}<TagPills tags={[certificationPill(country.certification, country.code)]} />{/if}
           </span>
           <span class="lane">
             {#if today !== null}<span class="now" style:--at="{today}%" aria-hidden="true"></span>{/if}

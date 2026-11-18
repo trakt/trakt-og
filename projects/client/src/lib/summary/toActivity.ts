@@ -6,6 +6,7 @@ import type { SocialRow } from './SocialRow.ts';
 import { userAvatar } from '../images/userAvatar.ts';
 import { PLACEHOLDER_AVATAR } from '../users/placeholderAvatar.ts';
 import { ratingPercent } from '../utils/ratingPercent.ts';
+import { formatCount } from '../utils/formatCount.ts';
 
 export type ActivityUser = {
   readonly key: string;
@@ -85,7 +86,7 @@ type ToActivityParams = {
   item?: { readonly type: 'movie' | 'show' | 'season' | 'episode'; readonly id: number };
 };
 
-const count = (value: number) => value.toLocaleString('en-US');
+const count = formatCount;
 const people = (value: number) => (value === 1 ? 'Person' : 'People');
 
 type Range = { readonly min: number; readonly max: number; readonly label: string; readonly name: string };

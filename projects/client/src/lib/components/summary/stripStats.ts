@@ -1,4 +1,5 @@
 import type { StripCount } from './StripCount.ts';
+import { formatCount } from '../../utils/formatCount.ts';
 
 /** Which icon and color a count takes on the ratings strip. */
 export type StripStatKind = 'watchers' | 'plays' | 'lists' | 'comments' | 'favorited';
@@ -42,7 +43,7 @@ export function stripStats(counts: readonly StripCount[]): StripStats {
       (count): StripStat => ({
         ...count,
         kind: KINDS[count.label] ?? 'watchers',
-        detail: count.count.toLocaleString('en-US'),
+        detail: formatCount(count.count),
       }),
     );
 

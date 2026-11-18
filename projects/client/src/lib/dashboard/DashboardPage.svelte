@@ -31,6 +31,12 @@ import { lastActivities } from '#lib/activity/lastActivities.ts';
 import { cachedComputedStats } from '#lib/stats/cachedComputedStats.ts';
 import { fetchComputedStats } from '#lib/stats/fetchComputedStats.ts';
 import type { UserStats } from '#lib/stats/userStatsSchema.ts';
+import {
+  type DashboardPanels,
+  PENDING,
+  pendingDashboardPanels,
+  startDashboardPanels,
+} from '#lib/dashboard/startDashboardPanels.ts';
 import { refreshOnReturn } from '#lib/dashboard/refreshOnReturn.ts';
 import { toStatsPanel } from '#lib/dashboard/toStatsPanel.ts';
 import type { loadDashboard } from '#lib/dashboard/loadDashboard.ts';
@@ -61,20 +67,41 @@ function loadSchedule({ filter, movies }: Pick<DashboardSettings['schedule'], 'f
   });
 }
 
-// Up Next and Recently Watched catch up with plays from elsewhere (a scrobble, another app): when you come back to the
-// tab, and when what you were watching ends. Each swaps in once it has loaded, so a panel never blanks.
-let upNext = $derived(data.upNext);
-let recentlyWatched = $derived(data.recentlyWatched);
+// The server renders each visible panel's placeholder; effects only run in the browser, so each panel's reads start
+// there, with the viewer's own token. A hidden panel stays null and makes no request. A fresh read for a saved panel
+// swaps in later, unless a newer start has replaced this one.
+let panels = $state.raw<DashboardPanels>(untrack(() => pendingDashboardPanels({ dashboard: data.dashboard, welcome })));
+let started = 0;
+$effect(() => {
+  const start = ++started;
+  panels = startDashboardPanels({
+    fetch: viewerFetch(),
+    slug: username,
+    dashboard: data.dashboard,
+    datePreferences: data.datePreferences,
+    settings: data.settings,
+    following: data.stats?.network?.following ?? null,
+    welcome,
+    activities: lastActivities.read,
+    onUpdate: (fresh) => {
+      if (start === started) panels = { ...panels, ...fresh };
+    },
+    now: new Date(),
+  });
+});
 
+// Up Next and Recently Watched catch up with plays from elsewhere (a scrobble, another app): when you come back to the
+// tab, and when what you were watching ends. They read fresh, past the saved copy, and each swaps in once it has
+// loaded, so a panel never blanks.
 function refreshPlays() {
   const fetch = viewerFetch();
-  if (data.upNext) {
-    fetchUpNext({ api: api({ fetch }), username, settings: data.dashboard.upNext })
-      .then((items) => (upNext = Promise.resolve(items)), () => {});
+  if (panels.upNext) {
+    fetchUpNext({ api: api({ fetch }), username, settings: data.dashboard.upNext, fetch })
+      .then((items) => (panels = { ...panels, upNext: Promise.resolve(items) }), () => {});
   }
-  if (data.recentlyWatched) {
+  if (panels.recentlyWatched) {
     fetchRecentlyWatched({ fetch, token: null, datePreferences: data.datePreferences })
-      .then((plays) => (recentlyWatched = Promise.resolve(plays)), () => {});
+      .then((plays) => (panels = { ...panels, recentlyWatched: Promise.resolve(plays) }), () => {});
   }
 }
 
@@ -89,8 +116,7 @@ $effect(() => {
 });
 
 // Without the API's stats, the browser counts them from your whole watched lists, starting from the loader's counts,
-// and keeps them until your activity moves. The server renders the panel's placeholder; effects only run in the browser.
-const PENDING = new Promise<never>(() => {});
+// and keeps them until your activity moves. Saved stats show at once and give way to a recount if it moved.
 let countedStats = $state<Promise<UserStats> | null>(null);
 $effect(() => {
   const counts = data.countedStats;
@@ -101,6 +127,9 @@ $effect(() => {
         user: username,
         counts,
         read: () => fetchComputedStats({ fetch, token: null, id: 'me', isSelf: true, counts: Promise.resolve(counts) }),
+        onUpdate: (stats) => {
+          if (data.countedStats === counts) countedStats = Promise.resolve(stats);
+        },
       })
     : null;
 });
@@ -148,32 +177,32 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
     {/await}
   {/if}
 </DashboardGreeting>
-  {#if data.recaps}<RecapRibbon recaps={data.recaps} split={loadRecapSplit} />{/if}
+  {#if panels.recaps}<RecapRibbon recaps={panels.recaps} split={loadRecapSplit} />{/if}
 {/if}
 <DashboardInbox requests={data.requests} />
 <!-- A panel the viewer hid comes back null. -->
-{#if upNext}
-  <UpNextPanel {upNext} {username} settings={data.dashboard.upNext} {welcome} />
+{#if panels.upNext}
+  <UpNextPanel upNext={panels.upNext} {username} settings={data.dashboard.upNext} {welcome} />
 {/if}
-{#if data.schedule}
-  <SchedulePanel schedule={data.schedule} filter={data.dashboard.schedule.filter}
+{#if panels.schedule}
+  <SchedulePanel schedule={panels.schedule} filter={data.dashboard.schedule.filter}
   movies={data.dashboard.schedule.movies}
   onpick={loadSchedule} />
 {/if}
-{#if data.watchlist}
-  <WatchlistPanel watchlist={data.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
+{#if panels.watchlist}
+  <WatchlistPanel watchlist={panels.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
 {/if}
-{#if data.lastThirtyDays}
-  <LastThirtyDaysPanel stats={data.lastThirtyDays} />
+{#if panels.lastThirtyDays}
+  <LastThirtyDaysPanel stats={panels.lastThirtyDays} />
 {/if}
-{#if recentlyWatched}
-  <RecentlyWatchedPanel plays={recentlyWatched} {username} datePreferences={data.datePreferences}
+{#if panels.recentlyWatched}
+  <RecentlyWatchedPanel plays={panels.recentlyWatched} {username} datePreferences={data.datePreferences}
   {welcome} />
 {/if}
-{#if data.socialFeed}
-  <SocialFeedPanel feed={data.socialFeed} {username} datePreferences={data.datePreferences} {welcome} />
+{#if panels.socialFeed}
+  <SocialFeedPanel feed={panels.socialFeed} {username} datePreferences={data.datePreferences} {welcome} />
 {/if}
-{#if data.recommendations}
-  <RecommendationsPanel recommendations={data.recommendations} type={data.dashboard.recommendations.type}
+{#if panels.recommendations}
+  <RecommendationsPanel recommendations={panels.recommendations} type={data.dashboard.recommendations.type}
   onpick={loadRecommendations} />
 {/if}

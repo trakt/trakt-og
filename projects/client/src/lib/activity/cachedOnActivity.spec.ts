@@ -103,4 +103,52 @@ describe('cachedOnActivity', () => {
     await expect(run({ storage: broken })).resolves.toBe('value');
     expect(() => broken.forget()).not.toThrow();
   });
+
+  describe('with onUpdate', () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+    it('should show the saved read without waiting on last_activities', async () => {
+      await run();
+      const onUpdate = vi.fn();
+      const never = () => new Promise<null>(() => {});
+
+      await expect(run({ activities: never, onUpdate })).resolves.toBe('value');
+      expect(read).toHaveBeenCalledTimes(1);
+    });
+
+    it('should hand over a fresh read when the key moved', async () => {
+      await run();
+      read.mockResolvedValue('fresh');
+      activities = watchedAt('2026-11-17T11:00:00.000Z');
+      const onUpdate = vi.fn();
+
+      await expect(run({ onUpdate })).resolves.toBe('value');
+      await settle();
+
+      expect(onUpdate).toHaveBeenCalledWith('fresh');
+      await expect(run()).resolves.toBe('fresh');
+    });
+
+    it('should stay quiet while the key holds', async () => {
+      await run();
+      const onUpdate = vi.fn();
+
+      await run({ onUpdate });
+      await settle();
+
+      expect(onUpdate).not.toHaveBeenCalled();
+      expect(read).toHaveBeenCalledTimes(1);
+    });
+
+    it('should wait for the read when nothing usable is saved', async () => {
+      await run();
+      time += 60_000;
+      read.mockResolvedValue('fresh');
+      const onUpdate = vi.fn();
+
+      await expect(run({ onUpdate })).resolves.toBe('fresh');
+      await settle();
+      expect(onUpdate).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -7,7 +7,8 @@ import { toLastThirtyDays } from './toLastThirtyDays.ts';
 
 type FetchLastThirtyDaysParams = {
   fetch: typeof globalThis.fetch;
-  token: string;
+  /** Null from the browser, whose `viewerFetch` signs the request itself. */
+  token: string | null;
   /** The viewer's slug, for the history links. */
   slug: string;
   timeZone: string;

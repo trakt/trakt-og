@@ -10,15 +10,6 @@ import { dashboardPrefs } from './dashboardPrefs.ts';
 import { apiUserStats } from '../stats/apiUserStats.ts';
 import { fetchStatsCounts } from '../stats/fetchStatsCounts.ts';
 import { dashboardProfileSchema } from './dashboardProfileSchema.ts';
-import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
-import { fetchRecapRibbon } from './fetchRecapRibbon.ts';
-import { fetchRecentlyWatched } from './fetchRecentlyWatched.ts';
-import { fetchRecommendations } from './fetchRecommendations.ts';
-import { fetchSchedule } from './fetchSchedule.ts';
-import { isStandardApi } from '../api/isStandardApi.ts';
-import { fetchSocialFeed } from './fetchSocialFeed.ts';
-import { fetchUpNext } from './fetchUpNext.ts';
-import { fetchWatchlist } from './fetchWatchlist.ts';
 import { followRequestsSchema } from './followRequestsSchema.ts';
 import { toDashboardSettings } from './toDashboardSettings.ts';
 import { toFollowRequest } from './toFollowRequest.ts';
@@ -26,7 +17,7 @@ import { fetchFirstNight, isNewAccount } from '../firstNight/firstNight.ts';
 
 type Params = {
   fetch: typeof fetch;
-  /** Streamed panels use a fetch without SvelteKit's completed-load dependency tracker. */
+  /** The welcome wall streams, so it uses a fetch without SvelteKit's completed-load dependency tracker. */
   panelFetch?: typeof fetch;
   locals: { token: string | null };
   cookies: { get: (name: string) => string | undefined };
@@ -34,12 +25,10 @@ type Params = {
   now?: Date;
 };
 
-// A hidden panel isn't fetched at all, and the page leaves it out.
-const unless = <T>(hidden: boolean, load: () => Promise<T>) => (hidden ? null : load());
-
 /**
- * The dashboard frame loads alongside layout settings; the panels stream and fail independently, in the viewer's
- * dashboard settings: `/users/settings` and the per-browser `og-dashboard` cookie.
+ * The dashboard frame loads alongside layout settings: the profile, stats, what you're watching and follow requests.
+ * It returns each panel's settings and whether it's hidden, in the viewer's dashboard settings (`/users/settings` and
+ * the per-browser `og-dashboard` cookie), but no panel data: the browser reads each visible panel itself.
  */
 export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies, parent, now = new Date() }: Params) {
   const { token } = locals;
@@ -64,7 +53,6 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
   const user = toProfileUser(parsedProfile.data);
   const prefs = dashboardPrefs.read(cookies.get(dashboardPrefs.COOKIE), user.slug);
   const dashboard = toDashboardSettings({ settings: layout.settings, prefs });
-  const { hidden } = dashboard;
   const known = apiUserStats(stats);
   // Without the API's stats only the counts are read here, quick reads the welcome wall waits on. The browser counts
   // the rest from your whole watched lists, so the Worker never pages through them.
@@ -73,9 +61,6 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     ? known.movies.watched + known.shows.watched
     : counts && counts.watched.movies + counts.watched.shows;
   const welcome = watched !== null && isNewAccount(watched) && !prefs.hide_first_night;
-  const panelClient = api({ fetch: panelFetch, token });
-  // The Social Feed skips its request at zero: the stats strip's read has the count.
-  const following = Promise.resolve(known?.network?.following ?? null);
   return {
     profile: user,
     memberSince: formatDate(parsedProfile.data.joined_at, { ...layout.datePreferences, time: true }),
@@ -92,50 +77,5 @@ export async function loadDashboard({ fetch, panelFetch = fetch, locals, cookies
     dashboard,
     // A new member's welcome wall stands in for the greeting and the recaps until they close it.
     firstNight: welcome ? fetchFirstNight({ fetch: panelFetch, now }) : null,
-    recaps: welcome
-      ? null
-      : fetchRecapRibbon({ client: panelClient, slug: user.slug, timeZone: layout.datePreferences.timeZone, now }),
-    upNext: unless(hidden.upNext, () =>
-      fetchUpNext({ api: panelClient, username: user.slug, settings: dashboard.upNext, fetch: panelFetch }),
-    ),
-    schedule: unless(hidden.schedule, () =>
-      fetchSchedule({
-        fetch: panelFetch,
-        token,
-        settings: layout.settings,
-        datePreferences: layout.datePreferences,
-        schedule: dashboard.schedule,
-        now,
-      }),
-    ),
-    watchlist: unless(hidden.watchlist, () =>
-      fetchWatchlist({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
-    ),
-    lastThirtyDays: unless(hidden.lastThirtyDays, () =>
-      fetchLastThirtyDays({
-        fetch: panelFetch,
-        token,
-        slug: user.slug,
-        timeZone: layout.datePreferences.timeZone,
-        weekStartDay: layout.datePreferences.weekStartDay,
-        now,
-      }),
-    ),
-    recentlyWatched: unless(hidden.recentlyWatched, () =>
-      fetchRecentlyWatched({ fetch: panelFetch, token, datePreferences: layout.datePreferences }),
-    ),
-    // Its feed is Official-only, so a Standard app never shows the panel.
-    socialFeed: unless(hidden.socialFeed || isStandardApi(), () =>
-      fetchSocialFeed({
-        fetch: panelFetch,
-        token,
-        following,
-        now,
-        datePreferences: layout.datePreferences,
-      }),
-    ),
-    recommendations: unless(hidden.recommendations, () =>
-      fetchRecommendations({ fetch: panelFetch, token, settings: dashboard.recommendations, now }),
-    ),
   };
 }

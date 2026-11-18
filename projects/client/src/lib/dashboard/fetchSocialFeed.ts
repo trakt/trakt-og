@@ -10,7 +10,7 @@ import { uniqueBy } from '../utils/uniqueBy.ts';
 
 type FetchSocialFeedParams = {
   fetch: typeof globalThis.fetch;
-  token: string;
+  token: string | null;
   /** How many members the viewer follows, from the dashboard's stats. Null when that didn't load. */
   following: Promise<number | null>;
   now: Date;

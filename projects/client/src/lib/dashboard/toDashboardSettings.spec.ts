@@ -18,7 +18,7 @@ describe('toDashboardSettings', () => {
         poster: 'show',
       },
       schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show' },
-      recommendations: { type: 'media' },
+      recommendations: { type: 'media', release: 'out_now' },
       hidden: {
         upNext: false,
         schedule: false,
@@ -52,7 +52,7 @@ describe('toDashboardSettings', () => {
       refresh: true,
       poster: 'show',
     });
-    expect(recommendations).toEqual({ type: 'media' });
+    expect(recommendations).toEqual({ type: 'media', release: 'out_now' });
   });
 
   it("should read the form's activity default and an unknown sort as Activity Date", () => {
@@ -89,6 +89,12 @@ describe('toDashboardSettings', () => {
     const prefs = { ...dashboardPrefs.defaults, recommendations_type: 'movie' } as const;
 
     expect(toDashboardSettings({ settings: null, prefs }).recommendations.type).toBe('movie');
+  });
+
+  it("should take the recommendations' release from the prefs", () => {
+    const prefs = { ...dashboardPrefs.defaults, recommendations_release: 'coming_soon' } as const;
+
+    expect(toDashboardSettings({ settings: null, prefs }).recommendations.release).toBe('coming_soon');
   });
 
   it('should hide every section for VIPs', () => {

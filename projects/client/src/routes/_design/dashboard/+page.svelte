@@ -183,21 +183,30 @@ const socialRowsFor = (period: Exclude<SocialPeriod, 'today'>) =>
   { label: 'Failed', feed: socialFailed, live: 0 },
   ]);
 
-const recsFor = (type: DashboardSettings['recommendations']['type']) =>
-  Promise.resolve<DashboardRecommendations>({
+const noReasons = { titles: [], likes: [], people: [] };
+const recsFor = ({ type, release }: DashboardSettings['recommendations']) => {
+  const items = type === 'media' ? recommendationsFixture : recommendationsFixture.filter((item) => item.type === type);
+  return Promise.resolve<DashboardRecommendations>({
     type,
-    items: type === 'media' ? recommendationsFixture : recommendationsFixture.filter((item) => item.type === type),
+    release,
+    items: release === 'coming_soon' ? items.map((item) => ({ ...item, why: noReasons })) : items,
   });
-  const recsOne = Promise.resolve<DashboardRecommendations>({ type: 'show', items: recommendationsFixture.slice(0, 1) });
-  const recsEmpty = Promise.resolve<DashboardRecommendations>({ type: 'movie', items: [] });
+};
+  const recsOne = Promise.resolve<DashboardRecommendations>({
+    type: 'show',
+    release: 'out_now',
+    items: recommendationsFixture.slice(0, 1),
+  });
+  const recsEmpty = Promise.resolve<DashboardRecommendations>({ type: 'movie', release: 'out_now', items: [] });
   const recsLoading = new Promise<DashboardRecommendations>(() => {});
   const recsFailed = browser ? Promise.reject(new Error('demo')) : recsLoading;
   const recommendations = [
-  { label: 'Shows and movies', recs: recsFor('media'), type: 'media' },
-    { label: 'One title', recs: recsOne, type: 'show' },
-  { label: 'Nothing to recommend', recs: recsEmpty, type: 'movie' },
-    { label: 'Loading', recs: recsLoading, type: 'media' },
-  { label: 'Failed', recs: recsFailed, type: 'media' },
+    { label: 'Shows and movies', recs: recsFor({ type: 'media', release: 'out_now' }), type: 'media', release: 'out_now' },
+    { label: 'Coming Soon', recs: recsFor({ type: 'media', release: 'coming_soon' }), type: 'media', release: 'coming_soon' },
+    { label: 'One title', recs: recsOne, type: 'show', release: 'out_now' },
+    { label: 'Nothing to recommend', recs: recsEmpty, type: 'movie', release: 'out_now' },
+    { label: 'Loading', recs: recsLoading, type: 'media', release: 'out_now' },
+    { label: 'Failed', recs: recsFailed, type: 'media', release: 'out_now' },
   ] as const;
 
   // Smart picks come without reasons, so Why this? loads them on its first open.
@@ -382,13 +391,14 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
   </div>
 </Specimen>
 
-<Specimen title="Recommendations" bleed note="The Type dropdown switches between shows, movies or both.">
+<Specimen title="Recommendations" bleed note="The Type dropdown switches between shows, movies or both, and Release between what's out now and what's coming soon. Coming Soon picks come without a Why this?.">
   <div class="states">
-    {#each recommendations as { label, recs, type } (label)}
+    {#each recommendations as { label, recs, type, release } (label)}
       <Variant label={label}>
         <RecommendationsPanel
           recommendations={recs}
           type={type}
+          release={release}
           onpick={recsFor}
         />
       </Variant>

@@ -8,7 +8,7 @@ const BASE = 'https://apiz.trakt.tv';
 const now = new Date('2026-10-14T12:00:00Z');
 const seen: Request[] = [];
 const server = setupServer();
-const settings: DashboardSettings['recommendations'] = { type: 'media' };
+const settings: DashboardSettings['recommendations'] = { type: 'media', release: 'out_now' };
 
 const media = (id: number, title: string, released: string) => ({
   title,
@@ -173,9 +173,45 @@ describe('fetchRecommendations', () => {
 
   it('should come back without items when the request fails or the body is unreadable', async () => {
     server.use(http.get(`${BASE}/shows/recommendations`, () => new HttpResponse(null, { status: 500 })));
-    expect(await load({ type: 'show' })).toEqual({ type: 'show', items: null });
+    expect(await load({ type: 'show' })).toEqual({ type: 'show', release: 'out_now', items: null });
 
     server.use(respond('/shows/recommendations', { nope: true }));
-    expect(await load({ type: 'show' })).toEqual({ type: 'show', items: null });
+    expect(await load({ type: 'show' })).toEqual({ type: 'show', release: 'out_now', items: null });
+  });
+
+  it('should load Coming Soon from the anticipated route, without the ignores', async () => {
+    server.use(respond('/movies/recommendations/anticipated', [{ ...rows[1], sources: [] }]));
+
+    const recs = await load({ type: 'movie', release: 'coming_soon' });
+    const url = new URL(seen.at(0)?.url ?? '');
+
+    expect(url.pathname).toBe('/movies/recommendations/anticipated');
+    expect([...url.searchParams.keys()].sort()).toEqual(['extended', 'limit']);
+    expect(url.searchParams.get('extended')).toBe('full,colors');
+    expect(url.searchParams.get('limit')).toBe('50');
+    expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
+    expect(recs).toMatchObject({ type: 'movie', release: 'coming_soon', items: [{ title: 'Soon' }] });
+    expect(recs.items?.at(0)?.why).toEqual({ titles: [], likes: [], people: [] });
+  });
+
+  it('should load every type of Coming Soon from its own anticipated route', async () => {
+    server.use(respond('/media/recommendations/anticipated', []), respond('/shows/recommendations/anticipated', []));
+
+    await load({ type: 'media', release: 'coming_soon' });
+    await load({ type: 'show', release: 'coming_soon' });
+
+    expect(seen.map((request) => new URL(request.url).pathname)).toEqual([
+      '/media/recommendations/anticipated',
+      '/shows/recommendations/anticipated',
+    ]);
+  });
+
+  it('should leave Coming Soon empty instead of dealing trending titles', async () => {
+    server.use(respond('/media/recommendations/anticipated', []));
+
+    const recs = await load({ release: 'coming_soon' });
+
+    expect(recs).toEqual({ type: 'media', release: 'coming_soon', items: [] });
+    expect(seen).toHaveLength(1);
   });
 });

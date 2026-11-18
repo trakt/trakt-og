@@ -140,15 +140,18 @@ const loadRecapSplit = (span: RecapSpan) => fetchRecapSplit({ client: api({ fetc
 
 const { track: trackDiscoverMode } = useTrack(AnalyticsEvent.DiscoverMode);
 
-// The recommendations' Type dropdown works the same way.
-function loadRecommendations(type: DashboardSettings['recommendations']['type']) {
-  trackDiscoverMode({ mode: type, source: page.route.id ?? 'unknown' });
-  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), recommendations_type: type });
-  return fetchRecommendations({
-    fetch: viewerFetch(),
-    token: null,
-    settings: { ...data.dashboard.recommendations, type },
+// The recommendations' Type and Release dropdowns work the same way.
+function loadRecommendations(picks: DashboardSettings['recommendations']) {
+  const saved = dashboardPrefs.load(username);
+  if (picks.type !== saved.recommendations_type) {
+    trackDiscoverMode({ mode: picks.type, source: page.route.id ?? 'unknown' });
+  }
+  dashboardPrefs.save(username, {
+    ...saved,
+    recommendations_type: picks.type,
+    recommendations_release: picks.release,
   });
+  return fetchRecommendations({ fetch: viewerFetch(), token: null, settings: picks });
 }
 </script>
 
@@ -204,5 +207,6 @@ function loadRecommendations(type: DashboardSettings['recommendations']['type'])
 {/if}
 {#if panels.recommendations}
   <RecommendationsPanel recommendations={panels.recommendations} type={data.dashboard.recommendations.type}
+  release={data.dashboard.recommendations.release}
   onpick={loadRecommendations} />
 {/if}

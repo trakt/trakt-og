@@ -2,6 +2,7 @@ import { api } from '../api/api.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import type { Recommendation } from './Recommendation.ts';
+import { recommendationsPath } from './recommendationRelease.ts';
 import { recommendationsSchema } from './recommendationsSchema.ts';
 import { toRecommendation } from './toRecommendation.ts';
 
@@ -9,13 +10,14 @@ type FetchRecommendationsParams = {
   fetch: typeof globalThis.fetch;
   /** Null in the browser, where `authenticatedFetch` sends it. */
   token: string | null;
-  /** The Type pick. */
+  /** The Type and Release picks. */
   settings: DashboardSettings['recommendations'];
   now?: Date;
 };
 
 export type DashboardRecommendations = {
   readonly type: DashboardSettings['recommendations']['type'];
+  readonly release: DashboardSettings['recommendations']['release'];
   /** Null when the request failed. */
   readonly items: readonly Recommendation[] | null;
   /** No recommendations yet, so these are trending titles. */
@@ -25,11 +27,7 @@ export type DashboardRecommendations = {
 /** Enough to still fill the band once anything already watched is filtered out in the browser. */
 const LIMIT = 50;
 
-const PATHS = {
-  media: '/media/recommendations',
-  show: '/shows/recommendations',
-  movie: '/movies/recommendations',
-} as const;
+const SEGMENTS = { media: 'media', show: 'shows', movie: 'movies' } as const;
 
 /**
  * Without what's fully watched, started, already on the watchlist or in the library. The recommendations pages send
@@ -43,9 +41,13 @@ export const recommendationIgnores = {
 } as const;
 
 const QUERY = new URLSearchParams({ extended: 'full,colors', limit: String(LIMIT), ...recommendationIgnores });
+// Coming Soon already leaves out the watchlist, and takes no other filter.
+const COMING_SOON_QUERY = new URLSearchParams({ extended: 'full,colors', limit: String(LIMIT) });
 
 async function load({ fetch, token, settings, now = new Date() }: FetchRecommendationsParams) {
-  const response = await rawApiFetch({ fetch, token, path: `${PATHS[settings.type]}?${QUERY}` });
+  const query = settings.release === 'coming_soon' ? COMING_SOON_QUERY : QUERY;
+  const path = `${recommendationsPath(SEGMENTS[settings.type], settings.release)}?${query}`;
+  const response = await rawApiFetch({ fetch, token, path });
   if (!response.ok) return null;
 
   const parsed = recommendationsSchema.safeParse(await response.json());
@@ -79,13 +81,15 @@ async function loadTrending({ fetch, settings, now = new Date() }: FetchRecommen
 /**
  * The viewer's recommendations, as v3 loads them: shows and movies together from `/media/recommendations`, or one
  * type from its own route, each with the sources that led to it. They're calculated daily and leave out what the
- * viewer has watched or started, what's on their watchlist and what's in their library.
+ * viewer has watched or started, what's on their watchlist and what's in their library. Coming Soon asks the
+ * `/anticipated` route for the same types instead, and never falls back to trending.
  */
 export async function fetchRecommendations(params: FetchRecommendationsParams): Promise<DashboardRecommendations> {
+  const { type, release } = params.settings;
   const items = await load(params).catch(() => null);
-  if (items?.length === 0) {
+  if (items?.length === 0 && release === 'out_now') {
     const trending = await loadTrending(params).catch(() => []);
-    if (trending.length > 0) return { type: params.settings.type, items: trending, fallback: true };
+    if (trending.length > 0) return { type, release, items: trending, fallback: true };
   }
-  return { type: params.settings.type, items };
+  return { type, release, items };
 }

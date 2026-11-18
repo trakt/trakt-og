@@ -1,6 +1,7 @@
 import type { User, UserManager } from 'oidc-client-ts';
 import { lastActivities } from '../activity/lastActivities.ts';
 import { activityCacheStorage } from '../activity/activityCacheStorage.ts';
+import { recentReads } from '../api/recentReads.ts';
 import { overlay } from './overlay.ts';
 
 /**
@@ -11,8 +12,11 @@ export function startOverlay(manager: UserManager): () => void {
   let followed: string | undefined;
   const follow = (user: User | null) => {
     const sub = user?.profile.sub;
-    // Another user's activity never answers for this one.
-    if (sub !== followed) lastActivities.forget();
+    // Another user's activity and reads never answer for this one.
+    if (sub !== followed) {
+      lastActivities.forget();
+      recentReads.forget();
+    }
     followed = sub;
     return (sub ? overlay.start(sub) : overlay.stop()).catch(() => {});
   };

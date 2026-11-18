@@ -8,7 +8,6 @@ import { loadProfile } from './loadProfile.ts';
 
 const profile = toProfileUser({ username: 'tester', name: 'Tester', private: false, ids: { slug: 'tester' } });
 const datePreferences = { order: 'mdy', hour24: false, timeZone: 'UTC', weekStartDay: 0 } as const;
-const now = new Date('2026-09-29T15:00:00Z');
 const seen: Request[] = [];
 
 const full = (minutes: number, collected = 0) => ({
@@ -40,12 +39,6 @@ const movie = (id: number, runtime: number) => ({
 const server = setupServer(
   http.get(/^https:\/\/apiz\.trakt\.tv\/users\/tester\//, ({ request }) => {
     seen.push(request);
-    const url = new URL(request.url);
-    // Three pages of 30-day movie history, one movie each.
-    if (url.pathname.endsWith('/history/movies') && url.searchParams.has('start_at')) {
-      const page = Number(url.searchParams.get('page'));
-      return HttpResponse.json([movie(page, 100)], { headers: { 'X-Pagination-Page-Count': '3' } });
-    }
     return HttpResponse.json([], { headers: { 'X-Pagination-Item-Count': '0' } });
   }),
 );
@@ -65,11 +58,6 @@ const genre = {
   shows: { play_count: 0, ids: [] },
   episodes: { play_count: 0, ids: [] },
 };
-const watchedMovie = (id: number, plays: number) => ({
-  plays,
-  last_watched_at: '2026-01-01T00:00:00.000Z',
-  movie: { title: `Movie ${id}`, ids: { trakt: id, slug: `movie-${id}` }, runtime: 100 },
-});
 
 type Options = {
   stats?: UserStats | null;
@@ -79,12 +67,11 @@ type Options = {
   settings?: ViewerSettings | null;
 };
 
-const loadPage = (options: Options = {}) =>
+const load = (options: Options = {}) =>
   loadProfile({
     fetch: (...args) => globalThis.fetch(...args),
     locals: { token: 'viewer-token' },
     params: { id: 'tester' },
-    now,
     parent: () =>
       Promise.resolve({
         profile: { ...profile, isPrivate: options.isPrivate ?? false, isLocked: options.isLocked ?? false },
@@ -95,42 +82,38 @@ const loadPage = (options: Options = {}) =>
       }),
   });
 
-/** The page with its streamed sections landed. */
-const load = async (options: Options = {}) => {
-  const data = await loadPage(options);
-  return { ...data, boxes: await data.boxes, mostWatched: await data.mostWatched };
-};
-
 describe('loadProfile', () => {
-  it('should read public sections without the token and sum every page of the last 30 days', async () => {
+  it('should read public sections without the token', async () => {
     const data = await load();
 
+    expect(seen.length).toBeGreaterThan(0);
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
-    const windowed = seen.filter((request) => new URL(request.url).searchParams.has('start_at'));
-    expect(new URL(windowed[0]?.url ?? '').searchParams.get('start_at')).toBe('2026-08-30T00:00:00.000Z');
-    expect(data.boxes?.map(({ key }) => key)).toEqual(['about', 'last-watched', 'watch-time', 'featured-list']);
-    expect(data.boxes?.find((box) => box.key === 'watch-time')?.view).toMatchObject({ hours: '5.0h' });
-    expect(data.boxes?.find((box) => box.key === 'featured-list')?.view).toMatchObject({
-      name: 'Watchlist',
-      href: '/users/tester/watchlist',
-      count: null,
-    });
+    expect(data.panels?.strip).toMatchObject({ latest: {}, genres: [], counts: null });
     expect(data.welcome).toBe(false);
   });
 
-  it("should read the progress for the boxes once, and only for someone who's watched an episode", async () => {
-    const progress = () => seen.filter((request) => new URL(request.url).pathname.includes('/progress/watched'));
-    await load();
-    expect(progress()).toHaveLength(1);
-    // No lists and three ratings: the Top List and Ratings boxes can't qualify, so their requests never run.
-    expect(seen.filter((request) => /\/(lists|ratings)\b/.test(new URL(request.url).pathname))).toHaveLength(0);
+  it("should leave the whole watched lists, the last 30 days and og's own stats to the browser", async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/users/tester/history/movies', () =>
+        HttpResponse.json([movie(9, 100)], { headers: { 'X-Pagination-Item-Count': '1' } }),
+      ),
+    );
+    const reads: URL[] = [];
+    server.events.on('request:start', ({ request }) => reads.push(new URL(request.url)));
+    const self = await load({ isSelf: true });
+    const counting = await load({ stats: null });
+    server.events.removeAllListeners('request:start');
 
-    seen.length = 0;
-    const moviesOnly = await load({
-      stats: { ...stats(0), episodes: { ...full(0), plays: 0 }, movies: full(100) } as UserStats,
-    });
-    expect(moviesOnly.boxes).toHaveLength(4);
-    expect(progress()).toHaveLength(0);
+    expect(self.panels?.strip).not.toBeNull();
+    expect(counting.panels?.strip).toMatchObject({ counts: { watched: { movies: 0 } } });
+    const wholeLists = reads.filter(
+      ({ pathname, searchParams }) => /\/watched\/(movies|shows)$/.test(pathname) && searchParams.get('limit') !== '1',
+    );
+    expect(wholeLists).toEqual([]);
+    expect(
+      reads.filter(({ searchParams }) => searchParams.has('start_at') && searchParams.get('limit') !== '1'),
+    ).toEqual([]);
+    expect(reads.filter(({ pathname }) => /\/(progress|hidden)\//.test(pathname))).toEqual([]);
   });
 
   it("should show the ghost profile only on someone else's profile with nothing on it", async () => {
@@ -144,8 +127,8 @@ describe('loadProfile', () => {
   });
 
   it('should show the welcome hero instead of the boxes on your own empty profile', async () => {
-    expect(await load({ stats: stats(0), isSelf: true })).toMatchObject({ boxes: null, welcome: true });
-    expect(await load({ stats: stats(0) })).toMatchObject({ boxes: null, welcome: false });
+    expect(await load({ stats: stats(0), isSelf: true })).toMatchObject({ panels: { strip: null }, welcome: true });
+    expect(await load({ stats: stats(0) })).toMatchObject({ panels: { strip: null }, welcome: false });
   });
 
   it('should read a private profile the viewer can see with the token, each section once', async () => {
@@ -153,16 +136,13 @@ describe('loadProfile', () => {
       http.get('https://apiz.trakt.tv/users/tester/history/movies', ({ request }) => {
         seen.push(request);
         if (!request.headers.has('authorization')) return new HttpResponse(null, { status: 401 });
-        return HttpResponse.json(new URL(request.url).searchParams.has('start_at') ? [] : [movie(9, 100)]);
+        return HttpResponse.json([movie(9, 100)]);
       }),
     );
     const data = await load({ isPrivate: true });
 
     expect(data.movies.map(({ id }) => id)).toEqual([9]);
-    const latest = seen.filter((request) => {
-      const url = new URL(request.url);
-      return url.pathname === '/users/tester/history/movies' && !url.searchParams.has('start_at');
-    });
+    const latest = seen.filter((request) => new URL(request.url).pathname === '/users/tester/history/movies');
     expect(latest.flatMap((request) => request.headers.get('authorization') ?? [])).toEqual(['Bearer viewer-token']);
   });
 
@@ -179,46 +159,6 @@ describe('loadProfile', () => {
 
     server.use(http.get('https://apiz.trakt.tv/users/tester/watched/genres', () => HttpResponse.json([{ bad: 1 }])));
     expect((await load()).charts).toBeNull();
-  });
-
-  it('should build the top three shows posters from their ids, without a summary each', async () => {
-    server.use(
-      http.get('https://apiz.trakt.tv/users/tester/watched/shows', () =>
-        HttpResponse.json(
-          [1, 2, 3, 4, 5].map((id) => ({
-            plays: id,
-            last_watched_at: '2026-01-01T00:00:00.000Z',
-            show: { title: `Show ${id}`, ids: { trakt: id, slug: `show-${id}` }, runtime: 30 },
-          })),
-        ),
-      ),
-    );
-    const data = await load();
-
-    expect(data.mostWatched?.shows.allTime.map(({ id, image }) => ({ id, image }))).toEqual([
-      { id: 5, image: 'https://media.trakt.tv/shows/5/thumb/poster.webp' },
-      { id: 4, image: 'https://media.trakt.tv/shows/4/thumb/poster.webp' },
-      { id: 3, image: 'https://media.trakt.tv/shows/3/thumb/poster.webp' },
-    ]);
-  });
-
-  it('should rank all time over every page of the watched list', async () => {
-    server.use(
-      http.get('https://apiz.trakt.tv/users/tester/watched/movies', ({ request }) => {
-        seen.push(request);
-        const page = Number(new URL(request.url).searchParams.get('page'));
-        return HttpResponse.json([watchedMovie(page, page)], { headers: { 'X-Pagination-Page-Count': '12' } });
-      }),
-    );
-    const data = await load();
-
-    // Capped at eight pages.
-    const pages = seen.filter((request) => new URL(request.url).pathname.endsWith('/watched/movies'));
-    expect(pages).toHaveLength(8);
-    expect(new URL(pages[0]?.url ?? '').searchParams.get('extended')).toBe('full');
-    expect(data.mostWatched?.movies.allTime.map(({ id }) => id)).toEqual([8, 7, 6]);
-    expect(data.mostWatched?.movies.lastMonth.map(({ id }) => id)).toEqual([1, 2, 3]);
-    expect(data.mostWatched?.windowStart).toBe('2026-08-30T00:00:00.000Z');
   });
 
   describe("the owner's saved settings", () => {
@@ -266,10 +206,12 @@ describe('loadProfile', () => {
       expect(recent.at(-1)?.headers.get('authorization')).toBe('Bearer viewer-token');
     });
 
-    it('should apply your most watched sorts and default tabs', async () => {
+    it('should hand the browser your most watched sorts and default tabs', async () => {
       const data = await load({ isSelf: true, settings });
-      expect(data.mostWatched?.shows).toMatchObject({ sortBy: 'time', tab: 'allTime' });
-      expect(data.mostWatched?.movies).toMatchObject({ sortBy: 'plays', tab: 'lastMonth' });
+      expect(data.panels?.prefs).toMatchObject({
+        most_watched_shows: { sort_by: 'time', tab: 'all_time' },
+        most_watched_movies: { sort_by: 'plays', tab: 'last_30_days' },
+      });
     });
 
     it("should give another viewer OG's defaults, whatever the viewer saved", async () => {
@@ -278,8 +220,7 @@ describe('loadProfile', () => {
       expect(favoriteReads().map((request) => new URL(request.url).pathname)).toEqual([
         '/users/tester/favorites/movie,show/random/asc',
       ]);
-      expect(data.mostWatched?.shows).toMatchObject({ sortBy: 'plays', tab: 'lastMonth' });
-      expect(data.mostWatched?.movies).toMatchObject({ sortBy: 'time', tab: 'lastMonth' });
+      expect(data.panels?.prefs).toBeNull();
     });
 
     it("should read your private profile's favorites once, in your saved order, with your token", async () => {
@@ -299,43 +240,8 @@ describe('loadProfile', () => {
     });
   });
 
-  describe('streaming', () => {
-    const watchedMovies = 'https://apiz.trakt.tv/users/tester/watched/movies';
-
-    it('should return the page before the watched lists land, then stream the boxes and most watched', async () => {
-      const { promise: released, resolve: release } = Promise.withResolvers<void>();
-      server.use(
-        http.get(watchedMovies, async () => {
-          await released;
-          return HttpResponse.json([watchedMovie(1, 2)]);
-        }),
-      );
-      const data = await loadPage();
-      const landed = { boxes: false, mostWatched: false };
-      void data.boxes?.then(() => (landed.boxes = true));
-      void data.mostWatched?.then(() => (landed.mostWatched = true));
-      await new Promise((resolve) => setTimeout(resolve, 20));
-
-      expect(data.comments).toEqual([]);
-      expect(landed).toEqual({ boxes: false, mostWatched: false });
-
-      release();
-      expect((await data.mostWatched)?.movies.allTime.map(({ id }) => id)).toEqual([1]);
-      expect(await data.boxes).toHaveLength(4);
-    });
-
-    it('should fail only the streamed sections when the watched lists fail', async () => {
-      server.use(http.get(watchedMovies, () => HttpResponse.error()));
-      const data = await loadPage();
-
-      expect(data.welcome).toBe(false);
-      await expect(data.boxes).rejects.toThrow();
-      await expect(data.mostWatched).rejects.toThrow();
-    });
-  });
-
-  it('should leave the charts and most watched out of a locked profile and never send the token', async () => {
-    expect(await load({ isPrivate: true, isLocked: true })).toMatchObject({ charts: null, mostWatched: null });
+  it('should leave the charts and the browser panels out of a locked profile and never send the token', async () => {
+    expect(await load({ isPrivate: true, isLocked: true })).toMatchObject({ charts: null, panels: null });
     expect(seen.every((request) => !request.headers.has('authorization'))).toBe(true);
   });
 
@@ -346,25 +252,23 @@ describe('loadProfile', () => {
         return HttpResponse.json(rows, { headers: { 'X-Pagination-Item-Count': String(count) } });
       });
 
-    it('should count them itself for the boxes and the ratings chart', async () => {
+    it('should read the counts for the ratings chart and hand them to the browser', async () => {
       server.use(
         http.get('https://apiz.trakt.tv/users/tester/watched/genres', () => HttpResponse.json([genre])),
         counted('history/movies', 1, [movie(9, 100)]),
-        counted('watched/movies', 1, [watchedMovie(9, 2)]),
+        counted('watched/movies', 1),
         counted('ratings/all/8', 3),
       );
       const data = await load({ stats: null });
 
-      expect(data.boxes?.find((box) => box.key === 'watch-time')?.view).toMatchObject({
-        allTime: { episodes: '0 eps', movies: '1 movie' },
-      });
+      expect(data.panels?.strip).toMatchObject({ counts: { watched: { movies: 1 }, ratings: { movies: 0 } } });
       expect(data.charts?.ratings).toMatchObject({ count: '3', average: '8.00' });
       expect(data.welcome).toBe(false);
     });
 
     it("should show your own empty profile's welcome hero, and no boxes for anyone else's", async () => {
-      expect(await load({ stats: null, isSelf: true })).toMatchObject({ boxes: null, welcome: true });
-      expect(await load({ stats: null })).toMatchObject({ boxes: null, welcome: false });
+      expect(await load({ stats: null, isSelf: true })).toMatchObject({ panels: { strip: null }, welcome: true });
+      expect(await load({ stats: null })).toMatchObject({ panels: { strip: null }, welcome: false });
     });
 
     it('should leave the boxes out when the counts fail', async () => {
@@ -373,7 +277,7 @@ describe('loadProfile', () => {
         http.get('https://apiz.trakt.tv/users/tester/lists', () => new HttpResponse(null, { status: 503 })),
       );
 
-      expect((await load({ stats: null })).boxes).toBeNull();
+      expect((await load({ stats: null })).panels?.strip).toBeNull();
     });
   });
 });

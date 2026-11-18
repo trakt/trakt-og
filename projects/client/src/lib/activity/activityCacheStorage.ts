@@ -1,4 +1,6 @@
 const STORAGE_KEY = 'og-activity';
+// About 1 MB of UTF-16, a fifth of a typical 5 MB localStorage quota, so one large read can't crowd out the rest.
+const MAX_ENTRY_CHARS = 500_000;
 
 /** A saved read: whose it is, the activity key it was read at, and when. */
 export type ActivityCacheEntry = { user: string; key: string; at: number; value: unknown };
@@ -16,7 +18,8 @@ const localStorageOrNull = (): KeyValueStorage | null => {
 /**
  * Where reads cached on `last_activities` outlive the page: one localStorage entry holding the latest read per cache
  * name, for one user at a time. Every method swallows storage failures (private mode, blocked, full), so a failure
- * only means reading again.
+ * only means reading again. A read too large to keep isn't saved, and its older copy goes; when the whole set no longer
+ * fits, the new read is kept alone.
  */
 export function activityCacheStorage(storage: KeyValueStorage | null = localStorageOrNull()) {
   const quietly = <T>(task: () => T, fallback: T) => {
@@ -36,8 +39,18 @@ export function activityCacheStorage(storage: KeyValueStorage | null = localStor
     },
     save: (name: string, entry: ActivityCacheEntry) => {
       // Another user's entries go when this one saves, so one browser never mixes people.
-      const kept = Object.fromEntries(Object.entries(all()).filter(([, saved]) => saved.user === entry.user));
-      quietly(() => storage?.setItem(STORAGE_KEY, JSON.stringify({ ...kept, [name]: entry })), undefined);
+      const kept = Object.fromEntries(
+        Object.entries(all()).filter(([saved, { user }]) => user === entry.user && saved !== name),
+      );
+      const write = (entries: Record<string, ActivityCacheEntry>) => {
+        storage?.setItem(STORAGE_KEY, JSON.stringify(entries));
+        return true;
+      };
+      if (quietly(() => JSON.stringify(entry).length, Infinity) > MAX_ENTRY_CHARS) {
+        quietly(() => write(kept), false);
+        return;
+      }
+      if (!quietly(() => write({ ...kept, [name]: entry }), false)) quietly(() => write({ [name]: entry }), false);
     },
     /** On sign-out, so the next person on this browser can't read it. */
     forget: () => quietly(() => storage?.removeItem(STORAGE_KEY), undefined),

@@ -14,7 +14,9 @@ import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
 interface Props {
   title: string;
   /** The heading's icon, as raw SVG. */
-  icon: string;
+  icon?: string;
+  /** The pulsing live dot before the heading, in place of the icon (Watching Now). */
+  live?: boolean;
   /** Marks the panel busy for screen readers while its content shows shimmers. */
   loading?: boolean;
   seeMore?: { href: string; text: string };
@@ -29,7 +31,8 @@ interface Props {
   footer?: Snippet;
 }
 
-const { title, icon, loading = false, seeMore, drilldown, help, section, aside, children, footer }: Props = $props();
+const { title, icon, live, loading = false, seeMore, drilldown, help, section, aside, children, footer }: Props =
+  $props();
 const id = $props.id();
 </script>
 
@@ -40,7 +43,7 @@ const id = $props.id();
   {@attach seeMore && drilldown && trackSectionDrilldown(drilldown, seeMore.href)}
 >
   <Container>
-    <PanelHeading {id} {title} {icon} {seeMore} {section} {aside} />
+    <PanelHeading {id} {title} {icon} {live} {seeMore} {section} {aside} />
     {#if help}
       <PanelHelp>{@render help()}</PanelHelp>
     {/if}

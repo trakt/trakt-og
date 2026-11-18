@@ -30,10 +30,14 @@ export type SocialCard = {
   readonly members: readonly SocialMember[];
   /** What the quick icons act on. */
   readonly target: SocialTarget;
+  /** A member's titles past their share, folded into this one card: how many it stands for. */
+  readonly folded?: number;
 };
 
 export type SocialBoard = {
   readonly cards: readonly SocialCard[];
+  /** What the cards count before any fold: titles, people or activities. */
+  readonly total: number;
   /** Each member's share of the period's activity, most active first, for the band. */
   readonly bars: readonly GenreBar[];
   readonly stats: { readonly activities: number; readonly people: number; readonly titles: number };
@@ -194,6 +198,51 @@ function byTitle(activities: readonly Activity[], context: Context): SocialCard[
   });
 }
 
+/** Past this many titles, a member's others fold into one card, so one busy friend can't fill the grid. */
+const PER_MEMBER = 2;
+
+/** A member's titles past their share as one card, opening their history for the period. */
+function foldOf(cards: readonly SocialCard[], context: Context): SocialCard {
+  const [next] = cards;
+  const member = next?.members[0];
+  if (!next || !member) throw new Error('An empty fold');
+
+  const history = memberHref(member, context);
+  return {
+    key: `more:${member.key}`,
+    href: history ?? next.href,
+    title: member.name,
+    line: [{ text: countLabel(cards.length, 'more title'), href: history }],
+    poster: next.poster,
+    members: [member],
+    target: next.target,
+    folded: cards.length,
+  };
+}
+
+/**
+ * Each member's latest title in turn, the most recently active first, then each one's next, so a row shows as many
+ * people as it can. A title several members touched is its latest member's. Past `PER_MEMBER` titles, a member's
+ * others fold into one card, unless there's only one more.
+ */
+function fairShare(cards: readonly SocialCard[], context: Context): SocialCard[] {
+  const queues = new Map<string, SocialCard[]>();
+  for (const card of cards) {
+    const key = card.members[0]?.key ?? card.key;
+    const queue = queues.get(key);
+    if (queue) queue.push(card);
+    else queues.set(key, [card]);
+  }
+
+  const turns = Array.from({ length: PER_MEMBER + 1 }, (_, turn) =>
+    [...queues.values()].flatMap((queue): SocialCard[] => {
+      if (turn < PER_MEMBER || queue.length === PER_MEMBER + 1) return queue.slice(turn, turn + 1);
+      return queue.length > PER_MEMBER ? [foldOf(queue.slice(PER_MEMBER), context)] : [];
+    }),
+  );
+  return turns.flat();
+}
+
 function byPerson(activities: readonly Activity[], context: Context): SocialCard[] {
   return groupBy(activities, (activity) => memberOf(activity).key).map((group) => {
     const [latest] = group;
@@ -320,8 +369,8 @@ function barsOf(activities: readonly Activity[], context: Context): GenreBar[] {
 }
 
 /**
- * The Social Feed's grid and band for one period. Title groups everyone's rows by show or movie, person by member,
- * and time lists each row, with a member's back-to-back episodes of one show as one card. Whoever's watching now
+ * The Social Feed's grid and band for one period. Title groups everyone's rows by show or movie, each member's titles
+ * taking turns and past two folding into one card, person groups by member, and time lists each row, with a member's back-to-back episodes of one show as one card. Whoever's watching now
  * has a card of their own above the grid, so they count toward the band and the counts but not the grid. The line under each poster links where it can: the episode, the
  * member's history for the period (or for that title), their ratings, the comment.
  */
@@ -332,7 +381,8 @@ export function toSocialBoard({ items, live, view, ...context }: ToSocialBoardPa
     view === 'title' ? byTitle(done, context) : view === 'person' ? byPerson(done, context) : byTime(done, context);
 
   return {
-    cards,
+    cards: view === 'title' ? fairShare(cards, context) : cards,
+    total: cards.length,
     bars: barsOf(activities, context),
     stats: {
       activities: activities.length,

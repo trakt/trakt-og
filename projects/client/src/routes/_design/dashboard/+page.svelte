@@ -364,7 +364,8 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
   </div>
 </Specimen>
 
-<Specimen title="Social Feed" bleed note="Seven watching puts four behind the +4 tile. Page back for earlier days.">
+<Specimen title="Social Feed" bleed
+  note="Watching Now is its own panel while anyone is, with the pulsing live dot as its mark: three cards, and More adds a row. Hover a count for what it counts, and a face for their name. By title, Kristin's titles past two fold into one poster that opens her history.">
   <div class="states">
     {#each socials as { label, feed, live, welcome } (label)}
       <Variant label={label}>

@@ -39,9 +39,7 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
   import RatingLine from '#lib/components/rating/RatingLine.svelte';
   import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
-  import clockRotateLeft from '#lib/icons/regular/clock-rotate-left.svg?raw';
-  import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
-  import user from '#lib/icons/regular/user.svg?raw';
+  import posterStack from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
   import fire from '#lib/icons/solid/fire.svg?raw';
   import DashboardPanel from './DashboardPanel.svelte';
   import SocialTile from './SocialTile.svelte';
@@ -74,11 +72,11 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
   const PERIODS: Readonly<Record<SocialPeriod, string>> = { today: 'Today', yesterday: 'Yesterday', week: 'Week' };
   const VIEWS: Readonly<Record<SocialView, string>> = { title: 'Title', person: 'Person', time: 'Time' };
 const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' : 'people'}` };
-  /** The grid's heading for each view, and what its count counts. */
-  const GRIDS: Readonly<Record<SocialView, { title: string; icon: string; one: string; many: string }>> = {
-    title: { title: 'Titles', icon: tvRetro, one: 'title', many: 'titles' },
-    person: { title: 'People', icon: user, one: 'person', many: 'people' },
-  time: { title: 'Timeline', icon: clockRotateLeft, one: 'activity', many: 'activities' },
+  /** What each view's count counts. */
+  const COUNTS: Readonly<Record<SocialView, { one: string; many: string }>> = {
+    title: { one: 'title', many: 'titles' },
+    person: { one: 'person', many: 'people' },
+    time: { one: 'activity', many: 'activities' },
   };
   const PER_ROW = 6;
   const LIVE_PER_ROW = 3;
@@ -98,6 +96,10 @@ const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' 
   // The grid's width, so a smaller tablet's four columns get whole rows.
   let width = $state(0);
   const perPage = $derived(visibleColumns(width, PER_ROW) * ROWS_PER_PAGE);
+  let liveRows = $state(1);
+  let liveWidth = $state(0);
+  // Half the poster grid's columns, as the live grid's container query below sets: three, two on smaller tablets.
+  const livePerRow = $derived(Math.max(2, visibleColumns(liveWidth, PER_ROW) / 2));
   let failed = $state<SocialPeriod | null>(null);
 
   const storageKey = $derived(`social_feed_pages:${username}`);
@@ -155,8 +157,10 @@ function changePages(pages: number) {
     };
   });
 
-  /** Who's watching now, in a period that runs up to now. */
-  const playing = $derived(period === 'yesterday' ? [] : liveTiles(live, now));
+  const tiles = $derived(liveTiles(live, now));
+  const livePages = $derived(rowCount({ rows: liveRows, items: tiles.length, perRow: livePerRow, maxRows: tiles.length }));
+  /** Who's watching now, in a period that runs up to now, for the counts and the band. */
+  const playing = $derived(period === 'yesterday' ? [] : tiles);
 const boardOf = (items: readonly SocialItem[] | undefined) =>
   items &&
   toSocialBoard({
@@ -170,10 +174,12 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
 </script>
 
 <!--
-  The dashboard's Social Feed: a period (today, yesterday, the week) and a view (by title, person or time) to pick,
-  then whoever's watching now as fanart cards, three across, and a poster grid of the rest of the period with the
-  viewer's own quick icons, so each title shows where they stand and can be marked or listed from here. A Most Active
-  panel follows with a band of who did the most. Pass the unawaited `fetchSocialFeed` promise from the loader: it
+  The dashboard's Social Feed. Watching Now comes first, a panel of its own while anyone is: fanart cards, three
+  across, with the less and more pill for the rest. Then the feed: a period (today, yesterday, the week) and a view
+  (by title, person or time) to pick, and a poster grid of the period with the viewer's own quick icons, so each title
+  shows where they stand and can be marked or listed from here. By title, members take turns, and past two a
+  member's other titles fold into one poster that opens their history. A Most Active panel follows with a band of who
+  did the most. Pass the unawaited `fetchSocialFeed` promise from the loader: it
   brings today, and the browser fetches the other periods when they're picked. Until a period lands, shimmering
   cards hold its place. After it renders, the browser asks
   what the most recently active members are watching, every 2 minutes while the tab is visible.
@@ -193,16 +199,14 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   ><div class="body">{@render content()}</div></DashboardPanel>
 {/snippet}
 
+<!-- Each count is its icon and number; what it counts is the tooltip, "Titles". -->
 {#snippet stat(svg: string, count: number, one: string, many: string)}
-  <Stat
-    svg={svg}
-    value={count.toLocaleString('en-US')}
-    noun={count === 1 ? one : many}
-  />
+  {@const noun = count === 1 ? one : many}
+  <Stat {svg} value={count.toLocaleString('en-US')} {noun} label={noun.charAt(0).toUpperCase() + noun.slice(1)} bare />
 {/snippet}
 
 {#snippet face(member: SocialMember)}
-  <Tooltip text={member.name === member.key ? member.name : `${member.name} (@${member.key})`}>
+  <Tooltip text={member.name}>
     {#snippet trigger(tooltip)}
       {#if member.href}
         <a class="face" href={member.href} aria-label={member.name} {...tooltip}><img src={member.avatar} alt=""
@@ -228,8 +232,8 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   title={item.title}
   number={item.number}
   image={item.poster}
-  userRating={state.rating}
-  icons={{
+  userRating={item.folded ? undefined : state.rating}
+  icons={item.folded ? undefined : {
       fill: quickIconFill({ state, airedEpisodes: target.airedEpisodes, runtime: target.runtime, datePreferences }),
       rating: target.rating,
       ratingTarget: { type: target.type, id: target.id, title: target.title, season: target.season },
@@ -251,6 +255,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
         {/each}
         {#if item.members.length > 3}<span class="more-faces">+{item.members.length - 3}</span>{/if}
       </span>
+      {#if item.folded}<span class="fold" aria-hidden="true">+{item.folded}</span>{/if}
     {/snippet}
     {#if item.line.length > 0}
       <span class="line">
@@ -276,7 +281,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   {:else}
     {@const board = boardOf(period === 'today' ? social.items : loaded[period])}
     {@const pages = rowCount({ rows: saved, items: board?.cards.length ?? 0, perRow: perPage, maxRows: MAX_PAGES })}
-    {@const shown = GRIDS[view]}
+    {@const counted = COUNTS[view]}
     {#snippet body()}
       <div class="feed" {@attach trackDrilldowns({ source: 'social-feed' })}>
         <div class="controls">
@@ -305,16 +310,6 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
           </Dropdown>
         </div>
 
-        {#if playing.length > 0}
-          <div class="live">
-            <PosterGrid columns={LIVE_PER_ROW} phoneColumns={2}>
-              {#each playing as tile (tile.watch.member.key)}
-                <SocialTile tile={tile} />
-              {/each}
-            </PosterGrid>
-          </div>
-        {/if}
-
         {#if failed === period}
           <div class="notice">
   <LoadFailed what={PERIODS[period]} onretry={() => pick(period)} />
@@ -337,11 +332,31 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
       </div>
     {/snippet}
     {#snippet navigator()}
-      <PageNavigator label="Social Feed" rows={pages.rows} maxRows={pages.maxRows} onchange={changePages} />
+      <PageNavigator label="Social Feed" rows={pages.rows} maxRows={pages.maxRows} onchange={changePages} edge />
     {/snippet}
     {#snippet count()}
-      {#if board}<span class="stats">{@render stat(shown.icon, board.cards.length, shown.one, shown.many)}</span>{/if}
+      {#if board}<span class="stats">{@render stat(posterStack, board.total, counted.one, counted.many)}</span>{/if}
     {/snippet}
+    {#if tiles.length > 0}
+      {#snippet liveNavigator()}
+        <PageNavigator label="Watching Now" rows={livePages.rows} maxRows={livePages.maxRows}
+          onchange={(rows) => liveRows = rows} edge />
+      {/snippet}
+      {#snippet liveCount()}
+        <span class="stats">{@render stat(userGroup, tiles.length, 'person', 'people')}</span>
+      {/snippet}
+      {#snippet liveHelp()}From people you follow.{/snippet}
+      <DashboardPanel --panel-bg="var(--color-social-live-bg)" title="Watching Now" live help={liveHelp}
+        footer={liveNavigator} aside={liveCount}>
+        <div class="live" bind:clientWidth={liveWidth} {@attach trackDrilldowns({ source: 'social-feed' })}>
+          <PosterGrid columns={LIVE_PER_ROW} phoneColumns={2}>
+            {#each tiles.slice(0, livePages.rows * livePerRow) as tile (tile.watch.member.key)}
+              <SocialTile tile={tile} />
+            {/each}
+          </PosterGrid>
+        </div>
+      </DashboardPanel>
+    {/if}
     {@render panel(fetching !== null, body, board && board.cards.length > 0 ? navigator : undefined, count)}
 
     {#if board && board.bars.length > 0}
@@ -429,10 +444,10 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     padding-block: var(--space-social-band);
   }
 
-  /* The grid's own top gutter sets it under its heading and leaves room for the faces. Under the posters, a little
-   room before the less and more pill, which hangs over the panel's edge. */
-  /* The poster grid under it brings its own gutter, which the faces lift into. */
+  /* Under its heading over the grid's own gutter, then a little room before the less and more pill, which hangs over
+   the panel's edge. */
   .live {
+    container-type: inline-size;
     margin-block-start: var(--space-social-live-top);
     margin-block-end: calc(var(--space-social-live-end) - var(--gutter));
   }
@@ -444,7 +459,6 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     }
   }
 
-  /* With nobody watching, the posters take the live cards' room under the dropdowns. */
   .controls + .grid {
     margin-block-start: var(--space-social-live-top);
   }
@@ -489,6 +503,19 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     &:is(:hover, :focus-visible) {
       transform: translateY(-2px);
     }
+  }
+
+  /* A member's other titles: how many, over the next one's poster. The poster's link takes the click. */
+  .fold {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-color: var(--color-social-fold-scrim);
+    color: var(--color-social-on-image);
+    font-size: var(--font-size-social-fold);
+    font-weight: var(--font-weight-headings-heavy);
+    pointer-events: none;
   }
 
   .more-faces {

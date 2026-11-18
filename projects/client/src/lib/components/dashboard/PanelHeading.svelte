@@ -12,7 +12,9 @@ interface Props {
   id: string;
   title: string;
   /** The heading's icon, as raw SVG, drawn as a watermark behind the title. */
-  icon: string;
+  icon?: string;
+  /** The pulsing live dot before the title, in place of the icon. */
+  live?: boolean;
   seeMore?: { href: string; text: string };
   /** OG's `h2.section`, with 28px above it instead of 20px (Recently Watched). */
   section?: boolean;
@@ -20,12 +22,12 @@ interface Props {
   aside?: Snippet;
 }
 
-const { id, title, icon, seeMore, section = false, aside }: Props = $props();
+const { id, title, icon, live = false, seeMore, section = false, aside }: Props = $props();
 </script>
 
 <div class={['heading', { section }]}>
   <h2 {id}>
-    <HeadingMark svg={icon} />{title}
+    <HeadingMark svg={icon} {live} />{title}
   </h2>
   <div class="links">
     {@render aside?.()}

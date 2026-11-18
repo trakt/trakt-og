@@ -12,6 +12,7 @@ import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toSeasonSummary } from './toSeasonSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { assertOk } from '../api/assertOk.ts';
+import { canSeePortraits } from '../images/canSeePortraits.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -107,6 +108,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     justwatch: watchNow.rank?.link,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
+    portraits: canSeePortraits(layout.user),
     datePreferences: layout.datePreferences,
     now: new Date(),
   });

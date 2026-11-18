@@ -23,6 +23,7 @@ import { episodeReleasedAt } from './episodeReleasedAt.ts';
 import { hasEpisodeAired } from './hasEpisodeAired.ts';
 import { type EpisodeCardContext, toEpisodeCard } from './toEpisodeCard.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
+import type { PortraitOf } from '../images/castHeadshot.ts';
 
 interface ShowSummaryParams {
   show: ShowResponse;
@@ -38,6 +39,8 @@ interface ShowSummaryParams {
   actorSpoilers: boolean;
   /** Off when the viewer hides episode type tags ("Season Premiere"). */
   episodeTypeTags: boolean;
+  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
+  portraits?: boolean;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -176,6 +179,7 @@ function facts({ show, studios, people, now, day, airs }: Facts) {
 /** Everything the show summary shows, from the loader's API responses. */
 export function toShowSummary(params: ShowSummaryParams) {
   const { show, stats, seasons, now, datePreferences } = params;
+  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
   const slug = show.ids.slug;
   const href = `/shows/${slug}`;
   const timeZone = params.signedIn ? datePreferences.timeZone : (show.airs?.timezone ?? datePreferences.timeZone);
@@ -263,8 +267,8 @@ export function toShowSummary(params: ShowSummaryParams) {
     tagline: show.tagline ?? null,
     overview: show.overview ?? null,
     links: toShowLinks({ show: params.show, justwatch: params.rank?.link }),
-    cast: toCastMembers(params.people?.cast, params.actorSpoilers, show.ids.trakt),
-    guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers, show.ids.trakt),
+    cast: toCastMembers(params.people?.cast, params.actorSpoilers, portraitOf),
+    guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers, portraitOf),
     crew: toCrewGroups(params.people?.crew, params.actorSpoilers),
     /** Next Episode and the aired ones, as a signed-out visit sees them. */
     recent: {

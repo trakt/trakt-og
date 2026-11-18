@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { SubpageItem } from '../subpage/SubpageItem.ts';
+import type { HeaderUser } from '../components/header/HeaderUser.ts';
 import { loadCredits } from './loadCredits.ts';
 import { api } from '../api/api.ts';
 import { toHeaderUser } from '../components/header/toHeaderUser.ts';
@@ -53,14 +54,25 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const load = (item: SubpageItem) =>
+const director: HeaderUser = {
+  slug: 'og_tester',
+  firstName: 'Og',
+  displayName: 'og_tester',
+  avatarUrl: '',
+  isVip: true,
+  isDirector: true,
+  joinedAt: null,
+  named: false,
+};
+
+const load = (item: SubpageItem, user: HeaderUser | null = null) =>
   loadCredits({
     fetch: globalThis.fetch,
     parent: () =>
       Promise.resolve({
         datePreferences: { order: 'ymd', hour24: false, timeZone: 'UTC', weekStartDay: 0 },
         settings: null,
-        user: null,
+        user,
       }),
     item,
   });
@@ -85,6 +97,24 @@ describe('loadCredits', () => {
       expect(data.next?.href).toBe('/shows/breaking-bad/seasons/2/episodes/1/people');
       const people = requests.filter(({ pathname }) => pathname.endsWith('/people'));
       expect(people.map(({ searchParams }) => searchParams.get('extended'))).toEqual([null, null]);
+    });
+  });
+
+  describe('portraits', () => {
+    const images = async (user: HeaderUser | null) => {
+      const data = await load({ type: 'episode', id: 'breaking-bad', season: '1', episode: '2' }, user);
+      return data.credits.actors[0]?.people.map(({ image }) => image?.split('#')[0]);
+    };
+
+    it("should show a director the actors in character, by the show's id", async () => {
+      expect(await images(director)).toEqual(['https://media.trakt.tv/portraits/show-1388-1/thumb/portrait.webp']);
+    });
+
+    it('should keep the headshots for everyone else', async () => {
+      expect(await images(null)).toEqual(['https://media.trakt.tv/people/1/thumb/headshot.webp']);
+      expect(await images({ ...director, isDirector: false })).toEqual([
+        'https://media.trakt.tv/people/1/thumb/headshot.webp',
+      ]);
     });
   });
 

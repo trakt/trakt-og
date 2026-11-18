@@ -22,6 +22,7 @@ import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { toEpisodeLinks } from './toEpisodeLinks.ts';
 import type { ItemStats } from './ItemStats.ts';
+import type { PortraitOf } from '../images/castHeadshot.ts';
 
 interface Params {
   show: ShowResponse;
@@ -35,11 +36,14 @@ interface Params {
   now: Date;
   episodeTypeTags: boolean;
   otherSiteRatings: boolean;
+  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
+  portraits?: boolean;
 }
 
 /** Episode facts, the season number strip and neighbours across seasons in broadcast order. */
 export function toEpisodeSummary(params: Params) {
   const { show, episode, season, ratings, stats, now } = params;
+  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
   // An unaired episode shows no ratings and only its list count, whatever the viewer's early-ratings setting.
   const releasedAt = episodeReleasedAt(episode);
   const aired = hasEpisodeAired(releasedAt, now.getTime());
@@ -136,8 +140,8 @@ export function toEpisodeSummary(params: Params) {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },
-    cast: toCastMembers(params.people.cast, false, show.ids.trakt),
-    guestStars: toCastMembers(params.people.guest_stars, false, show.ids.trakt),
+    cast: toCastMembers(params.people.cast, false, portraitOf),
+    guestStars: toCastMembers(params.people.guest_stars, false, portraitOf),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
       .toSorted((a, b) => a.number - b.number)

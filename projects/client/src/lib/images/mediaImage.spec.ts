@@ -41,9 +41,9 @@ describe('util: mediaImage', () => {
     );
   });
 
-  it("should build a character's URL from the show's and the person's Trakt ids", () => {
-    expect(mediaImage({ type: 'character', id: '1390-447271', slot: 'headshot', size: 'thumb' })).toBe(
-      'https://media.trakt.tv/characters/1390-447271/thumb/headshot.webp',
+  it("should build a portrait's URL from the show's and the person's Trakt ids", () => {
+    expect(mediaImage({ type: 'portrait', id: 'show-1390-447271', slot: 'portrait', size: 'thumb' })).toBe(
+      'https://media.trakt.tv/portraits/show-1390-447271/thumb/portrait.webp',
     );
   });
 });

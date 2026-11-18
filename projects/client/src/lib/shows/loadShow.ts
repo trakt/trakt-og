@@ -18,6 +18,7 @@ import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { type Season, seasonSchema } from './seasonSchema.ts';
+import { canSeePortraits } from '../images/canSeePortraits.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -105,6 +106,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   const episodeTypeTags = !settings?.browsing?.hide_episode_type_tags;
   const view = toShowSummary({
     show,
+    portraits: canSeePortraits(user),
     ratings,
     stats,
     people,

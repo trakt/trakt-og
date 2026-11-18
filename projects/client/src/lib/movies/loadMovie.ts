@@ -11,6 +11,7 @@ import { toMovieSummary } from './toMovieSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
 import { OFFICIAL_LISTS_LIMIT, pickCollectionList } from '../lists/pickCollectionList.ts';
+import { canSeePortraits } from '../images/canSeePortraits.ts';
 
 type LoadMovieParams = {
   fetch: typeof fetch;
@@ -72,6 +73,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide] = await extras;
 
   const view = toMovieSummary({
+    portraits: canSeePortraits(user),
     movie,
     ratings,
     stats,

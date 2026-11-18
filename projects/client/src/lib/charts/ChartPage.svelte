@@ -9,6 +9,7 @@
 <script lang="ts">
 import SeoHead from '#lib/seo/SeoHead.svelte';
 import type { ComponentProps } from 'svelte';
+import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { goto, invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import AdvancedFiltersToggle from '#lib/components/filters/AdvancedFiltersToggle.svelte';
@@ -79,6 +80,12 @@ import { smartListPath } from '#lib/lists/smart/smartListPath.ts';
 import { smartListSourceLabel } from '#lib/lists/smart/smartListSourceLabel.ts';
 import { toSmartListFilters } from '#lib/lists/smart/toSmartListFilters.ts';
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
+import {
+  type RecommendationRelease,
+  recommendationReleases,
+  RELEASE_PARAM,
+  releaseSearch,
+} from '#lib/dashboard/recommendationRelease.ts';
 
 type Props = {
   data: Awaited<ReturnType<typeof loadChart>> & {
@@ -105,7 +112,9 @@ const nextHref = $derived(
 );
 
 // Smart picks come without reasons. Only VIPs get any, and the route is Official-only.
-const reasons = $derived(Boolean(data.user?.isVip) && !isStandardApi());
+const reasons = $derived(Boolean(data.user?.isVip) && !isStandardApi() && data.release === 'out_now');
+// Coming Soon takes no filters, so the funnel and its panel stay away.
+const filterable = $derived(!(data.chart === 'recommendations' && data.release === 'coming_soon'));
 // Recommendations have no eye menu.
 const menu = $derived(data.chart !== 'recommendations');
 const options = $derived(fadeHideOptions.filter((option) => data.type === 'shows' || !('showsOnly' in option)));
@@ -207,7 +216,11 @@ const savable = $derived(data.user !== null && isSmartListChart(data.chart) && !
 // The panel filters as you go, back on the first page, so the history keeps one entry per visit, not one per click.
 // The open smart list's slug stays along, so its row stays current and changes can be saved back to it.
 function search(filters: AdvancedFilters) {
-  const query = [advancedFiltersSearch(filters), current ? `${SMART_LIST_PARAM}=${encodeURIComponent(current.slug)}` : '']
+  const query = [
+    advancedFiltersSearch(filters),
+    current ? `${SMART_LIST_PARAM}=${encodeURIComponent(current.slug)}` : '',
+    data.chart === 'recommendations' ? releaseSearch(data.release) : '',
+  ]
     .filter(Boolean)
     .join('&');
   return `${page.url.pathname}${query ? `?${query}` : ''}`;
@@ -229,6 +242,15 @@ function removeChip(id: string) {
 const periodHref = (period: string) =>
   `/${data.type}/${data.chart}/${period}${pageHref(page.url, 1).slice(page.url.pathname.length)}`;
 const period = $derived(advanced.config.period);
+
+// Out Now keeps the filters and drops the page; Coming Soon starts clean, as it takes none.
+function releaseHref(release: RecommendationRelease) {
+  const params = new SvelteURLSearchParams(release === 'out_now' ? page.url.search : '');
+  params.delete(RELEASE_PARAM);
+  params.delete('page');
+  const query = [params.toString(), releaseSearch(release)].filter(Boolean).join('&');
+  return `${page.url.pathname}${query ? `?${query}` : ''}`;
+}
 
 // Save as a smart list: the dialog names it, then the chart reopens as that list.
 let dialogOpen = $state(false);
@@ -337,8 +359,10 @@ async function saveChanges() {
   {#if menu}
     <FadeHideMenu value={fadeHide} {options} cookie={data.type} onchange={save} />
   {/if}
-  <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
-  active={advanced.count > 0} count={advanced.count} />
+  {#if filterable}
+    <AdvancedFiltersToggle bind:open={panelOpen} bind:button={funnel} controls="{panelId}-filters"
+    active={advanced.count > 0} count={advanced.count} />
+  {/if}
 {/snippet}
 
 {#snippet fanart(entry: Entry, large = false)}
@@ -359,7 +383,7 @@ async function saveChanges() {
 {/if}
 
 <SidebarFrame label="{title} charts" collapsed={data.sidebar.collapsed} {prevHref} {nextHref}
-  panel={filtersPanel} {panelOpen}>
+  panel={filterable ? filtersPanel : undefined} {panelOpen}>
   {#snippet sidebar()}
     <SidebarTitle {tools}>
       {#snippet heading()}
@@ -368,16 +392,12 @@ async function saveChanges() {
     </SidebarTitle>
 
     <div class="counts">
-      {#if data.chart === 'recommendations'}
-        <CountPill count={data.cards.length} label={data.type} one={noun} />
-      {:else}
-        {#if data.chart === 'trending'}
-          <!-- The API's own count only sums the page's rows; Live now reads the whole chart, filtered or not. -->
-          <CountPill count={data.liveFiltered ?? data.live?.[data.type] ?? data.watcherCount}
-            total={data.liveFiltered !== null ? data.live?.[data.type] : undefined} label="watchers" one="watcher" />
-        {/if}
-        <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
+      {#if data.chart === 'trending'}
+        <!-- The API's own count only sums the page's rows; Live now reads the whole chart, filtered or not. -->
+        <CountPill count={data.liveFiltered ?? data.live?.[data.type] ?? data.watcherCount}
+          total={data.liveFiltered !== null ? data.live?.[data.type] : undefined} label="watchers" one="watcher" />
       {/if}
+      <CountPill count={data.itemCount} total={data.totalCount} label={data.type} one={noun} />
     </div>
 
     <!-- Trending's under-title was its counts, which the pills now carry. -->
@@ -401,6 +421,18 @@ async function saveChanges() {
 
     {#if data.page.type === 'paginated' && data.page.total > 1}
       <PagePager current={data.page.current} total={data.page.total} href={(n) => pageHref(page.url, n)} />
+    {/if}
+
+    {#if data.chart === 'recommendations'}
+      <Dropdown block section="Release">
+        {#snippet trigger()}{recommendationReleases.find(({ id }) => id === data.release)?.label}{/snippet}
+        <ul>
+          {#each recommendationReleases as option (option.id)}
+            <li><a href={releaseHref(option.id)} aria-current={option.id === data.release ? 'page' : undefined}
+              >{option.label}</a></li>
+          {/each}
+        </ul>
+      </Dropdown>
     {/if}
 
     {#if period}

@@ -25,16 +25,23 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-const recommendations = (token: string | null) =>
+const recommendations = (token: string | null, search = '?page=2') =>
   loadChart({
     fetch: globalThis.fetch,
     token,
     cookies: { get: () => undefined },
     parent: () => Promise.resolve({ datePreferences: { order: 'mdy' }, settings: null }),
-    url: new URL('https://og.test/shows/recommendations?page=2'),
+    url: new URL(`https://og.test/shows/recommendations${search}`),
     type: 'shows',
     chart: 'recommendations',
   });
+
+const shows = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    show: { ...SHOW, title: `Show ${i + 1}`, ids: { trakt: i + 1, slug: `show-${i + 1}` } },
+    score: 1,
+    sources: [],
+  }));
 
 const redirectOf = (promise: Promise<unknown>) =>
   promise.then(
@@ -43,14 +50,70 @@ const redirectOf = (promise: Promise<unknown>) =>
   );
 
 describe('loadChart recommendations', () => {
-  it("should ask for page 1's two large cards and grid with the token and ignore paging", async () => {
-    const data = await recommendations('fake-token');
+  it('should ask for the whole list with the token, and no page', async () => {
+    const data = await recommendations('fake-token', '');
 
     const request = seen.at(0);
+    const query = new URL(request?.url ?? '').searchParams;
     expect(request?.headers.get('authorization')).toBe('Bearer fake-token');
-    expect(new URL(request?.url ?? '').searchParams.get('limit')).toBe('38');
+    expect(query.get('limit')).toBe('250');
+    expect(query.has('page')).toBe(false);
     expect(data.cards.map((card) => [card.href, card.tags])).toEqual([['/shows/severance', []]]);
-    expect(data.page).toEqual({ type: 'infinite', current: 1 });
+    expect(data.page).toEqual({ type: 'paginated', current: 1, total: 1 });
+    expect(data.release).toBe('out_now');
+  });
+
+  it("should cut the chart's pages from one request: 38 on the first, then 36 each", async () => {
+    server.use(http.get('https://apiz.trakt.tv/shows/recommendations', () => HttpResponse.json(shows(100))));
+
+    const first = await recommendations('fake-token', '');
+    const second = await recommendations('fake-token', '?page=2');
+    const last = await recommendations('fake-token', '?page=3');
+
+    expect(first.cards).toHaveLength(38);
+    expect(second.cards.map((card) => card.title)).toEqual(Array.from({ length: 36 }, (_, i) => `Show ${39 + i}`));
+    expect(last.cards.map((card) => card.title).at(0)).toBe('Show 75');
+    expect(last.cards).toHaveLength(26);
+    expect(second.page).toEqual({ type: 'paginated', current: 2, total: 3 });
+    expect(second.itemCount).toBe(100);
+  });
+
+  it('should keep a page past the end empty, on the last page', async () => {
+    server.use(http.get('https://apiz.trakt.tv/shows/recommendations', () => HttpResponse.json(shows(40))));
+
+    const data = await recommendations('fake-token', '?page=9');
+
+    expect(data.cards).toEqual([]);
+    expect(data.page).toEqual({ type: 'paginated', current: 2, total: 2 });
+  });
+
+  it('should ask Coming Soon for its 100 titles, without filters or ignores', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/shows/recommendations/anticipated', ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(shows(100).map((row) => ({ ...row, released: null })));
+      }),
+    );
+
+    const data = await recommendations('fake-token', '?release=coming-soon&genres=drama&ignore_watched=true&page=2');
+
+    const url = new URL(seen.at(0)?.url ?? '');
+    expect(url.pathname).toBe('/shows/recommendations/anticipated');
+    expect([...url.searchParams.keys()].sort()).toEqual(['extended', 'limit', 'page']);
+    expect(url.searchParams.get('limit')).toBe('100');
+    expect(url.searchParams.get('page')).toBe('1');
+    expect(data.release).toBe('coming_soon');
+    expect(data.filters.genres.values).toEqual([]);
+    expect(data.cards[0]?.title).toBe('Show 39');
+    expect(data.itemCount).toBe(100);
+    expect(data.page).toEqual({ type: 'paginated', current: 2, total: 3 });
+  });
+
+  it('should read anything but coming-soon as Out Now', async () => {
+    const data = await recommendations('fake-token', '?release=later');
+
+    expect(data.release).toBe('out_now');
+    expect(new URL(seen.at(0)?.url ?? '').pathname).toBe('/shows/recommendations');
   });
 
   it("should keep each pick's sources for its Why this?", async () => {
@@ -64,7 +127,7 @@ describe('loadChart recommendations', () => {
         ]),
       ),
     );
-    const data = await recommendations('fake-token');
+    const data = await recommendations('fake-token', '');
 
     expect(data.cards.at(0)?.why?.titles.map(({ href, loved }) => [href, loved])).toEqual([['/movies/alien', true]]);
   });

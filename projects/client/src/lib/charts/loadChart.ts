@@ -5,9 +5,15 @@ import { api } from '../api/api.ts';
 import { extractPageMeta } from '../api/extractPageMeta.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
 import type { DateOrder } from '../utils/formatDate.ts';
-import { hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
+import { emptyFilters, hasAdvancedFilters, parseAdvancedFilters } from '../components/filters/advancedFilters.ts';
 import { advancedFiltersQuery } from '../components/filters/advancedFiltersQuery.ts';
 import { recommendationIgnores } from '../dashboard/fetchRecommendations.ts';
+import {
+  type RecommendationRelease,
+  RELEASE_PARAM,
+  recommendationsPath,
+  releaseFromParam,
+} from '../dashboard/recommendationRelease.ts';
 import { recommendationSourceSchema } from '../dashboard/recommendationSourceSchema.ts';
 import { type FilterSource, toFilterSources } from '../components/filters/watchNowFilter.ts';
 import { type FadeHide, parseFadeHide } from '../components/filters/fadeHide.ts';
@@ -53,8 +59,11 @@ type Query = {
   [filter: string]: string | number | boolean | undefined;
 };
 
-// Page 1's opening cards and grid. Recommendations come as one page, so they ask for this many.
 const firstPage = ({ podium, grid }: ChartPageSize) => podium + grid;
+
+/** The most the worker sends: Out Now's `limit` ceiling, and Coming Soon's total. */
+const OUT_NOW_LIMIT = 250;
+const COMING_SOON_LIMIT = 100;
 
 type Rows = { headers: Headers; rows: readonly ChartRow[] };
 
@@ -80,22 +89,26 @@ const recommendationRowsSchema = z.array(
   chartRowSchema.and(z.object({ sources: z.array(recommendationSourceSchema).nullish() })),
 );
 
-// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`, so the body is parsed here. There's
-// no paging, so the paging headers are dropped.
+// `@trakt/api` has no contract for the worker's `/shows|movies/recommendations`, so the body is parsed here. Out Now
+// ignores `page` and Coming Soon is capped at 100, so each is asked for whole, on a URL that never changes, and the
+// chart's pages are cut from it. Coming Soon takes no filters.
 async function fetchRecommendations(
   fetch: typeof globalThis.fetch,
   token: string,
   type: MediaType,
+  release: RecommendationRelease,
   filters: Record<string, string>,
 ): Promise<Rows | 'signed-out' | 'failed'> {
-  const limit = firstPage(chartPageSize('recommendations'));
-  const search = new URLSearchParams({
-    extended: 'full',
-    limit: `${limit}`,
-    ...recommendationIgnores,
-    ...filters,
-  });
-  const response = await rawApiFetch({ fetch, token, path: `/${type}/recommendations?${search}` });
+  const search =
+    release === 'coming_soon'
+      ? new URLSearchParams({ extended: 'full', limit: `${COMING_SOON_LIMIT}`, page: '1' })
+      : new URLSearchParams({
+          extended: 'full',
+          limit: `${OUT_NOW_LIMIT}`,
+          ...recommendationIgnores,
+          ...filters,
+        });
+  const response = await rawApiFetch({ fetch, token, path: `${recommendationsPath(type, release)}?${search}` });
   if (response.status === 401) return 'signed-out';
   if (!response.ok) return 'failed';
 
@@ -111,6 +124,10 @@ const fetchSources = (fetch: typeof globalThis.fetch, country: string): Promise<
       response.status >= 200 && response.status < 300 ? toFilterSources(response.body, country) : new Map(),
     )
     .catch(() => new Map());
+
+// Where a chart page sits in a whole list: page 1 holds the opening cards and a grid, each later page a grid.
+const pageSlice = (page: number, { podium, grid }: ChartPageSize) =>
+  page <= 1 ? ([0, podium + grid] as const) : ([podium + grid * (page - 1), podium + grid * page] as const);
 
 // The chart's own pages, which don't line up with the API's.
 const pageMeta = (page: number, total: number) => ({
@@ -171,10 +188,15 @@ export async function loadChart({
 
   // The period the nav links keep. The charts without one link to the weekly default, as in OG.
   const period = chartPeriod(periodParam);
-  const page = chart === 'recommendations' ? 1 : positiveInt(url.searchParams.get('page'), 1);
+  const page = positiveInt(url.searchParams.get('page'), 1);
   // OG's `limit` param still sets plain pages of that size. Otherwise page 1 holds the opening cards and a grid.
+  // Recommendations are cut from one whole list, so they keep their own pages.
   const size = chartPageSize(chart);
-  const limit = url.searchParams.has('limit') ? positiveInt(url.searchParams.get('limit'), firstPage(size)) : undefined;
+  const limit =
+    chart !== 'recommendations' && url.searchParams.has('limit')
+      ? positiveInt(url.searchParams.get('limit'), firstPage(size))
+      : undefined;
+  const release = releaseFromParam(url.searchParams.get(RELEASE_PARAM));
   const requests = limit ? [{ page, limit, skip: 0 }] : chartPageRequests(page, size);
 
   // OG's `filter-fade-shows-*` and `filter-hide-shows-*`, one cookie a menu section. The page fades and hides by the
@@ -184,7 +206,9 @@ export async function loadChart({
     hide: parseFadeHide(cookies.get(`filter-hide-${type}`)),
   };
   // The advanced filters go to the API as they are in the URL, so SSR renders the filtered chart.
-  const filters = parseAdvancedFilters(url.searchParams);
+  // Coming Soon takes none of them, so a link with some opens it plain.
+  const comingSoon = chart === 'recommendations' && release === 'coming_soon';
+  const filters = comingSoon ? emptyFilters : parseAdvancedFilters(url.searchParams);
   // Advanced filters are for members: a signed-out link with them signs in and comes back filtered.
   if (!token && hasAdvancedFilters(filters)) signInRedirect(url);
   const filterQuery = advancedFiltersQuery(filters);
@@ -218,7 +242,7 @@ export async function loadChart({
     await Promise.all([
       chart === 'recommendations'
         ? token
-          ? fetchRecommendations(fetch, token, type, filterQuery).catch(() => 'failed' as const)
+          ? fetchRecommendations(fetch, token, type, release, filterQuery).catch(() => 'failed' as const)
           : signInRedirect(url)
         : token && viewer
           ? viewerRows(chart)
@@ -243,6 +267,10 @@ export async function loadChart({
   if (!response) error(502, 'The Trakt API could not load this chart.');
 
   const { headers } = response;
+  const isRecommendations = chart === 'recommendations';
+  const itemCount = isRecommendations ? response.rows.length : positiveInt(headers.get('x-pagination-item-count'), 0);
+  const shown = isRecommendations ? response.rows.slice(...pageSlice(page, size)) : response.rows;
+
   const country = watchNowCountry(settings);
   const favorites = favoriteSlugs(settings?.browsing?.watchnow?.favorites ?? [], country, country);
   // Only the picked services go to the page: the panel fetches the whole list itself when it opens.
@@ -259,13 +287,14 @@ export async function loadChart({
     watchNowFavorites: favorites,
     /** Recommendations didn't load. The other charts fail the whole page instead. */
     failed,
-    cards: response.rows.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
+    release,
+    cards: shown.map((row) => toChartCard(row, { chart, now: new Date(), order: datePreferences.order })),
     page:
-      limit || !headers.has('x-pagination-item-count')
+      !isRecommendations && (limit || !headers.has('x-pagination-item-count'))
         ? extractPageMeta(headers, page)
-        : pageMeta(page, chartPageCount(positiveInt(headers.get('x-pagination-item-count'), 0), size)),
-    /** The chart's size, for the sidebar's count. Recommendations send no paging, so theirs is 0. */
-    itemCount: positiveInt(headers.get('x-pagination-item-count'), 0),
+        : pageMeta(page, chartPageCount(itemCount, size)),
+    /** The chart's size, for the sidebar's count. Recommendations come whole, so theirs is the list's length. */
+    itemCount,
     /** Without filters: what the count is out of. Left out when nothing is filtered or that request failed. */
     totalCount: unfiltered ? positiveInt(unfiltered.headers.get('x-pagination-item-count'), 0) : undefined,
     /** Everyone watching something on the chart right now. Only trending sends it. */

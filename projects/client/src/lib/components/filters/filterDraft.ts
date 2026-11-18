@@ -15,8 +15,19 @@ export function toFilterDraft(filters: AdvancedFilters, config: AdvancedFiltersC
       return [key, filters[key] ?? [scaleMin(scale), scaleMax(scale)]];
     }),
   ) as FilterDraft['ranges'];
-  const { watchnow, genres, certifications, languages, countries, networks, status, episode_types, query, parental } =
-    filters;
+  const {
+    watchnow,
+    genres,
+    certifications,
+    languages,
+    countries,
+    networks,
+    studios,
+    status,
+    episode_types,
+    query,
+    parental,
+  } = filters;
   return {
     watchnow,
     genres,
@@ -24,6 +35,7 @@ export function toFilterDraft(filters: AdvancedFilters, config: AdvancedFiltersC
     languages,
     countries,
     networks,
+    studios,
     status,
     episode_types,
     query,

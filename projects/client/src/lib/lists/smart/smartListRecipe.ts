@@ -43,7 +43,7 @@ function valuesFor(key: string, value: unknown): FilterTagValue[] {
 
 /**
  * What a smart list is made of, as read-only filter chips. A list the chart panel can show reads like the chart's
- * Applied Filters; any other (keywords, studios, people, the hide switches) lists each filter it holds, with the
+ * Applied Filters; any other (keywords, people, the hide switches) lists each filter it holds, with the
  * hide switches together on one chip.
  */
 export function smartListRecipe({ filters, country }: Params): readonly FilterTag[] {

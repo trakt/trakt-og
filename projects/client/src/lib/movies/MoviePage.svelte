@@ -22,6 +22,7 @@ import LazySection from '#lib/components/summary/LazySection.svelte';
 import SummarySectionShimmer from '#lib/components/loading/SummarySectionShimmer.svelte';
 import ListsPreview from '#lib/components/summary/ListsPreview.svelte';
 import NameList from '#lib/components/summary/NameList.svelte';
+import { studioNames } from '#lib/components/filters/studioNames.svelte.ts';
 import Overview from '#lib/components/summary/Overview.svelte';
 import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
 import { createViewerNote } from '#lib/notes/createViewerNote.svelte.ts';
@@ -52,6 +53,8 @@ const parental = $derived({ page: `${movie.href}/parental-guide`, guide: data.pa
 gifArtContext.set(() => movie.fanart);
 const ratingTarget = $derived({ type: 'movie' as const, id: movie.id, title: movie.fullTitle });
 const facts = $derived(movie.facts);
+// Kept so a studio's link opens its chart with the studio's name already on the chip.
+$effect(() => studioNames.remember(facts.studios));
 const media = $derived({ type: 'movie' as const, id: movie.id, slug: movie.slug, title: movie.fullTitle });
 const lazy = () => browserSectionsClient(data.user !== null);
 

@@ -3,7 +3,7 @@
   filters the page straight away (typing and sliders after a short pause): streaming services, terms, then each list as
   a full-width field that keeps (⊕) and leaves out (⊖) values, then the runtime, the site ratings and the parental
   guide. Clear and Close sit at the top as icons, after Save when the page can keep the filters (a chart's smart list, a calendar's saved filter). The
-  lists ship with og and networks are searched as you type; the streaming services load the first time it opens. Esc
+  lists ship with og and networks and studios are searched as you type; the streaming services load the first time it opens. Esc
   closes it.
     <FiltersPanel id="calendar-filters" {open} {config} {filters} {country} {favorites} {sources}
       onchange={(filters) => goto(…)} onclose={close} />
@@ -33,6 +33,7 @@ import IncludeExcludeSelect from './IncludeExcludeSelect.svelte';
 import ParentalGuideFilter from './ParentalGuideFilter.svelte';
 import SearchField from './SearchField.svelte';
 import { searchNetworks } from './searchNetworks.ts';
+import { searchStudios } from './searchStudios.ts';
 import { type ListSelection, listSelection, toListFilter } from './listSelection.ts';
 import RangeSlider from './RangeSlider.svelte';
 import { scaleMax, scaleMin } from './rangeScale.ts';
@@ -82,6 +83,7 @@ const lists = {
   languages: 'Languages',
   countries: 'Countries',
   networks: 'Networks',
+  studios: 'Studios',
   episode_types: 'Episode Types',
   status: 'Status',
 } satisfies Record<ListFilterKey, string>;
@@ -130,9 +132,13 @@ const narrowed = (key: RangeFilterKey) => {
 const setRange = (key: RangeFilterKey, range: readonly [number, number]) =>
   apply({ ...draft, ranges: { ...draft.ranges, [key]: range } }, 400);
 
-// Every list but networks ships with og. Networks are too many to load whole, so they're searched.
+// Every list but networks and studios ships with og. Those are too many to load whole, so they're searched.
+const searches: Partial<Record<ListFilterKey, typeof searchNetworks>> = {
+  networks: searchNetworks,
+  studios: searchStudios,
+};
 const listGroups = (key: ListFilterKey): FilterOptionGroup[] =>
-  key === 'networks' ? [] : [{ options: listOptions(key, config) }];
+  key === 'networks' || key === 'studios' ? [] : [{ options: listOptions(key, config) }];
 
 // The streaming services load once per country, the first time the panel opens.
 let loadedSources = $state<ReadonlyMap<string, FilterSource>>();
@@ -222,8 +228,7 @@ function reset() {
     {/if}
 
     {#each config.lists as key (key)}
-      {@const searched = key === 'networks'}
-      <IncludeExcludeSelect label={lists[key]} groups={listGroups(key)} search={searched ? searchNetworks : undefined}
+      <IncludeExcludeSelect label={lists[key]} groups={listGroups(key)} search={searches[key]}
         labelFor={(value) => filterValueLabel(key, value)} selection={listSelection(draft[key])}
         onchange={(selection) => setList(key, selection)} />
     {/each}

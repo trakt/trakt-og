@@ -8,6 +8,7 @@ import {
   parentalLimitLabel,
 } from './parentalGuide.ts';
 import { parentalPreset } from './parentalPreset.ts';
+import { studioNames } from './studioNames.svelte.ts';
 
 /** The rating site whose logo leads a range tag. */
 export type TagSite = 'trakt' | 'imdb' | 'tmdb' | 'rt' | 'rt-audience' | 'letterboxd' | 'mal';
@@ -44,7 +45,8 @@ const displayName = (type: 'language' | 'region', code: string) => {
 
 /**
  * How OG named a filter value: genres and statuses title-cased,
- * certifications upper-cased, languages and countries by their English names, networks as they are.
+ * certifications upper-cased, languages and countries by their English names, networks as they are. A studio reads
+ * as its name once the browser has it, and as its title-cased slug until then.
  */
 export function filterValueLabel(key: ListFilterKey, value: string): string {
   switch (key) {
@@ -61,6 +63,8 @@ export function filterValueLabel(key: ListFilterKey, value: string): string {
       return displayName('region', value);
     case 'networks':
       return value;
+    case 'studios':
+      return studioNames.name(value) ?? titleCase(value);
   }
 }
 

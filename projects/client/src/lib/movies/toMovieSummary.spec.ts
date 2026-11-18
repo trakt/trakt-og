@@ -1,4 +1,4 @@
-import type { ListedMovieResponse, ListResponse, MovieResponse } from '@trakt/api';
+import type { ListedMovieResponse, ListResponse, MovieResponse, StudioResponse } from '@trakt/api';
 import { describe, expect, it } from 'vitest';
 import { toMovieSummary } from './toMovieSummary.ts';
 
@@ -111,6 +111,13 @@ describe('toMovieSummary', () => {
     expect(facts.genres).toEqual([{ name: 'Science Fiction', href: '/movies/popular?genres=science-fiction' }]);
     expect(facts.country).toEqual({ name: 'United States', href: '/movies/popular?countries=us' });
     expect(facts.languages.at(0)).toEqual({ name: 'English', href: '/movies/popular?languages=en' });
+  });
+
+  it('should link each studio to the chart filtered by its slug', () => {
+    const studios = [{ name: 'A24', ids: { slug: 'a24', trakt: 1806 } }] as StudioResponse[];
+    const { facts } = toMovieSummary({ ...base, studios });
+
+    expect(facts.studios).toEqual([{ name: 'A24', slug: 'a24', href: '/movies/popular?studios=a24' }]);
   });
 
   it('should drop other sites when the viewer turned them off', () => {

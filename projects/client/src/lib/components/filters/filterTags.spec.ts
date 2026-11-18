@@ -10,6 +10,7 @@ describe('util: filterValueLabel', () => {
     expect(filterValueLabel('languages', 'ja')).toBe('Japanese');
     expect(filterValueLabel('countries', 'us')).toBe('United States');
     expect(filterValueLabel('networks', 'A&E')).toBe('A&E');
+    expect(filterValueLabel('studios', 'warner-bros-pictures')).toBe('Warner Bros Pictures');
   });
 
   it('should fall back to the code for one it can not name', () => {

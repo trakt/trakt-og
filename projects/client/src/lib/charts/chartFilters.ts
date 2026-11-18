@@ -17,7 +17,7 @@ const periodOptions = [
 type ChartFiltersParams = { type: MediaType; chart: ChartName; period: ChartPeriod; now: Date };
 
 /**
- * The advanced filter panel for one chart. Filter Terms, Studios, Metacritic and the vote sliders are cut. Letterboxd
+ * The advanced filter panel for one chart. Filter Terms, Metacritic and the vote sliders are cut. Letterboxd
  * only rates movies. Recommendations take the same filters as the other charts, though OG offered only a few: the API
  * narrows the viewer's top picks with them, so a narrow mix can come back short.
  */
@@ -31,8 +31,8 @@ export function chartFilters({ type, chart, period, now }: ChartFiltersParams): 
   };
   const lists: ListFilterKey[] =
     type === 'shows'
-      ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'status']
-      : ['genres', 'certifications', 'languages', 'countries'];
+      ? ['genres', 'certifications', 'languages', 'countries', 'networks', 'studios', 'status']
+      : ['genres', 'certifications', 'languages', 'countries', 'studios'];
   const ranges: RangeFilterKey[] = [
     'years',
     'runtimes',

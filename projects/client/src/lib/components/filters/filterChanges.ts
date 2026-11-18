@@ -16,6 +16,7 @@ const LIST_IDS: Readonly<Record<ListFilterKey, string>> = {
   languages: 'languages',
   countries: 'countries',
   networks: 'networks',
+  studios: 'studios',
   status: 'statuses',
   episode_types: 'episode_types',
 };

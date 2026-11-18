@@ -10,7 +10,7 @@ import { mergeFilterOptions } from './mergeFilterOptions.ts';
 
 /** The per-type lists og ships with, so the panel asks the API for none of them. */
 const bundledOptions: Record<
-  Exclude<ListFilterKey, 'networks' | 'status' | 'episode_types'>,
+  Exclude<ListFilterKey, 'networks' | 'studios' | 'status' | 'episode_types'>,
   Readonly<Record<'shows' | 'movies', readonly FilterOption[]>>
 > = {
   genres: genreOptions,
@@ -21,9 +21,12 @@ const bundledOptions: Record<
 
 /**
  * A list filter's choices: statuses and episode types are fixed, and the other lists ship per media type, merged across
- * the page's media types (the mixed calendar offers both shows' and movies' genres). Networks are searched instead.
+ * the page's media types (the mixed calendar offers both shows' and movies' genres). Networks and studios are searched instead.
  */
-export function listOptions(key: Exclude<ListFilterKey, 'networks'>, config: AdvancedFiltersConfig): FilterOption[] {
+export function listOptions(
+  key: Exclude<ListFilterKey, 'networks' | 'studios'>,
+  config: AdvancedFiltersConfig,
+): FilterOption[] {
   if (key === 'status') return [...statusOptions];
   if (key === 'episode_types') return [...episodeTypeOptions];
   return mergeFilterOptions((config.optionTypes ?? [config.type]).map((type) => bundledOptions[key][type]));

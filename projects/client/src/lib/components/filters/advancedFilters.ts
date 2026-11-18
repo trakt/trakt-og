@@ -14,8 +14,9 @@ import {
  *
  * The parental guide is og's own (`parentalGuide.ts`), in the API's params.
  *
- * og names two params differently: `networks` carries names instead of OG's `network_ids`, because the API filters
- * networks by name, and `status` stays OG's name for the API's `statuses`.
+ * og names three params differently: `networks` carries names instead of OG's `network_ids` and `studios` slugs
+ * instead of OG's `studio_ids`, because the API filters them by name and slug, and `status` stays OG's name for the
+ * API's `statuses`.
  */
 
 export type ListMode = 'any' | 'all' | 'none';
@@ -35,6 +36,7 @@ export const listFilterKeys = [
   'languages',
   'countries',
   'networks',
+  'studios',
   'status',
   'episode_types',
 ] as const;

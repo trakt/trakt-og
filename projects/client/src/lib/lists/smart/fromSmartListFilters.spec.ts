@@ -11,6 +11,7 @@ describe('util: fromSmartListFilters', () => {
       genres: { values: ['crime', 'mystery'], mode: 'all' as const, excluded: ['animation'] },
       certifications: { values: ['tv-y'], mode: 'none' as const },
       networks: { values: ['HBO'], mode: 'any' as const },
+      studios: { values: ['a24'], mode: 'any' as const, excluded: ['neon'] },
       years: [2010, 2026] as const,
       rt_meters: [80, 100] as const,
       letterboxd_ratings: [3.5, 5] as const,
@@ -40,7 +41,6 @@ describe('util: fromSmartListFilters', () => {
   describe('for a filter the panel has no control for', () => {
     it.each([
       ['keywords', { keywords: ['time-travel'] }],
-      ['studios', { studios: ['a24'] }],
       ['people', { people: ['christopher-nolan'] }],
       ['a hide switch', { ignore_watched: true }],
       ['a range with one end', { years: [2010] }],

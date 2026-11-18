@@ -130,7 +130,8 @@ export function toMovieSummary(params: MovieSummaryParams) {
       })),
       studios: params.studios.map(({ name, ids }) => ({
         name,
-        href: popular('studio_ids', ids.trakt),
+        slug: ids.slug,
+        href: popular('studios', ids.slug),
       })),
       genres: (movie.genres ?? []).map((genre) => ({
         name: genreLabel(genre),

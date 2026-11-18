@@ -1,4 +1,4 @@
-import type { EpisodeResponse, ShowResponse } from '@trakt/api';
+import type { EpisodeResponse, ShowResponse, StudioResponse } from '@trakt/api';
 import { describe, expect, it } from 'vitest';
 import type { SeasonWithEpisodes } from './loadShow.ts';
 import { airsAt, type SeasonCard, sortSeasons, toShowSummary } from './toShowSummary.ts';
@@ -122,6 +122,15 @@ describe('toShowSummary', () => {
       });
       expect(facts.status).toBeUndefined();
       expect(facts.network).toBeUndefined();
+    });
+
+    it('should link each studio to the chart filtered by its slug', () => {
+      const studios = [{ name: 'AMC Studios', ids: { slug: 'amc-studios', trakt: 7 } }] as StudioResponse[];
+      const { facts } = toShowSummary({ ...base, studios });
+
+      expect(facts.studios).toEqual([
+        { name: 'AMC Studios', slug: 'amc-studios', href: '/shows/popular?studios=amc-studios' },
+      ]);
     });
 
     it('should link a network with a plus by the name the API filters on', () => {

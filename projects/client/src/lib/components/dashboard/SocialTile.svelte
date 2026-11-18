@@ -3,7 +3,7 @@
   quick icons, with Up Next's progress bar under it, then one line: who on the left and the time left ticking down on
   the right. Its tags
   are the pulsing "Watching now" (or "Checked in") and the type; an episode's show sits small over its number and
-  title.
+  title, and a movie has its year after its title.
 -->
 <script lang="ts">
 import FanartCard from '#lib/components/media/FanartCard.svelte';
@@ -27,6 +27,7 @@ const tags = $derived(liveTags(watch));
     href={watch.href}
     title={watch.episode ? watch.episode.title ?? '' : watch.title.name}
     number={watch.code}
+    year={watch.title.year}
     smallTitle={watch.episode ? { text: watch.title.name, href: watch.title.href } : undefined}
     image={watch.still}
     {tags}
@@ -36,7 +37,7 @@ const tags = $derived(liveTags(watch));
         live
         href={watch.href}
         percent={tile.progress}
-        tip={`${tile.progress}% watched\n${tile.minutesLeft}m left`}
+        tip={{ watched: tile.progress, minutesLeft: tile.minutesLeft }}
       />
     {/snippet}
   </FanartCard>

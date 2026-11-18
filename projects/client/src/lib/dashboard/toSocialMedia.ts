@@ -34,6 +34,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
         name: movie.title,
         href,
         poster: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'poster', size: 'thumb' }),
+        year: movie.year ?? undefined,
         target,
       },
       href,

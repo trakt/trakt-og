@@ -5,7 +5,8 @@
   `live` marks something being watched right now with a knob at the fill's end, like the watching-now player's
   scrubber. `watched` draws the summary watched button's bar instead, on poster cards (seasons, Up Next, progress's grid
   view): purple, rounded and apart from the quick icons, above the title, with no second bar in its tooltip. The link's
-  name carries every tooltip line, so nothing lives only in the tooltip.
+  name carries every tooltip line, so nothing lives only in the tooltip. A percent tip reads "**10%** watched", over a
+  gray "97m left" on a live watch.
 -->
 <script lang="ts">
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
@@ -13,14 +14,19 @@ import ProgressTip from './ProgressTip.svelte';
 import type { WatchedProgress } from './WatchedProgress.ts';
 import { watchedProgressText } from './watchedProgressText.ts';
 
+type PercentTip = { readonly watched: number; readonly minutesLeft?: number };
+
+const isPercent = (tip: Props['tip']): tip is PercentTip => !Array.isArray(tip);
+
 interface Props {
   href: string;
   /** 0 to 100. */
   percent: number;
   /** Each aired episode, true when watched, for OG's exact bar (`.progress.ticks`). */
   ticks?: readonly boolean[];
-  /** The tooltip: text for a live check-in, or `progressTooltip`'s runs (a rewatch has two, under a divider). */
-  tip: string | readonly WatchedProgress[];
+  /** The tooltip: how far in, with the minutes left on a live watch, or `progressTooltip`'s runs (a rewatch has two,
+   * under a divider). */
+  tip: PercentTip | readonly WatchedProgress[];
   /** Being watched now: a knob at the end of the fill. */
   live?: boolean;
   /** The summary watched button's bar, in place of Up Next's red one. Pair it with PosterCard's `detachedProgress`. */
@@ -29,13 +35,24 @@ interface Props {
 
 const { href, percent, ticks, tip, live = false, watched = false }: Props = $props();
 
-const label = $derived(typeof tip === 'string' ? tip.replaceAll('\n', ', ') : watchedProgressText(tip));
+const label = $derived(
+  isPercent(tip)
+    ? `${tip.watched}% watched${tip.minutesLeft === undefined ? '' : `, ${tip.minutesLeft}m left`}`
+    : watchedProgressText(tip),
+);
 </script>
 
 <!-- The progress page isn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-{#snippet progressTip()}{#if typeof tip !== 'string'}<ProgressTip progress={tip} bar={!watched} />{/if}{/snippet}
-<Tooltip content={typeof tip === 'string' ? tip : progressTip} placement="bottom">
+{#snippet progressTip()}
+  {#if isPercent(tip)}
+    <span class="live-tip"><span><strong>{tip.watched}%</strong> watched</span>{#if tip.minutesLeft !== undefined}<span
+          class="left">{tip.minutesLeft}m left</span>{/if}</span>
+  {:else}
+    <ProgressTip progress={tip} bar={!watched} />
+  {/if}
+{/snippet}
+<Tooltip content={progressTip} placement="bottom">
   {#snippet trigger(tooltip)}
     <a class={['under-progress', { watched }]} {href} aria-label={label} {...tooltip}>
       <span class={['track', { full: percent >= 100, ticks: Boolean(ticks) }]}>
@@ -53,6 +70,15 @@ const label = $derived(typeof tip === 'string' ? tip.replaceAll('\n', ', ') : wa
 </Tooltip>
 
 <style>
+.live-tip {
+  display: grid;
+  text-align: center;
+}
+
+.left {
+  color: var(--color-tooltip-muted);
+}
+
 .under-progress {
   position: relative;
   display: block;

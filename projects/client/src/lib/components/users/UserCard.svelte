@@ -74,7 +74,8 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
         <div class="now-title">
           <span class="tags">{#each tags as tag, i (i)}<CardTag {...tag} />{/each}</span>
           {#if media.episode}<a class="show" href={media.title.href}>{media.title.name}</a>{/if}
-          <a class="watching" href={media.href}>{media.episode ? media.code : media.title.name}</a>
+          <a class="watching" href={media.href}>{media.episode ? media.code : media.title.name}{#if !media.episode &&
+              media.title.year}<span class="year">{media.title.year}</span>{/if}</a>
         </div>
         <span class="left"><Countdown startedAt={media.startedAt} endsAt={media.expiresAt} /></span>
       </div>
@@ -83,7 +84,7 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
           live
           href={media.href}
           percent={watch.progress}
-          tip={`${watch.progress}% watched\n${watch.minutesLeft}m left`}
+          tip={{ watched: watch.progress, minutesLeft: watch.minutesLeft }}
         />
       </div>
     {/if}
@@ -201,6 +202,14 @@ const sinceYear = $derived(since ? new Date(since).getUTCFullYear() : null);
 .watching {
   font-size: var(--font-size-fanart-title);
   font-weight: var(--font-weight-headings-heavy);
+}
+
+/* A movie's year after its title, lighter, as on the fanart cards. */
+.year {
+  margin-inline-start: 0.25em;
+  color: var(--gray-lightish);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-headings-light);
 }
 
 .show,

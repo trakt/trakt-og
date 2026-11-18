@@ -77,7 +77,7 @@ let now = $state(new Date());
   {@const checkin = toCheckin(play, now)}
   {#snippet checkinBar()}
     <UnderProgress live href={play.href} percent={checkin?.progress ?? 0}
-  tip={`${checkin?.progress ?? 0}% watched`} />
+  tip={{ watched: checkin?.progress ?? 0 }} />
   {/snippet}
   <div class="play">
   <FanartCard
@@ -136,6 +136,7 @@ let now = $state(new Date());
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
+  edge
 />
   {/snippet}
   {@render panel(false, cards, items.length > 0 ? navigator : undefined)}

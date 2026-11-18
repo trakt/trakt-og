@@ -377,7 +377,7 @@ function clearFilters() {
                       progressTipBar: false,
                     }}>
                     {#snippet progress()}
-                      <UnderProgress href={row.href} percent={row.percent} tip={done} watched />
+                      <UnderProgress href={row.href} percent={row.percent} tip={{ watched: row.percent }} watched />
                     {/snippet}
                   </PosterCard>
                 </div>

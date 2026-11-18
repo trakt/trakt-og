@@ -116,6 +116,7 @@ const progressHref = $derived(
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
+  edge
 />
   {/snippet}
   {@render panel(false, cards, navigator)}

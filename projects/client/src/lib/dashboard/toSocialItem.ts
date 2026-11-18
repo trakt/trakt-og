@@ -41,6 +41,8 @@ export type SocialItem = {
     readonly name: string;
     readonly href: string;
     readonly poster?: string;
+    /** A movie's year, after its title. */
+    readonly year?: number;
     /** The movie or show itself, for quick icons on a card about the title. */
     readonly target: SocialTarget;
   };

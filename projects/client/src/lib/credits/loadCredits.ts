@@ -6,13 +6,19 @@ import { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
 import { subpageApiPath } from '../subpage/subpageApiPath.ts';
 import { toCredits } from './toCredits.ts';
+import { canSeePortraits } from '../images/canSeePortraits.ts';
+import type { PortraitOf } from '../images/castHeadshot.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'>;
 
 type People = z.infer<typeof seasonPeopleSchema>;
 
-const showIdOf = (item: CommentItem) =>
-  item.type === 'show' ? item.id : item.type === 'season' || item.type === 'episode' ? item.show : undefined;
+const portraitOf = (item: CommentItem): PortraitOf | undefined =>
+  item.type === 'movie' || item.type === 'show'
+    ? { media: item.type, id: item.id }
+    : item.type === 'season' || item.type === 'episode'
+      ? { media: 'show', id: item.show }
+      : undefined;
 
 async function readPeople(fetch: typeof globalThis.fetch, path: string): Promise<People> {
   const response = await rawApiFetch({ fetch, path });
@@ -54,7 +60,7 @@ export async function loadCredits({ fetch, parent, item }: Params) {
       crew: people.crew,
       episodeCounts:
         (item.type === 'show' || item.type === 'season') && subpage.settings?.browsing?.spoilers?.actors !== 'hide',
-      showId: showIdOf(subpage.media.item),
+      portraitOf: canSeePortraits(subpage.user) ? portraitOf(subpage.media.item) : undefined,
     }),
   };
 }

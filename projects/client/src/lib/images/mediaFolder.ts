@@ -1,9 +1,9 @@
 import type { MediaImageType } from './MediaImageType.ts';
 
-/** A show cast member's id on media.trakt.tv: the show's Trakt id, then the person's. */
-export type CharacterImageId = `${number}-${number}`;
+/** An actor in character on media.trakt.tv: the show or movie and its Trakt id, then the person's. */
+export type PortraitId = `${'show' | 'movie'}-${number}-${number}`;
 
-const FOLDERS: Readonly<Record<MediaImageType | 'character', string>> = {
+const FOLDERS: Readonly<Record<MediaImageType | 'portrait', string>> = {
   movie: 'movies',
   show: 'shows',
   season: 'seasons',
@@ -12,10 +12,10 @@ const FOLDERS: Readonly<Record<MediaImageType | 'character', string>> = {
   network: 'networks',
   company: 'companies',
   list: 'lists',
-  character: 'characters',
+  portrait: 'portraits',
 };
 
 /** An item's folder on media.trakt.tv: `https://media.trakt.tv/{folder}/{id}/…`. */
-export function mediaFolder(type: MediaImageType | 'character', id: number | CharacterImageId): string {
+export function mediaFolder(type: MediaImageType | 'portrait', id: number | PortraitId): string {
   return `https://media.trakt.tv/${FOLDERS[type]}/${id}`;
 }

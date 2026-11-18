@@ -16,6 +16,7 @@ const ART: readonly (readonly [string, string | null])[] = [
   ['screenshot', fanart],
   ['banner', banner],
   ['headshot', zoidberg],
+  ['portrait', zoidberg],
   // Words drawn over art: with none, the art alone reads better than a placeholder.
   ['logo', null],
   ['clearart', null],

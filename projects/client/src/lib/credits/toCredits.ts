@@ -1,7 +1,7 @@
 import type { z } from 'zod/v4';
 import type { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { countLabel } from '../utils/countLabel.ts';
-import { castHeadshot } from '../images/castHeadshot.ts';
+import { castHeadshot, type PortraitOf } from '../images/castHeadshot.ts';
 import { crewDepartments } from './crewDepartments.ts';
 import { parameterize } from '../utils/parameterize.ts';
 
@@ -38,8 +38,8 @@ type Params = {
   crew: People['crew'];
   /** Episodes and movies have no episode counts. */
   episodeCounts: boolean;
-  /** Shows, seasons and episodes: picks each actor's photo in character. Movies leave it out. */
-  showId?: number;
+  /** Shows each actor in character, for viewers who get portraits. */
+  portraitOf?: PortraitOf;
 };
 
 function group(
@@ -47,7 +47,7 @@ function group(
   members: readonly Member[],
   role: (member: Member) => readonly string[],
   counts: boolean,
-  showId?: number,
+  portraitOf?: PortraitOf,
 ) {
   return {
     id: parameterize(label),
@@ -57,7 +57,7 @@ function group(
       id: member.person.ids.trakt,
       name: member.person.name,
       href: `/people/${member.person.ids.slug}`,
-      image: castHeadshot(member.person.ids.trakt, showId),
+      image: castHeadshot(member.person.ids.trakt, portraitOf),
       gender: member.person.gender ?? undefined,
       // `credits_characters`: "A / B" becomes "A, B".
       role: role(member).join(', '),
@@ -68,14 +68,16 @@ function group(
 }
 
 /** The credits page's actor and crew groups. Empty groups are left out. */
-export function toCredits({ actors, crew, episodeCounts, showId }: Params): {
+export function toCredits({ actors, crew, episodeCounts, portraitOf }: Params): {
   actors: CreditGroup[];
   crew: CreditGroup[];
 } {
   return {
     actors: actors
       .filter(({ members }) => members?.length)
-      .map(({ label, members }) => group(label, members ?? [], ({ characters }) => characters, episodeCounts, showId)),
+      .map(({ label, members }) =>
+        group(label, members ?? [], ({ characters }) => characters, episodeCounts, portraitOf),
+      ),
     crew: crewDepartments(crew).map(({ label, members }) =>
       group(label, members, ({ jobs }) => jobs ?? [], episodeCounts),
     ),

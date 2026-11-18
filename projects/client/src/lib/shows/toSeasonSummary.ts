@@ -18,6 +18,7 @@ import { toCrewGroups } from '../components/summary/toCrewGroups.ts';
 import { seasonName } from '../utils/seasonName.ts';
 import { genreLabel } from '../utils/genreLabel.ts';
 import { toSeasonLinks } from './toSeasonLinks.ts';
+import type { PortraitOf } from '../images/castHeadshot.ts';
 
 interface Params {
   show: ShowResponse;
@@ -31,6 +32,8 @@ interface Params {
   justwatch?: string | null;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
+  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
+  portraits?: boolean;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -38,6 +41,7 @@ interface Params {
 /** Season-specific facts and navigation; the show episode and cast mappers provide the shared rows. */
 export function toSeasonSummary(params: Params) {
   const { show, season, seasons, episodes, stats, ratings, datePreferences, now } = params;
+  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
   const showHref = `/shows/${show.ids.slug}`;
   const href = `${showHref}/seasons/${season.number}`;
   const standardTitle = seasonName(season.number);
@@ -121,8 +125,8 @@ export function toSeasonSummary(params: Params) {
       genres: (show.genres ?? []).map((genre) => ({ name: genreLabel(genre), href: popular('genres', genre) })),
     },
     links: toSeasonLinks({ show, number: season.number, justwatch: params.justwatch }),
-    cast: toCastMembers(params.people.cast, params.actorSpoilers, show.ids.trakt),
-    guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers, show.ids.trakt),
+    cast: toCastMembers(params.people.cast, params.actorSpoilers, portraitOf),
+    guestStars: toCastMembers(params.people.guest_stars, params.actorSpoilers, portraitOf),
     crew: toCrewGroups(params.people.crew, params.actorSpoilers),
     episodes: episodeList.rows,
     seasonLinks: [

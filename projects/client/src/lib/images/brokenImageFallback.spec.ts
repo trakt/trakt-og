@@ -23,7 +23,9 @@ describe('brokenImageFallback', () => {
 
   it('should give a headshot the person placeholder', () => {
     expect(brokenImageFallback('https://media.trakt.tv/people/1/thumb/headshot.webp')).toContain('person');
-    expect(brokenImageFallback('https://media.trakt.tv/characters/1388-17419/thumb/headshot.webp')).toContain('person');
+    expect(brokenImageFallback('https://media.trakt.tv/portraits/show-1388-17419/thumb/portrait.webp')).toContain(
+      'person',
+    );
   });
 
   it("should hide a logo, from the image host or through og's logo route", () => {

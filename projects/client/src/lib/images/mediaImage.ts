@@ -1,14 +1,14 @@
-import { type CharacterImageId, mediaFolder } from './mediaFolder.ts';
+import { type PortraitId, mediaFolder } from './mediaFolder.ts';
 import type { MediaImageSlot } from './MediaImageSlot.ts';
 import type { MediaImageType } from './MediaImageType.ts';
 
 // Art drawn as words or a strip comes in medium and full only.
-const NO_THUMB: ReadonlySet<MediaImageSlot> = new Set(['logo', 'clearart', 'banner']);
+const NO_THUMB: ReadonlySet<string> = new Set<MediaImageSlot>(['logo', 'clearart', 'banner']);
 
 type MediaImageParams = (
   | { readonly type: MediaImageType; readonly id: number; readonly slot: MediaImageSlot }
-  /** An actor in character on a show. */
-  | { readonly type: 'character'; readonly id: CharacterImageId; readonly slot: 'headshot' }
+  /** An actor in character on a show or movie. */
+  | { readonly type: 'portrait'; readonly id: PortraitId; readonly slot: 'portrait' }
 ) & {
   readonly size: 'thumb' | 'medium' | 'full';
   /** Art to try when this one is missing, like the show's poster for a season's (`brokenImageFallback`). */

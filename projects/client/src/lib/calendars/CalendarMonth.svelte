@@ -11,6 +11,7 @@ import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import CalendarEntryCard from './CalendarEntryCard.svelte';
+import CalendarEntryShimmer from './CalendarEntryShimmer.svelte';
 import { monthGrid } from './monthGrid.ts';
 
 interface Props {
@@ -21,10 +22,12 @@ interface Props {
   weekStart?: number;
   /** Shows and movies on one calendar: movies get a Movie tag. */
   mixed?: boolean;
+  /** The month is still reading: an empty day holds a shimmering card. */
+  loading?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { month, days, today, artwork, weekStart = 0, mixed = false, cardIcons }: Props = $props();
+const { month, days, today, artwork, weekStart = 0, mixed = false, loading = false, cardIcons }: Props = $props();
 
 const weeks = $derived(monthGrid({ month, weekStart }));
 const byDate = $derived(new Map(days.map((day) => [day.date, day.entries])));
@@ -85,6 +88,7 @@ const longDate = (date: string) =>
               {#if cell.date === today}<span class="tag">Today</span>{/if}
             </h2>
             <div class="cards">
+              {#if loading && entries.length === 0}<CalendarEntryShimmer {artwork} small />{/if}
               {#each entries as entry (entry.key)}<CalendarEntryCard {entry} icons={cardIcons(entry)} {artwork} {mixed} small />{/each}
             </div>
           </section>

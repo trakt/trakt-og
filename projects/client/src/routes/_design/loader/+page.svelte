@@ -1,7 +1,7 @@
 <!--
   The page loader as lists and progress pages show it, the line along the top while the next page loads, the starfield while og signs in or out, the shimmering bars
-  that hold a number's or a name's place on the home page, the shimmering cards that hold a dashboard panel's place,
-  and a picker's shimmering option rows.
+  that hold a number's or a name's place on the home page, the shimmering cards that hold a dashboard panel's or a
+  calendar day's place, and a picker's shimmering option rows.
 -->
 <script lang="ts">
 import AuthFailureNotice from '#lib/auth/AuthFailureNotice.svelte';
@@ -9,12 +9,15 @@ import { AUTH_SCENES, authLine } from '#lib/auth/authScenes.ts';
 import HyperspaceLoader from '#lib/components/loading/HyperspaceLoader.svelte';
 import LoadingOverlay from '#lib/components/loading/LoadingOverlay.svelte';
 import NavigationProgress from '#lib/components/loading/NavigationProgress.svelte';
+import CalendarEntryShimmer from '#lib/calendars/CalendarEntryShimmer.svelte';
 import CardShimmerRow from '#lib/components/loading/CardShimmerRow.svelte';
 import OptionRowShimmers from '#lib/components/loading/OptionRowShimmers.svelte';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import DemoToggle from '#lib/design/DemoToggle.svelte';
 import Specimen from '#lib/design/Specimen.svelte';
 import Variant from '#lib/design/Variant.svelte';
+
+const CALENDAR_ARTWORKS = ['poster', 'fanart', 'none'] as const;
 
 let leaving = $state(true);
 let stalled = $state(false);
@@ -84,6 +87,15 @@ let stalled = $state(false);
   </Variant>
 </Specimen>
 
+<Specimen title="Calendar card shimmer" row
+  note="CalendarEntryShimmer in an empty day while your calendar's month reads, in the card's own frame for the Display section's artwork: the art at a poster's or a fanart's ratio (Logo, Fanart and Screenshot share it, Text has none), the title and tag lines at their fixed heights, then the quick-icon bar, small for posters and the month grid.">
+  {#each CALENDAR_ARTWORKS as artwork (artwork)}
+    <Variant label={artwork === 'none' ? 'Text' : artwork === 'poster' ? 'Poster' : 'Logo, Fanart, Screenshot'}>
+      <div class={['calendar-card', artwork]}><CalendarEntryShimmer {artwork} /></div>
+    </Variant>
+  {/each}
+</Specimen>
+
 <Specimen title="Option row shimmers" row
   note="OptionRowShimmers while a picker's options load, in the loaded rows' height so the list keeps its size.">
   <Variant label="A filters panel field, as Genres loads">
@@ -132,6 +144,14 @@ let stalled = $state(false);
   border: 1px solid var(--color-menu-border);
   border-radius: var(--radius-menu);
   background-color: var(--color-menu-bg);
+}
+
+.calendar-card {
+  inline-size: var(--calendar-poster-min-width);
+
+  &:not(.poster) {
+    inline-size: calc(var(--calendar-poster-min-width) * 2);
+  }
 }
 
 .home {

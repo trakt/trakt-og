@@ -46,6 +46,15 @@ describe('cachedOnActivity', () => {
     expect(read).toHaveBeenCalledTimes(1);
   });
 
+  it('should read again instead of showing a saved read its accepts check turns down', async () => {
+    await run({ key: () => 'a' });
+    read.mockResolvedValue('other');
+    const onUpdate = vi.fn();
+
+    expect(await run({ key: () => 'a', accepts: () => false, onUpdate })).toBe('other');
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
   it('should read again when the key moves', async () => {
     await run();
     activities = watchedAt('2026-11-17T11:00:00.000Z');

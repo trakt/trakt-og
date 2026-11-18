@@ -104,7 +104,7 @@ const load = ({
   });
 
 const shownKeys = (data: Awaited<ReturnType<typeof load>>) =>
-  data.days.flatMap(({ items }) =>
+  (data.days ?? []).flatMap(({ items }) =>
     items.map((item) =>
       item.type === 'movie' ? `m${item.movie.ids.trakt}` : `${item.show.ids.trakt}s${item.episode.season}`,
     ),
@@ -126,10 +126,12 @@ describe('loadCalendar', () => {
         const data = await load({ target, slug: 'movies', token: target === 'my' ? 'fake-token' : null, start });
         expect(data.window.start).toBe('2026-09-01');
         expect(data.window.dates).toHaveLength(30);
-        expect(shownKeys(data)).toEqual(target === 'my' ? ['m7'] : ['m7', 'm8']);
-        expect(new URL(requestTo(`/calendars/${target}/movies/`)?.url ?? '').pathname).toBe(
-          `/calendars/${target}/movies/2026-08-30/33`,
-        );
+        if (target === 'all') {
+          expect(shownKeys(data)).toEqual(['m7', 'm8']);
+          expect(new URL(requestTo('/calendars/all/movies/')?.url ?? '').pathname).toBe(
+            '/calendars/all/movies/2026-08-30/33',
+          );
+        }
       }
     },
   );
@@ -175,12 +177,6 @@ describe('loadCalendar', () => {
     expect((await load({ cookies })).display).toEqual({ view: 'agenda', artwork: 'logo', episodes: 'each' });
   });
 
-  it('should apply episode types on SSR', async () => {
-    const data = await load({ slug: 'shows', search: '?episode_types=-standard' });
-    expect(shownKeys(data)).toEqual([]);
-    expect(new URL(requestTo('/calendars/my/shows/')?.url ?? '').searchParams.has('episode_types')).toBe(false);
-  });
-
   it('should use the token for watch now on a public calendar, falling back after a 401', async () => {
     server.use(
       http.get(`${API}/calendars/all/movies/:start/:days`, ({ request }) => {
@@ -207,41 +203,14 @@ describe('loadCalendar', () => {
     expect(data.fadeHide).toEqual({ fade: ['watched'], hide: ['rated'] });
   });
 
-  it("should page a whole month whatever the account's period, capping requests", async () => {
+  it("should frame a whole month whatever the account's period", async () => {
     const data = await load({
       start: '2026-08-12',
       calendar: { period: 'week', layout: 'grid', start_day: 'monday', image_type: 'poster' },
     });
-    const requests = seen.filter((request) => new URL(request.url).pathname.startsWith('/calendars/my/'));
-    expect(requests.map((request) => new URL(request.url).pathname).toSorted()).toEqual([
-      '/calendars/my/movies/2026-07-30/17',
-      '/calendars/my/movies/2026-08-17/16',
-      '/calendars/my/shows/2026-07-30/17',
-      '/calendars/my/shows/2026-08-17/16',
-    ]);
-    expect(requests.every((request) => new URL(request.url).searchParams.get('extended') === 'full')).toBe(true);
-    expect(data.days).toHaveLength(31);
-    expect(data.days.at(0)?.date).toBe('2026-08-01');
+    expect(data.window.dates).toHaveLength(31);
+    expect(data.window.dates.at(0)).toBe('2026-08-01');
     expect(data.display.artwork).toBe('poster');
-  });
-
-  it("should fetch each day of a month once, since the worker's days=N covers N + 1 days", async () => {
-    await load({ start: '2026-08-12', calendar: { period: 'month' } });
-    const covered = seen
-      .map((request) => new URL(request.url).pathname.split('/'))
-      .filter((parts) => parts.at(3) === 'shows')
-      .flatMap((parts) => {
-        const start = new Date(`${parts.at(4)}T00:00:00Z`);
-        return Array.from({ length: Number(parts.at(5)) + 1 }, (_, i) => {
-          const day = new Date(start);
-          day.setUTCDate(day.getUTCDate() + i);
-          return day.toISOString().slice(0, 10);
-        });
-      });
-
-    expect(covered).toHaveLength(35);
-    expect(new Set(covered).size).toBe(35);
-    expect([covered.at(0), covered.at(-1)]).toEqual(['2026-07-30', '2026-09-02']);
   });
 
   it("should take today and the month from the viewer's zone", async () => {
@@ -260,42 +229,17 @@ describe('loadCalendar', () => {
       expect(seen.some((request) => new URL(request.url).pathname.endsWith('.ics'))).toBe(false);
     });
 
-    it("should read the viewer's shows and movies with the token and leave out what they hid", async () => {
-      const data = await load({ hideSpecials: true });
+    it("should leave the viewer's month and hidden list to the browser, making no calendar reads", async () => {
+      const data = await load({ search: '?genres=drama', hideSpecials: true });
 
-      for (const type of ['shows', 'movies']) {
-        const calendar = requestTo(`/calendars/my/${type}/`);
-        expect(new URL(calendar?.url ?? '').pathname).toBe(`/calendars/my/${type}/2026-08-30/33`);
-        expect(calendar?.headers.get('authorization')).toBe('Bearer fake-token');
-      }
-      expect(requestTo('/calendars/my/media/')).toBeUndefined();
-      expect(requestTo('/users/hidden/calendar')?.headers.get('authorization')).toBe('Bearer fake-token');
+      expect(seen).toHaveLength(0);
+      expect(data.days).toBeNull();
+      expect(data.totals).toBeUndefined();
       expect(data.calendar.label).toBe('Shows & Movies');
       expect(data.target).toBe('my');
-      expect(shownKeys(data)).toEqual(['m7', '1s1']);
-    });
-
-    it.each(['shows', 'shows-movies'] as const)('should drop specials on %s only with the setting on', async (slug) => {
-      const movies = slug === 'shows-movies' ? ['m7'] : [];
-      expect(shownKeys(await load({ slug, hideSpecials: false }))).toEqual([...movies, '1s1', '1s0']);
-      expect(shownKeys(await load({ slug, hideSpecials: true }))).toEqual([...movies, '1s1']);
-    });
-
-    it("should put a US show on the viewer's own prime time", async () => {
-      const data = await load({ slug: 'shows', timeZone: 'America/Los_Angeles', hideSpecials: true });
-
-      // 9:00 pm Eastern on the 29th is 9:00 pm Pacific on the 29th, not 6:00 pm.
-      const day = data.days.find(({ items }) => items.length > 0);
-      expect(day?.date).toBe('2026-09-29');
-      expect(day?.items.at(0)?.at).toBe('2026-09-30T04:00:00.000Z');
-    });
-
-    it('should show everything when the hidden items fail to load', async () => {
-      server.use(http.get(`${API}/users/hidden/calendar`, () => new HttpResponse(null, { status: 500 })));
-      expect(shownKeys(await load({ slug: 'movies' }))).toEqual(['m7', 'm8']);
-
-      server.use(http.get(`${API}/users/hidden/calendar`, () => HttpResponse.json({ not: 'a list' })));
-      expect(shownKeys(await load({ slug: 'movies' }))).toEqual(['m7', 'm8']);
+      expect(data.window.dates).toHaveLength(30);
+      expect(data.filters.genres.values).toEqual(['drama']);
+      expect(data.preferences.hideSpecials).toBe(true);
     });
 
     it('should send a signed-out viewer to sign in without calling the API', async () => {
@@ -309,25 +253,10 @@ describe('loadCalendar', () => {
       );
     });
 
-    it("should send a viewer whose token stopped working to sign in on the worker's plain-text 401", async () => {
-      server.use(
-        http.get(`${API}/calendars/my/shows/:start/:days`, () => workerUnauthorized()),
-        http.get(`${API}/users/hidden/calendar`, () => workerUnauthorized()),
-      );
-      expect(await redirectOf(load({ stale: true }))).toBe('/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies');
-    });
-
     it('should 404 a calendar OG never had', async () => {
       const thrown = await load({ slug: 'subscriptions' }).catch((e: unknown) => e);
       expect(isHttpError(thrown) && thrown.status).toBe(404);
     });
-  });
-
-  it('should redirect when either monthly chunk reports an expired viewer token', async () => {
-    server.use(http.get(`${API}/calendars/my/movies/2026-08-17/16`, () => new HttpResponse(null, { status: 401 })));
-    expect(await redirectOf(load({ start: '2026-08-12', calendar: { period: 'month' } }))).toBe(
-      '/signin?redirect_to=%2Fcalendars%2Fmy%2Fshows-movies',
-    );
   });
 
   it('should use defaults for a signed-out viewer even if parent settings are populated', async () => {

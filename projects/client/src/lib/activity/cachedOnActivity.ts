@@ -14,6 +14,11 @@ type CachedOnActivityParams<T> = {
   /** How long a saved read lasts even when nothing moved, for what changes without any activity of yours. */
   maxAgeMs: number;
   /**
+   * Whether a saved read, by the key it was saved with, may be shown at all. For a cache that holds one saved read
+   * while its inputs vary (a month of a calendar), so a read for other inputs is never shown in place of this one.
+   */
+  accepts?: (savedKey: string) => boolean;
+  /**
    * Given, a saved read comes back at once, without waiting on `last_activities`, and the fresh read arrives here
    * once the check finds the key moved.
    */
@@ -34,12 +39,13 @@ export async function cachedOnActivity<T>({
   key,
   read,
   maxAgeMs,
+  accepts,
   onUpdate,
   storage = activityCacheStorage(),
   now = Date.now,
 }: CachedOnActivityParams<T>): Promise<T> {
   const saved = storage.load(name, user);
-  const usable = saved && now() - saved.at < maxAgeMs ? saved : null;
+  const usable = saved && now() - saved.at < maxAgeMs && (accepts?.(saved.key) ?? true) ? saved : null;
 
   const refresh = async () => {
     const latest = await activities().catch(() => null);

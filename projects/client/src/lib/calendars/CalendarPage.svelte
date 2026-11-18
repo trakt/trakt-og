@@ -5,6 +5,9 @@
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { viewerFetch } from '#lib/auth/viewerFetch.ts';
+  import { lastActivities } from '#lib/activity/lastActivities.ts';
+  import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
+  import Shimmer from '#lib/components/loading/Shimmer.svelte';
   import { settingsRequest } from '#lib/settings/settingsRequest.ts';
   import { page } from '$app/state';
   import CalendarFeed from '#lib/components/calendar/CalendarFeed.svelte';
@@ -45,7 +48,7 @@
   import list from '#lib/icons/regular/list.svg?raw';
   import { overlay } from '#lib/overlay/overlay.ts';
   import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
-  import { type ComponentProps, onMount, tick } from 'svelte';
+  import { type ComponentProps, onMount, tick, untrack } from 'svelte';
   import { on } from 'svelte/events';
   import type { CalendarItem } from './calendarDays.ts';
   import {
@@ -64,7 +67,10 @@
   import { type CalendarGroup, groupCalendarItems } from './groupCalendarItems.ts';
   import { groupLabel } from './groupLabel.ts';
   import type { loadCalendar } from './loadCalendar.ts';
-  import { MY_CALENDARS } from './myCalendars.ts';
+  import { type MyCalendar, MY_CALENDARS } from './myCalendars.ts';
+  import { calendarWindow } from './calendarWindow.ts';
+  import { startCalendarMonth } from './startCalendarMonth.ts';
+  import type { CalendarMonthData } from './toCalendarMonth.ts';
   import { nearbyMonths } from './nearbyMonths.ts';
   import { PUBLIC_CALENDARS } from './publicCalendars.ts';
   import {
@@ -266,14 +272,94 @@ const current = $derived(
   const options = fadeHideOptions.filter((option) => !('showsOnly' in option));
   let fadeHide = $derived<FadeHide>(data.fadeHide);
 
+  /* ---------- the browser's month ---------- */
+
+  // The Worker renders a My calendar's frame; effects only run in the browser, so its month reads there with the
+  // viewer's own token. A saved month shows at once and a fresh read swaps in later, unless a newer start replaced it.
+  let browserMonth = $state.raw<CalendarMonthData>();
+  let failure = $state.raw<{ error: unknown } | undefined>();
+  let started = 0;
+  let readFor = '';
+  const monthRead = (window: typeof data.window) => {
+    const user = data.user;
+    if (data.days || data.target !== 'my' || !user) return null;
+    return {
+      fetch: viewerFetch(),
+      user: user.slug,
+      slug: data.calendar.slug as MyCalendar['slug'],
+      window,
+      filters: data.filters,
+      timeZone: data.datePreferences.timeZone,
+      hideSpecials: data.preferences.hideSpecials,
+      activities: lastActivities.read,
+    };
+  };
+  function readMonth() {
+    const params = monthRead(data.window);
+    if (!params) return;
+    const start = ++started;
+    // The same month read again (a setting saved, Try again) keeps what shows; another month starts from shimmers.
+    const identity = `${data.calendar.slug}|${data.window.start}|${page.url.search}`;
+    if (identity !== readFor) browserMonth = undefined;
+    readFor = identity;
+    failure = undefined;
+    startCalendarMonth({
+      ...params,
+      onUpdate: (fresh) => {
+        if (start === started) browserMonth = fresh;
+      },
+    }).then(
+      (month) => {
+        if (start === started) browserMonth = month;
+      },
+      (error: unknown) => {
+        if (start === started) failure = { error };
+      },
+    );
+  }
+  $effect(() => {
+    void data;
+    untrack(readMonth);
+  });
+
+  // Reaching for the month pager starts the months on either side, so the next page usually opens with its days.
+  let prefetchedFor: typeof data | undefined;
+  function prefetchNeighbors() {
+    if (prefetchedFor === data) return;
+    prefetchedFor = data;
+    for (const start of [data.window.previous, data.window.next]) {
+      const window = calendarWindow({
+        start,
+        today: data.today,
+        period: 'month',
+        layout: 'list',
+        startDay: data.preferences.startDay,
+      });
+      const params = monthRead(window);
+      if (params) startCalendarMonth({ ...params, onUpdate: () => {} }).catch(() => {});
+    }
+  }
+  const onPagerIntent = (node: HTMLElement) => {
+    node.addEventListener('pointerenter', prefetchNeighbors);
+    node.addEventListener('focusin', prefetchNeighbors);
+    return () => {
+      node.removeEventListener('pointerenter', prefetchNeighbors);
+      node.removeEventListener('focusin', prefetchNeighbors);
+    };
+  };
+
   /* ---------- cards ---------- */
 
   // Off the calendar: anything hidden from it, and any show the viewer dropped.
   const isHidden = (type: 'show' | 'movie', id: number) => overlay.isHidden('calendar', type, id) || type === 'show' && overlay.state('show', id).dropped === true;
 
   const clock = $derived({ ...data.datePreferences, imageType: display.artwork });
-  const shown = $derived(visibleCalendarDays({ days: data.days, isHidden }));
-  const cardOf = $derived(new Map(data.days.flatMap((day) => day.items.map((item) => [item, toCalendarCard(item, clock)] as const))));
+  // A My calendar's month is read in the browser: until it lands, every day is empty and the views show shimmers.
+  const monthDays = $derived(data.days ?? browserMonth?.days ?? data.window.dates.map((date) => ({ date, items: [] })));
+  const totals = $derived(data.days ? data.totals : browserMonth?.totals);
+  const loading = $derived(!data.days && !browserMonth && !failure);
+  const shown = $derived(visibleCalendarDays({ days: monthDays, isHidden }));
+  const cardOf = $derived(new Map(monthDays.flatMap((day) => day.items.map((item) => [item, toCalendarCard(item, clock)] as const))));
 
   type Match = (typeof options)[number]['id'];
   function itemState(item: CalendarItem) {
@@ -289,7 +375,7 @@ const current = $derived(
     const items = group.items.map(itemState);
     if (fadeHide.hide.some((id) => items.every(({ matches }) => matches(id)))) return [];
     const faded = fadeHide.fade.some((id) => items.every(({ matches }) => matches(id)));
-    const label = groupLabel({ group, days: data.days });
+    const label = groupLabel({ group, days: monthDays });
   const grouped = label ? toCalendarGroupCard({ group, label, clock }) : undefined;
     if (grouped) {
       const state = episodeBatchState(items.map(({ state }) => state));
@@ -556,15 +642,19 @@ const weeks = $derived(
     </SidebarTitle>
 
     <div class="counts">
-      {#if kind !== 'movies'}
-        <CountPill count={episodeCount} total={data.totals?.episodes} label="episodes" one="episode" />
-      {/if}
-      {#if kind !== 'shows'}
-        <CountPill count={movieCount} total={data.totals?.movies} label="movies" one="movie" />
+      {#if loading}
+        <Shimmer inline="var(--card-shimmer-title-width)" block="var(--sidebar-pill-height)" />
+      {:else}
+        {#if kind !== 'movies'}
+          <CountPill count={episodeCount} total={totals?.episodes} label="episodes" one="episode" />
+        {/if}
+        {#if kind !== 'shows'}
+          <CountPill count={movieCount} total={totals?.movies} label="movies" one="movie" />
+        {/if}
       {/if}
     </div>
 
-    <div class="month">
+    <div class="month" {@attach onPagerIntent}>
       <MonthPager label={monthLabel} prevHref={href(data.target, data.calendar.slug, data.window.previous)}
         nextHref={href(data.target, data.calendar.slug, data.window.next)}
         todayHref={href(data.target, data.calendar.slug)}
@@ -702,8 +792,11 @@ const weeks = $derived(
   {/snippet}
 
   <div class="calendar" {@attach followScroll}
+    aria-busy={loading}
     {@attach trackDrilldowns({ source: data.target === 'my' ? 'calendar' : 'releases' })}>
-    {#if display.view === 'month'}
+    {#if failure}
+      <LoadFailed what="Calendar" error={failure.error} onretry={readMonth} />
+    {:else if display.view === 'month'}
       <CalendarMonth
         month={month}
         days={days}
@@ -711,6 +804,7 @@ const weeks = $derived(
         artwork={display.artwork}
         weekStart={weekStart}
         mixed={mixed}
+        {loading}
         cardIcons={cardIcons}
       />
     {:else if display.view === 'agenda'}
@@ -719,6 +813,7 @@ const weeks = $derived(
         today={data.today}
         artwork={display.artwork}
         mixed={mixed}
+        {loading}
         cardIcons={cardIcons}
       />
     {:else}
@@ -727,6 +822,7 @@ const weeks = $derived(
         today={data.today}
         artwork={display.artwork}
         mixed={mixed}
+        {loading}
         cardIcons={cardIcons}
       />
     {/if}

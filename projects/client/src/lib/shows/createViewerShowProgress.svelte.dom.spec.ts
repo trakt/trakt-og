@@ -1,6 +1,7 @@
 import type { EpisodeResponse } from '@trakt/api';
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { recentReads } from '../api/recentReads.ts';
 import { createViewerShowProgress } from './createViewerShowProgress.svelte.ts';
 import { fetchShowProgress } from './fetchShowProgress.ts';
 import type { ShowProgressBase } from './toShowProgress.ts';
@@ -24,7 +25,11 @@ const watchNext = {
 } as EpisodeResponse;
 
 const cleanups: (() => void)[] = [];
-afterEach(() => cleanups.splice(0).forEach((cleanup) => cleanup()));
+afterEach(() => {
+  cleanups.splice(0).forEach((cleanup) => cleanup());
+  recentReads.forget();
+  vi.mocked(fetchShowProgress).mockReset();
+});
 
 const track = (params: () => Parameters<typeof createViewerShowProgress>[0] extends () => infer P ? P : never) => {
   let viewer!: ReturnType<typeof createViewerShowProgress>;
@@ -60,6 +65,20 @@ describe('createViewerShowProgress', () => {
     const viewer = track(() => ({ showId: 1, base, datePreferences }));
 
     await vi.waitFor(() => expect(viewer.view).toBeNull());
+  });
+
+  it('should show the kept progress at once on the next visit, and read again after a write', async () => {
+    vi.mocked(fetchShowProgress).mockResolvedValue({ next_episode: watchNext });
+    const first = track(() => ({ showId: 1, base, datePreferences }));
+    await vi.waitFor(() => expect(first.view).not.toBeUndefined());
+
+    const again = track(() => ({ showId: 1, base, datePreferences }));
+    await vi.waitFor(() => expect(again.view).not.toBeUndefined());
+    expect(fetchShowProgress).toHaveBeenCalledTimes(1);
+
+    recentReads.forget();
+    track(() => ({ showId: 1, base, datePreferences }));
+    expect(fetchShowProgress).toHaveBeenCalledTimes(2);
   });
 
   it('should go back to waiting when the page moves to another show', async () => {

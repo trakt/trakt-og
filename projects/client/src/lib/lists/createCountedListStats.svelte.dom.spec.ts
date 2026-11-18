@@ -1,5 +1,6 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { recentReads } from '../api/recentReads.ts';
 import { createCountedListStats } from './createCountedListStats.svelte.ts';
 import { fetchListStats } from './fetchListStats.ts';
 import type { ListStatsRead } from './ListStatsRead.ts';
@@ -20,6 +21,7 @@ const statsRead = (base: string): ListStatsRead => ({
 const cleanups: (() => void)[] = [];
 afterEach(() => {
   cleanups.splice(0).forEach((cleanup) => cleanup());
+  recentReads.forget();
   vi.mocked(fetchListStats).mockReset();
 });
 
@@ -49,6 +51,17 @@ describe('createCountedListStats', () => {
 
     await expect(counting.stats).resolves.toBe(counted);
     await vi.waitFor(() => expect(counting.settled).toBe(counted));
+  });
+
+  it('should hand over the kept count on the next visit without counting again', async () => {
+    vi.mocked(fetchListStats).mockResolvedValue(counted);
+    const first = statsRead('/lists/1/items');
+    const next = statsRead('/lists/1/items');
+    track(() => first);
+    const again = track(() => next);
+
+    await vi.waitFor(() => expect(again.settled).toBe(counted));
+    expect(fetchListStats).toHaveBeenCalledTimes(1);
   });
 
   it('should settle to null when the count fails', async () => {

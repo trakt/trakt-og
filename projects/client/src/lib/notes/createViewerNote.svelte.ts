@@ -1,3 +1,4 @@
+import { recentReads } from '../api/recentReads.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
 import type { NotableItem } from './NotableItem.ts';
 import type { PrivateNote } from './PrivateNote.ts';
@@ -10,7 +11,8 @@ type Params = {
 
 /**
  * A signed-in viewer's private note on an item, read in the browser after paint so the server renders without it.
- * Null while it loads, when there's none, and signed out.
+ * Null while it loads, when there's none, and signed out. Kept in memory for a few minutes, so going Back shows it at
+ * once; saving a note lets go of it.
  */
 export function createViewerNote(params: () => Params) {
   let read = $state<{ type: string; id: number; note: PrivateNote | null }>();
@@ -20,7 +22,10 @@ export function createViewerNote(params: () => Params) {
     if (!signedIn) return;
     const { type, id } = item;
     let current = true;
-    void fetchPrivateNote({ fetch: viewerFetch(), token: null, item }).then((note) => {
+    const reading = recentReads.read(`note:${type}:${id}`, () =>
+      fetchPrivateNote({ fetch: viewerFetch(), token: null, item }),
+    );
+    void reading.then((note) => {
       if (current) read = { type, id, note };
     });
     return () => {

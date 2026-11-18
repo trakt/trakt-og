@@ -63,6 +63,8 @@ type CreateOverlayParams = {
   storage: OverlayStorage;
   /** The shared `last_activities` reader; by default one of its own over `get`. */
   activities?: ReadLastActivities;
+  /** Runs on every optimistic write, so reads kept elsewhere can let go of what it changes. */
+  onWrite?: () => void;
   now?: () => number;
 };
 
@@ -275,6 +277,7 @@ export function createOverlay({
   storage,
   now = Date.now,
   activities = createLastActivities({ get, now }).read,
+  onWrite = () => {},
 }: CreateOverlayParams) {
   let slices = $state.raw<Partial<OverlaySlices>>({});
   let user: string | null = null;
@@ -423,6 +426,7 @@ export function createOverlay({
 
       const after = update(base);
       slices = { ...slices, [name]: after };
+      onWrite();
       return () => {
         if (slices[name] === after) slices = { ...slices, [name]: before };
       };

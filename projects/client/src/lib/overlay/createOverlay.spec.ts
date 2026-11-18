@@ -104,9 +104,9 @@ function fakeStorage(seed: Record<string, SliceRecord[]> = {}) {
   return { storage, records };
 }
 
-const setup = (seed?: Record<string, SliceRecord[]>, now = () => 0) => {
+const setup = (seed?: Record<string, SliceRecord[]>, now = () => 0, onWrite?: () => void) => {
   const { storage, records } = fakeStorage(seed);
-  const overlay = createOverlay({ get: (path) => rawApiFetch({ path, token: 't' }), storage, now });
+  const overlay = createOverlay({ get: (path) => rawApiFetch({ path, token: 't' }), storage, now, onWrite });
   return { overlay, records };
 };
 
@@ -438,6 +438,17 @@ describe('createOverlay', () => {
   });
 
   describe('patch', () => {
+    it('should tell onWrite about each write, but not about a slice it leaves alone', async () => {
+      const onWrite = vi.fn();
+      const { overlay } = setup(undefined, () => 0, onWrite);
+      overlay.patch('dropped', (dropped) => new Set([...dropped.keys(), 7]));
+      expect(onWrite).not.toHaveBeenCalled();
+
+      await overlay.start('sean');
+      overlay.patch('dropped', (dropped) => new Set([...dropped.keys(), 7]));
+      expect(onWrite).toHaveBeenCalledTimes(1);
+    });
+
     it('should apply the update and roll it back', async () => {
       const { overlay } = setup();
       await overlay.start('sean');

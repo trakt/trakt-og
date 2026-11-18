@@ -1,3 +1,4 @@
+import { recentReads } from '../api/recentReads.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
 import { fetchListStats } from './fetchListStats.ts';
 import type { ListStatsRead } from './ListStatsRead.ts';
@@ -8,7 +9,8 @@ const PENDING = new Promise<never>(() => {});
 /**
  * A longer list's stats, counted over every page in the browser: the server renders the bar's shimmer, and effects only
  * run here. `stats` stays pending until the current read's count lands; `settled` is undefined while it counts and null
- * when it couldn't be counted. A count for an earlier read never shows for the next.
+ * when it couldn't be counted. A count for an earlier read never shows for the next. Kept in memory for a few minutes,
+ * so going Back shows it at once; any list or play change lets go of it.
  */
 export function createCountedListStats(read: () => ListStatsRead | null) {
   // Raw, so each read keeps its identity: a proxy of it would never match the page's current read.
@@ -18,7 +20,10 @@ export function createCountedListStats(read: () => ListStatsRead | null) {
   $effect(() => {
     const current = read();
     if (!current) return;
-    const stats = fetchListStats({ ...current, fetch: current.viewer ? viewerFetch() : globalThis.fetch });
+    const { base, query, total, withItems, viewer } = current;
+    const stats = recentReads.read(`list-stats:${JSON.stringify([base, query, total, withItems, viewer])}`, () =>
+      fetchListStats({ ...current, fetch: viewer ? viewerFetch() : globalThis.fetch }),
+    );
     counted = { read: current, stats };
     void stats
       .catch(() => null)

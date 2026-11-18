@@ -1,4 +1,5 @@
 import type { DatePreferences } from '../settings/DatePreferences.ts';
+import { recentReads } from '../api/recentReads.ts';
 import { viewerFetch } from '../auth/viewerFetch.ts';
 import { fetchShowProgress } from './fetchShowProgress.ts';
 import { type ShowProgress, type ShowProgressBase, toShowProgress } from './toShowProgress.ts';
@@ -12,7 +13,8 @@ type Params = {
 
 /**
  * A signed-in viewer's progress on a show, read in the browser after paint so the server renders without it. `view`
- * is undefined while it loads, and null when there is none to show: signed out, or the read failed.
+ * is undefined while it loads, and null when there is none to show: signed out, or the read failed. Kept in memory for
+ * a few minutes, so going Back shows it at once; any play or other write lets go of it.
  */
 export function createViewerShowProgress(params: () => Params) {
   let read = $state.raw<{ showId: number; progress: ShowProgress | null; now: Date }>();
@@ -21,7 +23,8 @@ export function createViewerShowProgress(params: () => Params) {
     const { showId, base } = params();
     if (!base) return;
     let current = true;
-    void fetchShowProgress({ fetch: viewerFetch(), showId }).then((progress) => {
+    const reading = recentReads.read(`progress:${showId}`, () => fetchShowProgress({ fetch: viewerFetch(), showId }));
+    void reading.then((progress) => {
       // eslint-disable-next-line svelte/prefer-svelte-reactivity -- the time the read landed, never mutated
       if (current) read = { showId, progress, now: new Date() };
     });

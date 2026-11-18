@@ -12,6 +12,7 @@ import type { ComponentProps } from 'svelte';
 import type { CalendarArtwork } from './calendarDisplay.ts';
 import type { CalendarEntry } from './CalendarEntry.ts';
 import CalendarEntryCard from './CalendarEntryCard.svelte';
+import CalendarEntryShimmer from './CalendarEntryShimmer.svelte';
 
 interface Props {
   days: readonly { readonly date: string; readonly entries: readonly CalendarEntry[] }[];
@@ -19,17 +20,23 @@ interface Props {
   artwork: CalendarArtwork;
   /** Shows and movies on one calendar: movies get a Movie tag. */
   mixed?: boolean;
+  /** The month is still reading: an empty day holds a shimmering card instead of saying it's empty. */
+  loading?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
+const { days, today, artwork, mixed = false, loading = false, cardIcons }: Props = $props();
 </script>
 
 <div class={['calendar-list', artwork]}>
   {#each days as day (day.date)}
     <section class="day" id="day-{day.date}" data-day={day.date}>
       <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} />
-      {#if day.entries.length === 0}
+      {#if day.entries.length === 0 && loading}
+        <div class="width">
+          <div class="cards"><CalendarEntryShimmer {artwork} /></div>
+        </div>
+      {:else if day.entries.length === 0}
         <div class="empty"><EmptyState title="Nothing on this day." /></div>
       {:else}
         <div class="width">

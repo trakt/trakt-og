@@ -7,11 +7,9 @@ import { type FilterSource, toFilterSources } from '../components/filters/watchN
 import { calendarDisplay } from './calendarDisplay.ts';
 import { calendarFilters } from './calendarFilters.ts';
 import { calendarWatchNow } from './calendarWatchNow.ts';
-import { matchesCalendarFilters } from './matchesCalendarFilters.ts';
 import { api } from '../api/api.ts';
 import { parseFadeHide } from '../components/filters/fadeHide.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
-import { calendarDays } from './calendarDays.ts';
 import { calendarRanges } from './calendarRanges.ts';
 import { calendarWindow } from './calendarWindow.ts';
 import { calendarFeedUrls } from './calendarFeedUrls.ts';
@@ -19,9 +17,8 @@ import { fetchCalendar } from './fetchCalendar.ts';
 import { fetchHiddenCalendar, type HiddenCalendar } from './fetchHiddenCalendar.ts';
 import { MY_CALENDARS } from './myCalendars.ts';
 import { PUBLIC_CALENDARS } from './publicCalendars.ts';
-import { viewerAirTime } from './viewerAirTime.ts';
+import { toCalendarMonth } from './toCalendarMonth.ts';
 import { toCalendarPreferences } from './toCalendarPreferences.ts';
-import { withoutHidden } from './withoutHidden.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
 type LoadCalendarParams = {
@@ -46,7 +43,8 @@ const NOTHING_HIDDEN: HiddenCalendar = { shows: new Set(), movies: new Set() };
  * from their cookies. The public calendars go without the user's token: a stale cookie token would get a
  * 401 from the worker for data that doesn't depend on it. The My calendars need one, and send a signed-out viewer (or
  * one whose token stopped working) to sign in. Signed in, both leave out what the viewer hid from the calendar, and
- * specials with the "hide specials" setting on, as OG did on every calendar.
+ * specials with the "hide specials" setting on, as OG did on every calendar. A My calendar is private, so the Worker
+ * sends only its frame (`days` is null) and `startCalendarMonth` reads the month in the browser.
  */
 export async function loadCalendar({
   fetch,
@@ -65,8 +63,10 @@ export async function loadCalendar({
   if (target === 'my' && !token) signInRedirect(url);
 
   // The feed range depends on the account's start day, so the calendar waits for the shared settings. The hidden list
-  // (never rejects) only filters the result, so the calendar doesn't wait for it.
-  const hiddenItems = token ? fetchHiddenCalendar({ fetch, token }) : Promise.resolve(NOTHING_HIDDEN);
+  // (never rejects) only filters the result, so the calendar doesn't wait for it. A My calendar's reads, this one
+  // included, start in the browser instead.
+  const hiddenItems =
+    token && target === 'all' ? fetchHiddenCalendar({ fetch, token }) : Promise.resolve(NOTHING_HIDDEN);
   const { datePreferences, settings } = await parent();
   const preferences = toCalendarPreferences(token ? settings : null);
   const { timeZone } = datePreferences;
@@ -106,19 +106,28 @@ export async function loadCalendar({
     );
   // Filtered, the sidebar counts "12 of 40": the same month without filters, fetched alongside.
   const filtered = hasAdvancedFilters(filters);
-  const [responses, unfilteredResponses, hidden] = await Promise.all([
-    fetchItems(query, calendarToken),
-    filtered ? fetchItems({}, target === 'my' ? token : null) : Promise.resolve(undefined),
-    hiddenItems,
-  ]);
-  if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) signInRedirect(url);
-  const flatten = (lists: typeof responses) => lists.flatMap((items) => (items === 'signed-out' ? [] : items));
-  const visible = (items: ReturnType<typeof flatten>) =>
-    withoutHidden(items, { hidden, hideSpecials: preferences.hideSpecials });
-  const shown = visible(flatten(responses).filter((item) => matchesCalendarFilters(item, filters)));
-  const toDays = (items: ReturnType<typeof visible>) =>
-    calendarDays({ dates: window.dates, items: items.map((item) => viewerAirTime(item, timeZone)), timeZone });
-  const unfiltered = unfilteredResponses ? toDays(visible(flatten(unfilteredResponses))) : undefined;
+  const month =
+    target === 'my'
+      ? undefined
+      : await Promise.all([
+          fetchItems(query, calendarToken),
+          filtered ? fetchItems({}, null) : Promise.resolve(undefined),
+          hiddenItems,
+        ]).then(([responses, unfilteredResponses, hidden]) => {
+          if ([...responses, ...(unfilteredResponses ?? [])].some((items) => items === 'signed-out')) {
+            signInRedirect(url);
+          }
+          const flatten = (lists: typeof responses) => lists.flatMap((items) => (items === 'signed-out' ? [] : items));
+          return toCalendarMonth({
+            items: flatten(responses),
+            unfilteredItems: unfilteredResponses && flatten(unfilteredResponses),
+            hidden,
+            hideSpecials: preferences.hideSpecials,
+            filters,
+            dates: window.dates,
+            timeZone,
+          });
+        });
 
   return {
     calendar,
@@ -132,12 +141,10 @@ export async function loadCalendar({
     window,
     preferences,
     display,
-    days: toDays(shown),
+    /** Null for a My calendar: the browser reads its month, since it is private and costly on the Worker. */
+    days: month?.days ?? null,
     /** Without filters: what the sidebar's counts are out of. Left out when nothing is filtered. */
-    totals: unfiltered && {
-      episodes: unfiltered.flatMap((day) => day.items).filter((item) => item.type === 'episode').length,
-      movies: unfiltered.flatMap((day) => day.items).filter((item) => item.type === 'movie').length,
-    },
+    totals: month?.totals,
     // OG's eye menu, one choice for every calendar (`filter-fade-calendars-*`). The page fades and hides by the overlay.
     fadeHide: {
       fade: parseFadeHide(cookies.get('filter-fade-calendars')),

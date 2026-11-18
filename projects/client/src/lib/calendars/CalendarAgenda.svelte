@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 import CalendarDayHeader from '#lib/components/calendar/CalendarDayHeader.svelte';
+import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
 import type QuickIcons from '#lib/components/media/QuickIcons.svelte';
 import type { ComponentProps } from 'svelte';
@@ -20,17 +21,26 @@ interface Props {
   artwork: CalendarArtwork;
   /** Shows and movies on one calendar: movies get a Movie tag. */
   mixed?: boolean;
+  /** The month is still reading: an empty day holds a shimmering row instead of saying it's empty. */
+  loading?: boolean;
   cardIcons: (entry: CalendarEntry) => Omit<ComponentProps<typeof QuickIcons>, 'small'>;
 }
 
-const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
+const { days, today, artwork, mixed = false, loading = false, cardIcons }: Props = $props();
 </script>
 
 <div class={['calendar-agenda', artwork]}>
   {#each days as day (day.date)}
     <section class="day" id="day-{day.date}" data-day={day.date}>
       <CalendarDayHeader date={day.date} today={day.date === today} past={day.date < today} />
-      {#if day.entries.length === 0}
+      {#if day.entries.length === 0 && loading}
+        <div class="slot" aria-hidden="true">
+          <p class="time"><Shimmer inline="var(--card-shimmer-subtitle-width)" block="var(--font-size-card-subtitle)" /></p>
+          <ul class="rows">
+            <li class={['row-shimmer', artwork]}><Shimmer inline="100%" block="100%" /></li>
+          </ul>
+        </div>
+      {:else if day.entries.length === 0}
         <div class="empty"><EmptyState title="Nothing on this day." /></div>
       {:else}
         {#each agendaSlots(day.entries) as slot, i (i)}
@@ -99,6 +109,16 @@ const { days, today, artwork, mixed = false, cardIcons }: Props = $props();
 
   & li + li {
     border-block-start: 1px solid var(--color-frame-line);
+  }
+}
+
+/* A row's place while the month reads, at the loaded row's height for the artwork. */
+.row-shimmer {
+  display: flex;
+  block-size: var(--calendar-agenda-row-height);
+
+  &.none {
+    block-size: var(--calendar-agenda-text-row-height);
   }
 }
 </style>

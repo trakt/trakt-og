@@ -538,6 +538,8 @@
   --font-size-help-text: 14px;
   /* A section heading's icon as a faint watermark, mostly in the margin left of the title (HeadingMark). */
   --font-size-heading-mark: 80px;
+  --size-heading-live-dot: 14px; /* Watching Now's pulsing dot in place of the watermark */
+  --space-heading-live-dot: 30px; /* that dot's left edge, out past the title's start */
   --space-heading-mark-inline: -56px;
   --space-heading-mark-block: -12px;
   --color-heading-mark: color-mix(in srgb, currentColor 6%, transparent);
@@ -782,14 +784,17 @@
 
   /* The dashboard's Social Feed: watching-now tiles, the Earlier timeline and the Comments column */
   --color-social-feed-bg: light-dark(var(--gray-lighter), var(--dk-bg2));
+  --color-social-live-bg: light-dark(#e5e5e5, var(--dk-bg3)); /* Watching Now, a shade off the Social Feed under it */
+  --color-social-fold-scrim: rgb(0 0 0 / 0.55); /* over a poster that stands for a member's other titles */
+  --font-size-social-fold: 34px; /* that poster's "+15" */
   --color-social-live: light-dark(var(--brand-primary), #ff3b42);
   --color-social-live-glow: light-dark(rgb(237 28 36 / 0.45), rgb(255 59 66 / 0.5));
   --color-social-done: light-dark(var(--brand-success), #6cc96c);
   --color-social-on-image: #fff;
   --space-social-band: 30px; /* above and below the Most Active band */
-  --space-social-live-top: 12px; /* the dropdowns to the watching now cards (or the posters), over the grid's own gutter */
+  --space-social-live-top: 12px; /* a heading's dropdowns, or Watching Now's heading, to the cards, over the grid's own gutter */
   --social-shimmer-dropdown-width: 130px; /* a Period or View dropdown's place until the feed lands */
-  --space-social-live-end: 12px; /* the watching now cards' last line to the posters' faces */
+  --space-social-live-end: 34px; /* the watching now cards' last line to the panel's end, or its less and more pill */
   --space-social-grid-end: 14px; /* the last posters' lines to the less and more pill */
   --social-face: 28px; /* who's on a grid poster */
   --social-face-lift: 8px; /* how far the faces sit out past the poster's corner */

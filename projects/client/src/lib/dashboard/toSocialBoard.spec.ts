@@ -25,12 +25,46 @@ const card = (view: SocialView, key: string, live?: Parameters<typeof board>[1])
 
 describe('toSocialBoard', () => {
   describe('by title', () => {
-    it("should list each title by who's touched it last, leaving out who's watching now", () => {
+    it("should give each member's latest title a turn before anyone's next, leaving out who's watching now", () => {
       expect(
         board('title')
-          .cards.slice(0, 3)
+          .cards.slice(0, 6)
           .map(({ key }) => key),
-      ).toEqual(['title:show:that-70s-show', 'title:show:home-improvement', 'title:show:lizzie-mcguire']);
+      ).toEqual([
+        'title:show:that-70s-show',
+        'title:show:persona-2025',
+        'title:show:lanterns',
+        'title:show:the-paper-2025',
+        'title:show:paw-patrol',
+        'title:show:home-improvement',
+      ]);
+    });
+
+    it("should fold a member's titles past two into one card opening their history for the period", () => {
+      const { cards, total } = board('title');
+      const more = card('title', 'more:sample-kristin');
+
+      expect(total).toBe(23);
+      expect(cards).toHaveLength(9);
+      expect(cards.filter(({ members }) => members[0]?.key === 'sample-kristin').map(({ key }) => key)).toEqual([
+        'title:show:that-70s-show',
+        'title:show:home-improvement',
+        'more:sample-kristin',
+      ]);
+      expect(more).toMatchObject({ title: 'Kristin', folded: 15, members: [{ key: 'sample-kristin' }] });
+      expect(text(more)).toBe('15 more titles');
+      expect(more.href).toBe(
+        '/users/sample-kristin/history?start_at=2026-09-29T12%3A00%3A00.000Z&end_at=2026-09-30T12%3A00%3A00.000Z',
+      );
+    });
+
+    it('should show a third title rather than fold just one', () => {
+      const three = new Set(['show:that-70s-show', 'show:home-improvement', 'show:lizzie-mcguire']);
+      const fewer = items.filter(({ member, title }) => member.key !== 'sample-kristin' || three.has(title.key));
+      const { cards } = toSocialBoard({ items: fewer, live: [], view: 'title', windows, now, datePreferences });
+
+      expect(cards.map(({ key }) => key)).toContain('title:show:lizzie-mcguire');
+      expect(cards.map(({ key }) => key)).not.toContain('more:sample-kristin');
     });
 
     it('should count the friends on a title, latest first', () => {

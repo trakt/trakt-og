@@ -100,6 +100,7 @@ describe('fetchWatching', () => {
           name: 'Weapons',
           href: '/movies/weapons-2025',
           poster: 'https://media.trakt.tv/movies/867094/thumb/poster.webp',
+          year: 2025,
           target: weapons,
         },
         target: weapons,

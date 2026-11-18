@@ -117,6 +117,7 @@ interface Props {
   rows={rows.rows}
   maxRows={rows.maxRows}
   onchange={changeRows}
+  edge
 />
   {/snippet}
   {@render panel(false, cards, list, list.cards.length > 0 ? navigator : undefined)}

@@ -7,6 +7,7 @@ import MediaSpoiler from '#lib/components/summary/MediaSpoiler.svelte';
 import AdditionalStat from '#lib/components/summary/AdditionalStat.svelte';
 import AdditionalStats from '#lib/components/summary/AdditionalStats.svelte';
 import NameList from '#lib/components/summary/NameList.svelte';
+import { studioNames } from '#lib/components/filters/studioNames.svelte.ts';
 import Overview from '#lib/components/summary/Overview.svelte';
 import PrivateNotes from '#lib/components/summary/PrivateNotes.svelte';
 import { createViewerNote } from '#lib/notes/createViewerNote.svelte.ts';
@@ -22,6 +23,8 @@ interface Props {
 const { show, privateNotes }: Props = $props();
 const viewerNote = createViewerNote(() => privateNotes);
 const facts = $derived(show.facts);
+// Kept so a studio's link opens its chart with the studio's name already on the chip.
+$effect(() => studioNames.remember(facts.studios));
 const textLinks = $derived(show.links.filter(({ icon }) => !icon));
 </script>
 

@@ -8,6 +8,7 @@ const listParams: Record<Exclude<ListFilterKey, 'episode_types'>, string> = {
   languages: 'languages',
   countries: 'countries',
   networks: 'networks',
+  studios: 'studios',
   status: 'statuses',
 };
 

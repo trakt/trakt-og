@@ -14,6 +14,7 @@ export const smartListFilterKeys = {
     languages: 'languages',
     countries: 'countries',
     networks: 'networks',
+    studios: 'studios',
     status: 'statuses',
   },
   ranges: {

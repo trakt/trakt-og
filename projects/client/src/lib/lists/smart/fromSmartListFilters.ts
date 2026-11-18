@@ -58,8 +58,8 @@ const toRange = (range: readonly number[] | undefined): Range | null | undefined
 };
 
 /**
- * A smart list's filters as the chart panel's, or null when it holds one the panel can't show (keywords, studios,
- * people, the hide switches, a left-out service, an open-ended range, a parental guide floor or keeping unrated
+ * A smart list's filters as the chart panel's, or null when it holds one the panel can't show (keywords, people,
+ * the hide switches, a left-out service, an open-ended range, a parental guide floor or keeping unrated
  * titles). Those lists open as a list instead.
  */
 export function fromSmartListFilters(filters: SmartListFilters): AdvancedFilters | null {

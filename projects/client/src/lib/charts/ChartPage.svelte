@@ -19,6 +19,7 @@ import { expireHideCookie } from '#lib/components/filters/expireHideCookie.ts';
 import FiltersPanel from '#lib/components/filters/FiltersPanel.svelte';
 import { type AdvancedFilters, advancedFiltersSearch } from '#lib/components/filters/advancedFilters.ts';
 import { filterChips } from '#lib/components/filters/filterChips.ts';
+import { studioNames } from '#lib/components/filters/studioNames.svelte.ts';
 import { fromFilterDraft, toFilterDraft } from '#lib/components/filters/filterDraft.ts';
 import { withoutFilterTag } from '#lib/components/filters/withoutFilterTag.ts';
 import { trackFilterChanges } from '#lib/components/filters/trackFilterChanges.ts';
@@ -175,6 +176,12 @@ const advanced = $derived.by(() => {
     favorites: data.watchNowFavorites,
   });
   return { config, filters, chips, count: chips.length };
+});
+
+// The URL only names studios by slug, so the browser looks up the names it hasn't seen.
+$effect(() => {
+  const { values, excluded = [] } = advanced.filters.studios;
+  studioNames.resolve([...values, ...excluded]);
 });
 let panelOpen = $state(false);
 let funnel = $state<HTMLButtonElement>();

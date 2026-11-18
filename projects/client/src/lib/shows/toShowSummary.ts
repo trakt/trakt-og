@@ -164,7 +164,7 @@ function facts({ show, studios, people, now, day, airs }: Facts) {
       name: languageName(code),
       href: popular('languages', code),
     })),
-    studios: studios.map(({ name, ids }) => ({ name, href: popular('studio_ids', ids.trakt) })),
+    studios: studios.map(({ name, ids }) => ({ name, slug: ids.slug, href: popular('studios', ids.slug) })),
     genres: (show.genres ?? []).map((genre) => ({
       name: genreLabel(genre),
       href: popular('genres', genre),

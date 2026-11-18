@@ -1,7 +1,7 @@
 <!--
   The band under the hero: the `WorldMap` of where people are watching the trending titles right now, and beside it
-  the ten countries with the most, sharing one lit country, at one decimal. For directors, the heading's see-more
-  link opens the live page.
+  the ten countries with the most, sharing one lit country, at one decimal. For VIPs and directors, the heading's
+  see-more link opens the live page.
 -->
 <script lang="ts">
 import PanelHeading from '#lib/components/dashboard/PanelHeading.svelte';
@@ -9,6 +9,7 @@ import PanelHelp from '#lib/components/dashboard/PanelHelp.svelte';
 import CountryRanking from '#lib/components/worldmap/CountryRanking.svelte';
 import WorldMap from '#lib/components/worldmap/WorldMap.svelte';
 import globe from '#lib/icons/solid/globe.svg?raw';
+import { canSeeLive } from '#lib/live/canSeeLive.ts';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import type { HomeLive } from './live/toHomeLive.ts';
@@ -26,7 +27,7 @@ const count = (n: number) => n.toLocaleString('en-US');
 let lit = $state<string | null>(null);
 const countries = $derived(live?.countries ?? null);
 const ranks = $derived(!live || live.countries.some(({ watching }) => watching));
-const seeLive = $derived(page.data.user?.isDirector ? { href: resolve('/live'), text: 'Watch it live' } : undefined);
+const seeLive = $derived(canSeeLive(page.data.user) ? { href: resolve('/live'), text: 'Watch it live' } : undefined);
 </script>
 
 <section class="band" aria-labelledby="home-map-title" aria-busy={!live}>

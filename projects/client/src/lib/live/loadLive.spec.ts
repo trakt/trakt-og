@@ -5,7 +5,7 @@ import { loadLive } from './loadLive.ts';
 
 const live = { shows: 10, movies: 5, countries: [] };
 const homeLive: typeof loadHomeLive = () => ({ trending: Promise.resolve(null), live: Promise.resolve(live) });
-const member = (isDirector: boolean) => ({ isVip: true, isDirector }) as HeaderUser;
+const member = (isVip: boolean, isDirector = false) => ({ isVip, isDirector }) as HeaderUser;
 const params = (token: string | null, user: HeaderUser | null) => ({
   fetch,
   liveFetch: fetch,
@@ -24,14 +24,20 @@ describe('loadLive', () => {
     });
   });
 
-  it("should stream the home page's snapshot to a director, who gets it live", async () => {
+  it("should stream the home page's snapshot to a VIP, who gets it live", async () => {
     const data = await loadLive(params('token', member(true)));
 
     expect(data.vip).toBe(true);
     expect(await data.live).toEqual(live);
   });
 
-  it("should 404 for a member who isn't a director, while it's tried out", async () => {
+  it('should let a director in, who gets it live', async () => {
+    const data = await loadLive(params('token', member(false, true)));
+
+    expect(data.vip).toBe(true);
+  });
+
+  it('should 404 for a member without VIP', async () => {
     await expect(loadLive(params('token', member(false)))).rejects.toMatchObject({ status: 404 });
   });
 });

@@ -13,6 +13,8 @@ type Params = {
   counts: StatsCounts;
   /** The full count, run when nothing saved still matches. */
   read: () => Promise<UserStats>;
+  /** Given, saved stats come back at once and a recount arrives here if your activity moved. */
+  onUpdate?: (stats: UserStats) => void;
 } & Pick<Parameters<typeof cachedOnActivity>[0], 'storage' | 'now'>;
 
 /**

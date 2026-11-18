@@ -65,22 +65,9 @@ const load = (token: string | null = 'token', cookies: Record<string, string> = 
     now: new Date('2026-09-30T12:00:00Z'),
   });
 
-// Every streamed panel, settled so none of its requests runs on into the next test.
-const panels = (data: Awaited<ReturnType<typeof load>>) =>
-  [
-    data.upNext,
-    data.schedule,
-    data.watchlist,
-    data.lastThirtyDays,
-    data.recentlyWatched,
-    data.socialFeed,
-    data.recommendations,
-  ].map((panel) => panel?.catch(() => null));
-
 describe('loadDashboard', () => {
   it('should authenticate viewer reads and map greeting and request dates with layout preferences', async () => {
     const data = await load();
-    await Promise.all(panels(data));
     expect(data.profile.firstName).toBe('OG');
     expect(data.memberSince).toBe('Aug 20, 2020 12:23 PM');
     expect(data.requests.at(0)).toMatchObject({ id: 1, name: 'Toby Gerlach', requestedAt: 'Sep 29, 2026 3:00 PM' });
@@ -97,7 +84,7 @@ describe('loadDashboard', () => {
 
   it("should redirect, not throw, on the worker's plain-text 401 for every frame read", async () => {
     server.use(
-      ...['/users/me', '/users/me/stats', '/users/me/watching', '/users/requests'].map((path) =>
+      ...['/users/me', '/users/me/stats', '/users/me/watching', '/users/requests/'].map((path) =>
         http.get(`${API}${path}`, () => workerUnauthorized()),
       ),
     );
@@ -116,46 +103,67 @@ describe('loadDashboard', () => {
   it('should leave an empty inbox empty', async () => {
     server.use(http.get(`${API}/users/requests`, () => HttpResponse.json([])));
     const data = await load('token');
-    await Promise.all(panels(data));
     expect(data.requests).toEqual([]);
   });
 
-  it('should leave out the panels the viewer hid, and not fetch them', async () => {
-    const paths: string[] = [];
-    const record = ({ request }: { request: Request }) => paths.push(new URL(request.url).pathname);
-    server.events.on('request:start', record);
-    const prefs = { tester: { hide_list: true, hide_network: true, hide_recommendations: true } };
-    const data = await load('token', { 'og-dashboard': JSON.stringify(prefs) }, { user: { vip: true } });
-
-    expect(data.watchlist).toBeNull();
-    expect(data.socialFeed).toBeNull();
-    expect(data.recommendations).toBeNull();
-    expect(data.upNext).not.toBeNull();
-    await Promise.all(panels(data));
-    server.events.removeListener('request:start', record);
-    expect(paths).toContain('/sync/progress/up_next_nitro');
-    expect(paths.some((path) => path.includes('/watchlist') || path.startsWith('/recommendations'))).toBe(false);
-    expect(paths.some((path) => path.includes('/following/activities'))).toBe(false);
-  });
-
-  it("should load the panels in the viewer's settings", async () => {
-    const upNext: URL[] = [];
-    server.use(
-      http.get(`${API}/sync/progress/up_next_nitro`, ({ request }) => {
-        upNext.push(new URL(request.url));
-        return HttpResponse.json([]);
-      }),
-    );
-    const settings = {
-      browsing: { progress: { on_deck: { sort: 'title', sort_how: 'desc', simple_progress: true } } },
+  describe('streamed panels', () => {
+    const frameReads = ['/users/me/', '/users/me/stats', '/users/me/watching', '/users/requests/'];
+    const panelReads =
+      /up_next|\/sync\/|watchlist|recommendations|following|calendars|\/history\/?$|\/history\/all|watched\/genres|\/progress\//;
+    const readPaths = async (
+      cookies: Record<string, string> = {},
+      settings: unknown = null,
+      token: string | null = 'token',
+    ) => {
+      const paths: string[] = [];
+      const record = ({ request }: { request: Request }) => paths.push(new URL(request.url).pathname);
+      server.events.on('request:start', record);
+      const data = await load(token, cookies, settings);
+      server.events.removeListener('request:start', record);
+      return { data, paths };
     };
 
-    const data = await load('token', {}, settings);
-    await Promise.all(panels(data));
+    it('should read only the frame for every panel, leaving their reads to the browser', async () => {
+      const { data, paths } = await readPaths();
 
-    expect(data.dashboard.upNext.sort).toEqual({ by: 'title', how: 'desc', title: 'Title' });
-    expect(upNext.at(0)?.searchParams.get('sort_by')).toBe('title');
-    expect(upNext.at(0)?.searchParams.get('sort_how')).toBe('desc');
+      expect(paths).toEqual(expect.arrayContaining(frameReads));
+      expect(paths.filter((path) => panelReads.test(path))).toEqual([]);
+      const panelKeys = [
+        'upNext',
+        'schedule',
+        'watchlist',
+        'lastThirtyDays',
+        'recentlyWatched',
+        'socialFeed',
+        'recommendations',
+        'recaps',
+      ];
+      panelKeys.forEach((key) => expect(data).not.toHaveProperty(key));
+    });
+
+    it("should return each panel's settings and whether the viewer hid it", async () => {
+      const prefs = { tester: { hide_list: true, hide_network: true, hide_recommendations: true } };
+      const { data, paths } = await readPaths({ 'og-dashboard': JSON.stringify(prefs) }, { user: { vip: true } });
+
+      expect(data.dashboard.hidden).toMatchObject({
+        watchlist: true,
+        socialFeed: true,
+        recommendations: true,
+        upNext: false,
+        recentlyWatched: false,
+      });
+      expect(paths.filter((path) => panelReads.test(path))).toEqual([]);
+    });
+
+    it("should return the viewer's settings for the panels", async () => {
+      const settings = {
+        browsing: { progress: { on_deck: { sort: 'title', sort_how: 'desc', simple_progress: true } } },
+      };
+      const { data } = await readPaths({}, settings);
+
+      expect(data.dashboard.upNext.sort).toEqual({ by: 'title', how: 'desc', title: 'Title' });
+      expect(data.dashboard.upNext.simpleProgress).toBe(true);
+    });
   });
 
   describe('without stats from the API', () => {
@@ -189,7 +197,6 @@ describe('loadDashboard', () => {
         }
       });
       const data = await load();
-      await Promise.all(panels(data));
       server.events.removeAllListeners('request:start');
 
       expect(data.stats).toBeNull();
@@ -205,7 +212,6 @@ describe('loadDashboard', () => {
         http.get(`${API}/users/me/lists`, () => new HttpResponse(null, { status: 503 })),
       );
       const data = await load();
-      await Promise.all(panels(data));
 
       expect(data.stats).toBeNull();
       expect(data.countedStats).toBeNull();

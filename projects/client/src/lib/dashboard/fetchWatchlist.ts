@@ -6,7 +6,8 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 
 type FetchWatchlistParams = {
   fetch: typeof globalThis.fetch;
-  token: string;
+  /** Null from the browser, whose `viewerFetch` signs the request itself. */
+  token: string | null;
   datePreferences: DatePreferences;
 };
 

@@ -24,9 +24,10 @@ import { edgeCache } from './lib/utils/edgeCache.ts';
  * browser renews it.
  * The page's `<html data-theme>` is the viewer's Dark Knight setting, which the root layout's load puts in
  * `locals.theme` before the page renders, so the first paint needs no script. Anyone else gets Dark Knight, og's default.
- * Links preload their page's data on hover, or on tap for a Standard app, whose lower rate limit a sweep across links
- * would spend. A guest's links never preload, since a click sends them to sign in (`isGuestGated`). Their page's code, which
- * costs no API calls, loads as they scroll into view (`app.html`).
+ * Links preload their page's data on tap, which starts the read before the click lands. Hover would also fire for links
+ * people pass over without opening, each one a Worker request and its API reads. A guest's links never preload, since a
+ * click sends them to sign in (`isGuestGated`). Their page's code, which costs no API calls, loads as they scroll into view
+ * (`app.html`).
  * `locals.crawler` says whether a search engine or link-preview bot asked, and `withCrawlHeaders` sets the page's
  * cache and robots headers from it and the session. A bot that isn't a verified search engine gets a page's head alone
  * (`previewHead`), from one or two API reads; endpoints still answer it as usual, so preview art loads.
@@ -62,10 +63,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   });
 };
 
-const preloadData = (hasSession: boolean) => {
-  if (!hasSession) return 'off';
-  return isStandardApi() ? 'tap' : 'hover';
-};
+const preloadData = (hasSession: boolean) => (hasSession ? 'tap' : 'off');
 
 const isHeadOnly = ({ locals, request, route }: RequestEvent) =>
   locals.crawler.headOnly &&

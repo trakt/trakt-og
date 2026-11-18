@@ -104,9 +104,9 @@ describe('hooks: link preloading', () => {
   const preload = async (cookie: string | undefined) =>
     /data-sveltekit-preload-data="([^"]*)"/.exec(await shell(cookie))?.at(1);
 
-  it("should preload a signed-in viewer's links on hover", async () => {
+  it("should preload a signed-in viewer's links on tap", async () => {
     darkKnight('true');
-    expect(await preload(authCookie(Date.now() + 60_000))).toBe('hover');
+    expect(await preload(authCookie(Date.now() + 60_000))).toBe('tap');
   });
 
   it("should never preload a guest's links, which send them to sign in", async () => {

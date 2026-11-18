@@ -2,6 +2,8 @@ name: Scrobble aka CI
 
 # Every PR push against main runs the checks, drafts included; Sean or Justin merges. Every push to main, including a
 # merge from the GitHub UI, runs CI again and deploys og.trakt.tv, like trakt-web. "Run workflow" from main redeploys it.
+# The checks run side by side (format and lint, types, the tests in two halves, the build), and "Totally Ninja aka CI",
+# the required check, passes only when every one of them did; on main it then builds and deploys.
 on:
   push:
     branches: [main]
@@ -14,15 +16,12 @@ permissions:
   pull-requests: read
 
 jobs:
-  ci:
-    name: Totally Ninja aka CI
+  lint:
+    name: Clean Cut aka Format and Lint
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: projects/client
-    # One deploy at a time; a newer push to main waits rather than racing an older one.
-    concurrency:
-      group: ${{ github.ref == 'refs/heads/main' && 'deploy-main' || github.run_id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -32,17 +31,91 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-      # Only the deploy needs the real client ID. Fork PRs get no secrets and build with an empty one.
+      - run: bun x biome format .
+      - run: bun run lint
+
+  types:
+    name: Typecast aka Types
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-bun
+      - run: bun run check
+      - run: bun run check:scripts
+
+  test:
+    name: Rerun aka Tests (${{ matrix.shard }}/2)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-bun
+      - run: bun run test --shard=${{ matrix.shard }}/2
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+
+  build:
+    name: Final Cut aka Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-bun
+      # Fork PRs get no secrets and build with an empty client ID.
+      - run: bun run build
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+
+  ci:
+    name: Totally Ninja aka CI
+    needs: [lint, types, test, build]
+    # Always runs, so a failed check fails this one instead of skipping it (a skipped required check counts as passed).
+    if: always()
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/client
+    # One deploy at a time; a newer push to main waits rather than racing an older one.
+    concurrency:
+      group: ${{ github.ref == 'refs/heads/main' && 'deploy-main' || github.run_id }}
+    env:
+      DEPLOY: ${{ github.ref == 'refs/heads/main' && vars.OG_DEPLOY != 'off' }}
+    steps:
+      - name: All Green aka Require Every Check
+        working-directory: .
+        run: |
+          for result in $RESULTS; do
+            [ "$result" = success ] || { echo "::error::A check didn't pass: $RESULTS (lint, types, tests, build)"; exit 1; }
+          done
+        env:
+          RESULTS: ${{ needs.lint.result }} ${{ needs.types.result }} ${{ needs.test.result }} ${{ needs.build.result }}
+      - uses: actions/checkout@v7
+        if: env.DEPLOY == 'true'
+      - uses: ./.github/actions/setup-bun
+        if: env.DEPLOY == 'true'
+      # Only the deploy needs the real client ID.
       - name: Checking the Ticket aka Require the Client ID
-        if: github.ref == 'refs/heads/main' && vars.OG_DEPLOY != 'off'
+        if: env.DEPLOY == 'true'
         run: '[ -n "$TRAKT_CLIENT_ID" ] || { echo "::error::Add the TRAKT_CLIENT_ID repo secret."; exit 1; }'
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
-      - run: bun run ci
+      - run: bun run build
+        if: env.DEPLOY == 'true'
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
       - name: Now Playing aka Deploy to og.trakt.tv
-        if: github.ref == 'refs/heads/main' && vars.OG_DEPLOY != 'off'
+        if: env.DEPLOY == 'true'
         run: bun x wrangler deploy --message "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

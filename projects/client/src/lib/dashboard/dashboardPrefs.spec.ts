@@ -12,6 +12,7 @@ describe('dashboardPrefs', () => {
       upcoming_start_day: 'today',
       upcoming_poster: 'show',
       recommendations_type: 'media',
+      recommendations_release: 'out_now',
       hide_on_deck: false,
       hide_upcoming: false,
       hide_list: false,
@@ -54,6 +55,19 @@ describe('dashboardPrefs', () => {
     const cookie = JSON.stringify({ sean: { hide_list: true } });
 
     expect(dashboardPrefs.write(cookie, 'sean', dashboardPrefs.defaults)).toBe('{}');
+  });
+
+  it('should round trip the recommendations release and fall back to Out Now', () => {
+    const next = dashboardPrefs.write(undefined, 'sean', {
+      ...dashboardPrefs.defaults,
+      recommendations_release: 'coming_soon',
+    });
+
+    expect(JSON.parse(next)).toEqual({ sean: { recommendations_release: 'coming_soon' } });
+    expect(dashboardPrefs.read(next, 'sean').recommendations_release).toBe('coming_soon');
+    expect(dashboardPrefs.read('{"sean":{"recommendations_release":"soon"}}', 'sean').recommendations_release).toBe(
+      'out_now',
+    );
   });
 
   it('should save to and load from the browser cookie', () => {

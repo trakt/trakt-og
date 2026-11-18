@@ -27,6 +27,8 @@ const prefsSchema = z.object({
   upcoming_poster: z.enum(['show', 'season']).catch('show'),
   /** og's own: which recommendations the panel shows, picked from its Type dropdown. */
   recommendations_type: z.enum(['media', 'show', 'movie']).catch('media'),
+  /** og's own: out now or coming soon, picked from its Release dropdown. */
+  recommendations_release: z.enum(['out_now', 'coming_soon']).catch('out_now'),
   hide_on_deck: z.boolean().catch(false),
   hide_upcoming: z.boolean().catch(false),
   hide_list: z.boolean().catch(false),

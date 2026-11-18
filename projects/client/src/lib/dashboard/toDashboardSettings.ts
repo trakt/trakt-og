@@ -86,7 +86,7 @@ export function toDashboardSettings({
       startDay: prefs.upcoming_start_day,
       poster: prefs.upcoming_poster,
     },
-    recommendations: { type: prefs.recommendations_type },
+    recommendations: { type: prefs.recommendations_type, release: prefs.recommendations_release },
     hidden: {
       upNext: prefs.hide_on_deck,
       schedule: vipHidden(prefs.hide_upcoming),

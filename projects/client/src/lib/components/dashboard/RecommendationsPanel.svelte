@@ -1,7 +1,7 @@
 <!--
   The dashboard's recommendations on their dark band: one list of shows and movies, shows or movies, picked from the
-  Type dropdown. The pick in the spotlight fills most of the row, and beside it six posters from the list, the
-  spotlighted one ringed. Clicking a poster, or the arrows, moves the spotlight; the posters only page when the
+  Type dropdown, and out now or coming soon from the Release dropdown. The pick in the spotlight fills most of the
+  row, and beside it six posters from the list, the spotlighted one ringed. Clicking a poster, or the arrows, moves the spotlight; the posters only page when the
   spotlight leaves them. Pass the unawaited `fetchRecommendations` promise from the loader, so the page streams in.
   Until the first list lands, shimmering placeholders hold its size, and while another type loads the last list stays, dimmed, so
   the page never jumps. OG has no page for shows and movies together, so the mix links to both.
@@ -23,6 +23,11 @@ import SeeMore from '#lib/components/see-more/SeeMore.svelte';
 import type { DashboardRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import type { Recommendation } from '#lib/dashboard/Recommendation.ts';
 import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
+import {
+  type RecommendationRelease,
+  recommendationReleases,
+  releaseSearch,
+} from '#lib/dashboard/recommendationRelease.ts';
 import clapperboard from '#lib/icons/regular/clapperboard.svg?raw';
 import bullseyeArrow from '#lib/icons/regular/bullseye-arrow.svg?raw';
 import tvRetro from '#lib/icons/regular/tv-retro.svg?raw';
@@ -32,16 +37,19 @@ import { trackSectionDrilldown } from '#lib/analytics/trackSectionDrilldown.ts';
 import RecommendationSpotlight from './RecommendationSpotlight.svelte';
 
 type RecommendationType = DashboardSettings['recommendations']['type'];
+type Picks = { type: RecommendationType; release: RecommendationRelease };
 
 interface Props {
   recommendations: Promise<DashboardRecommendations>;
   /** The saved pick, for the dropdown while the first list streams in. */
   type: RecommendationType;
-  /** Saves the pick and loads its list. Left out, the dropdown is hidden. */
-  onpick?: (type: RecommendationType) => Promise<DashboardRecommendations>;
+  /** The saved Release pick. */
+  release?: RecommendationRelease;
+  /** Saves the picks and loads their list. Left out, the dropdowns are hidden. */
+  onpick?: (picks: Picks) => Promise<DashboardRecommendations>;
 }
 
-const { recommendations, type, onpick }: Props = $props();
+const { recommendations, type, release = 'out_now', onpick }: Props = $props();
 
 const TYPES = [
   { id: 'media', label: 'Shows & Movies', icon: bullseyeArrow },
@@ -50,11 +58,11 @@ const TYPES = [
 ] as const;
 const LINKS = {
   media: [
-    { href: '/shows/recommendations', text: 'More shows' },
-    { href: '/movies/recommendations', text: 'More movies' },
+    { path: '/shows/recommendations', text: 'More shows' },
+    { path: '/movies/recommendations', text: 'More movies' },
   ],
-  show: [{ href: '/shows/recommendations', text: 'More' }],
-  movie: [{ href: '/movies/recommendations', text: 'More' }],
+  show: [{ path: '/shows/recommendations', text: 'More' }],
+  movie: [{ path: '/movies/recommendations', text: 'More' }],
 } as const;
 /** The posters beside the spotlight: two rows of three, or of four under it on a smaller tablet. */
 const PAGE = 6;
@@ -64,7 +72,7 @@ const SMALL_TABLET = 940;
 /** How long to wait for the watch history before showing the list unfiltered. */
 const HISTORY_WAIT = 4000;
 
-let picked = $state<{ type: RecommendationType; list: Promise<DashboardRecommendations> }>();
+let picked = $state<Picks & { list: Promise<DashboardRecommendations> }>();
 let landed = $state<DashboardRecommendations | null>(null);
 let loading = $state(true);
 let focus = $state(0);
@@ -86,13 +94,18 @@ $effect(() => {
   return () => clearTimeout(timer);
 });
 const current = $derived(picked?.type ?? type);
+const currentRelease = $derived(picked?.release ?? release);
+const releaseOption = $derived(recommendationReleases.find(({ id }) => id === currentRelease) ?? recommendationReleases[0]);
+const links = $derived(
+  LINKS[current].map(({ path, text }) => ({ path, text, href: releaseSearch(currentRelease) ? `${path}?${releaseSearch(currentRelease)}` : path })),
+);
 const source = $derived(picked?.list ?? recommendations);
 const option = $derived(TYPES.find(({ id }) => id === current) ?? TYPES[0]);
 
 // The last list stays on screen until the next one lands; a newer pick overrides an older one still loading.
 $effect(() => {
   const list = source;
-  const failed: DashboardRecommendations = { type: current, items: null };
+  const failed: DashboardRecommendations = { type: current, release: currentRelease, items: null };
   let live = true;
   loading = true;
   const land = (recs: DashboardRecommendations) => {
@@ -130,9 +143,10 @@ const whenCached = (src: string) => (image: HTMLImageElement) => {
   if (image.complete && image.naturalWidth > 0) loadedPosters.add(src);
 };
 
-function pick(next: RecommendationType) {
-  if (!onpick || next === current) return;
-  picked = { type: next, list: onpick(next) };
+function pick(next: Partial<Picks>) {
+  const picks = { type: current, release: currentRelease, ...next };
+  if (!onpick || (picks.type === current && picks.release === currentRelease)) return;
+  picked = { ...picks, list: onpick(picks) };
 }
 
 // For now the API's watched filters miss some, so anything with a play (a movie, or any episode of a show) goes here.
@@ -147,12 +161,12 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-{#snippet links()}
+{#snippet seeMore()}
   <span
     class="links"
-    {@attach trackSectionDrilldown({ source: 'recommended', type: 'show' }, '/shows/recommendations')}
-    {@attach trackSectionDrilldown({ source: 'recommended', type: 'movie' }, '/movies/recommendations')}
-  >{#each LINKS[current] as link (link.href)}<SeeMore {...link} />{/each}</span>
+    {@attach trackSectionDrilldown({ source: 'recommended', type: 'show' }, links.find(({ path }) => path.startsWith('/shows'))?.href)}
+    {@attach trackSectionDrilldown({ source: 'recommended', type: 'movie' }, links.find(({ path }) => path.startsWith('/movies'))?.href)}
+  >{#each links as link (link.path)}<SeeMore href={link.href} text={link.text} />{/each}</span>
 {/snippet}
 
 {#snippet poster(item: Recommendation, index: number, spotlit: boolean)}
@@ -211,7 +225,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
     <div class="layout">
       <div class="stage">
         <RecommendationSpotlight item={spotlight} index={at} total={items.length} mixed={recs.type === 'media'}
-          onstep={(by) => step(items.length, by)} reasons={reasons && !recs.fallback} />
+          onstep={(by) => step(items.length, by)} reasons={reasons && !recs.fallback && recs.release === 'out_now'} />
       </div>
       {@render posters(items, start, at)}
     </div>
@@ -221,7 +235,7 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
 <div class="recommendations">
   <Container>
     <section aria-labelledby="recommendations-heading" aria-busy={loading} bind:clientWidth={width}>
-      <PanelHeading id="recommendations-heading" title="Recommendations" icon={option.icon} aside={links} />
+      <PanelHeading id="recommendations-heading" title="Recommendations" icon={option.icon} aside={seeMore} />
       {#if onpick}
         <div class="bar">
           <Dropdown section="Type">
@@ -230,7 +244,18 @@ const step = (count: number, by: -1 | 1) => (focus = (focus + by + count) % coun
               {#each TYPES as row (row.id)}
                 <li>
                   <button type="button" aria-current={row.id === current ? 'true' : undefined}
-                    onclick={() => pick(row.id)}>{row.label}</button>
+                    onclick={() => pick({ type: row.id })}>{row.label}</button>
+                </li>
+              {/each}
+            </ul>
+          </Dropdown>
+          <Dropdown section="Release">
+            {#snippet trigger()}{releaseOption.label}{/snippet}
+            <ul>
+              {#each recommendationReleases as row (row.id)}
+                <li>
+                  <button type="button" aria-current={row.id === currentRelease ? 'true' : undefined}
+                    onclick={() => pick({ release: row.id })}>{row.label}</button>
                 </li>
               {/each}
             </ul>

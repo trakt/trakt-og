@@ -1,12 +1,14 @@
 <!--
   The profile page under the frame: the stat boxes, or the welcome hero on your own empty
   profile, or only the ghost profile on someone else's with nothing on it. Otherwise favorites (only when there are some), the recently watched episodes and movies, the genre and ratings charts, the most watched
-  shows and movies, and the newest comments. The boxes and Most Watched stream in, holding their places with shimmers.
+  shows and movies, and the newest comments. The boxes and Most Watched load in the browser, holding their places with shimmers.
 -->
 <script lang="ts">
 import { trackDrilldowns } from '#lib/analytics/trackDrilldowns.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
 import { toProfileSeo } from '#lib/seo/pages/toProfileSeo.ts';
+import { lastActivities } from '#lib/activity/lastActivities.ts';
+import { viewerFetch } from '#lib/auth/viewerFetch.ts';
 import type { UserStats } from '#lib/stats/userStatsSchema.ts';
 import DashboardPanel from '#lib/components/dashboard/DashboardPanel.svelte';
 import EmptyState from '#lib/components/empty/EmptyState.svelte';
@@ -31,6 +33,7 @@ import ProfileBoxStrip from '#lib/users/profile/boxes/ProfileBoxStrip.svelte';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import { findAction } from '#lib/users/findAction.ts';
 import type { loadProfile } from './loadProfile.ts';
+import { type ProfilePanels, startProfilePanels } from './startProfilePanels.ts';
 import type { WatchedCard } from './toProfileSummary.ts';
 
 type Props = {
@@ -46,6 +49,34 @@ type Props = {
 const { data }: Props = $props();
 const user = $derived(`/users/${data.profile.slug}`);
 const viewer = $derived(data.user ? { slug: data.user.slug } : null);
+
+// The boxes and Most Watched read the whole watched lists in the browser, so the Worker never pages through them. The
+// server renders their placeholders; effects only run in the browser. A fresh read for your saved panels swaps in
+// later, unless a newer start has replaced this one.
+const PENDING = new Promise<never>(() => {});
+let started = $state.raw<ProfilePanels | null>(null);
+let starts = 0;
+$effect(() => {
+  const { panels, profile, stats, isSelf } = data;
+  const start = ++starts;
+  started = panels
+    ? startProfilePanels({
+        profile,
+        stats,
+        isSelf,
+        strip: panels.strip,
+        prefs: panels.prefs,
+        now: new Date(),
+        signedIn: viewerFetch(),
+        activities: lastActivities.read,
+        onUpdate: (fresh) => {
+          if (start === starts && started) started = { ...started, ...fresh };
+        },
+      })
+    : null;
+});
+const boxes = $derived(data.panels?.strip ? (started?.boxes ?? PENDING) : null);
+const mostWatchedPanel = $derived(data.panels ? (started?.mostWatched ?? PENDING) : null);
 </script>
 
 <SeoHead {...toProfileSeo({ profile: data.profile, stats: data.stats })} noindex={data.profile.isPrivate} />
@@ -79,8 +110,8 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   <Container><div class="failed"><LoadFailed {what} {error} /></div></Container>
 {/snippet}
 
-{#if data.boxes}
-  {#await data.boxes}
+{#if boxes}
+  {#await boxes}
     <ProfileSectionShimmer section="boxes" />
   {:then boxes}
     {#if boxes}<ProfileBoxStrip {boxes} />{/if}
@@ -138,8 +169,8 @@ const viewer = $derived(data.user ? { slug: data.user.slug } : null);
   <ProfileCharts genres={data.charts.genres} ratings={data.charts.ratings} slug={data.profile.slug} />
 {/if}
 
-{#if data.mostWatched}
-  {#await data.mostWatched}
+{#if mostWatchedPanel}
+  {#await mostWatchedPanel}
     <ProfileSectionShimmer section="most-watched" />
   {:then mostWatched}
     <MostWatched

@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { signInRedirect } from '#lib/auth/signInRedirect.ts';
 import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
 import { loadHomeLive } from '#lib/home/live/loadHomeLive.ts';
+import { canSeeLive } from '#lib/live/canSeeLive.ts';
 import type { KeyedCache } from '#lib/utils/sharedCache.ts';
 
 interface LoadLiveParams {
@@ -17,9 +18,9 @@ interface LoadLiveParams {
 }
 
 /**
- * `/live`, for directors while it's tried out: guests go to sign in, and other members get a 404. It opens on the
- * home page's snapshot of who is watching, streamed in; a VIP's socket keeps it live, and anyone else keeps the still
- * map (a director is always VIP, so that's for when it opens to members).
+ * `/live`, for VIPs and directors: guests go to sign in, and members without VIP get a 404. It opens on the home
+ * page's snapshot of who is watching, streamed in, and the socket keeps it live. The still map with a way to VIP is for
+ * when it opens to every member.
  */
 export async function loadLive({
   fetch,
@@ -35,6 +36,6 @@ export async function loadLive({
 
   const { live } = homeLive({ fetch, liveFetch, now, cache, origin: url.origin });
   const { user } = await parent();
-  if (!user?.isDirector) error(404, 'Not found');
+  if (!canSeeLive(user)) error(404, 'Not found');
   return { vip: user.isVip || user.isDirector, live };
 }

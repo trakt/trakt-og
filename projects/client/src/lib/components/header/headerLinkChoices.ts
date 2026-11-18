@@ -7,8 +7,8 @@ type HeaderLinkChoicesParams = {
   /** The viewer's slug, for their profile pages. Null while signed out or while a session renews. */
   slug: string | null;
   signedIn: boolean;
-  /** Trakt staff, who can pick Live while it's being tried out. */
-  director: boolean;
+  /** VIPs and directors, who can pick Live. */
+  live: boolean;
 };
 
 const PROFILE_PAGES = [
@@ -66,10 +66,10 @@ function calendars(signedIn: boolean): HeaderLink[] {
 /**
  * Every link the header can show, in the picker's order: the main links, the show charts, the movie charts with Box
  * Office, the calendars, My before All like OG's sidebar, then the viewer's profile pages. The main links after Home
- * are the bar's defaults (`headerLinkPrefs.DEFAULTS`); Live, the world map live, comes after them for directors while
- * it's tried out. Home opens `/home`, which skips the signed-in redirect to the dashboard.
+ * are the bar's defaults (`headerLinkPrefs.DEFAULTS`); Live, the world map live, comes after them for VIPs and
+ * directors. Home opens `/home`, which skips the signed-in redirect to the dashboard.
  */
-export function headerLinkChoices({ slug, signedIn, director }: HeaderLinkChoicesParams): HeaderLink[] {
+export function headerLinkChoices({ slug, signedIn, live }: HeaderLinkChoicesParams): HeaderLink[] {
   const main = (id: string, title: string, href: string): HeaderLink => ({
     id,
     title,
@@ -93,7 +93,7 @@ export function headerLinkChoices({ slug, signedIn, director }: HeaderLinkChoice
     main('shows', 'Shows', '/shows/trending'),
     main('movies', 'Movies', '/movies/trending'),
     main('calendar', 'Calendar', calendarHome(signedIn)),
-    ...(director ? [main('live', 'Live', '/live')] : []),
+    ...(live ? [main('live', 'Live', '/live')] : []),
     ...charts('Shows', 'shows'),
     ...charts('Movies', 'movies'),
     { id: 'movies-boxoffice', title: 'Box Office', label: 'Box Office', group: 'movies', href: '/movies/boxoffice' },

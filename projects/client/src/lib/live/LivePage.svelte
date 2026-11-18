@@ -1,8 +1,8 @@
 <!--
-  `/live`, for directors while it's tried out: the world map as big as the screen allows, with every country in a
+  `/live`, for VIPs and directors: the world map as big as the screen allows, with every country in a
   scrolling column beside it. It opens on the home page's snapshot; the socket then brings a new count every few
-  seconds, so dots fade, pings ring out, rows slide and shares roll as they change. Ready for VIPs later: a viewer
-  without VIP keeps the still map, with a way to VIP.
+  seconds, so dots fade, pings ring out, rows slide and shares roll as they change. Ready for every member later: a
+  viewer without VIP keeps the still map, with a way to VIP.
   Four toggles, all off until turned on: Night shading dims where it's night, Tour when idle walks the top countries'
   cards after 10 seconds without the mouse, Keep screen on holds off the screen's sleep, and Full screen shows only
   the map and the countries.

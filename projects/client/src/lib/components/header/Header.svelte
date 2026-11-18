@@ -33,6 +33,7 @@ import { settingsRequest } from '#lib/settings/settingsRequest.ts';
 import { showsDark } from '#lib/settings/showsDark.ts';
 import type { SettingsBody } from '#lib/settings/SettingsBody.ts';
 import { traktUrls } from '#lib/traktUrls.ts';
+import { canSeeLive } from '#lib/live/canSeeLive.ts';
 import { MediaQuery } from 'svelte/reactivity';
 import HeaderHelp from './HeaderHelp.svelte';
 import HeaderWatching from './HeaderWatching.svelte';
@@ -98,7 +99,7 @@ const browserSave = (body: SettingsBody) =>
 
   const signedIn = $derived(user !== null || renewing);
   const choices = $derived(
-    headerLinkChoices({ slug: user?.slug ?? null, signedIn, director: user?.isDirector ?? false }),
+    headerLinkChoices({ slug: user?.slug ?? null, signedIn, live: canSeeLive(user) }),
   );
   // What the bar shows now: the saved links until an edit changes them. A link that isn't on offer (Dashboard while
   // signed out, or one og no longer has) drops out.

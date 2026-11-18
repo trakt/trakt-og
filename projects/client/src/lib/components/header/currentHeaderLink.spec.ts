@@ -3,7 +3,7 @@ import { currentHeaderLink } from './currentHeaderLink.ts';
 import { headerLinkChoices } from './headerLinkChoices.ts';
 
 describe('currentHeaderLink', () => {
-  const choices = headerLinkChoices({ slug: 'sean', signedIn: true, director: false });
+  const choices = headerLinkChoices({ slug: 'sean', signedIn: true, live: false });
   const bar = (...ids: string[]) => ids.flatMap((id) => choices.filter((link) => link.id === id));
   const main = bar('dashboard', 'discover', 'shows', 'movies', 'calendar');
 

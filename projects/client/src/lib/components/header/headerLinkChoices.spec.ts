@@ -3,7 +3,7 @@ import { headerLinkChoices } from './headerLinkChoices.ts';
 import { headerLinkPrefs } from './headerLinkPrefs.ts';
 
 describe('headerLinkChoices', () => {
-  const choices = headerLinkChoices({ slug: 'sean', signedIn: true, director: true });
+  const choices = headerLinkChoices({ slug: 'sean', signedIn: true, live: true });
   const byId = (id: string) => choices.find((link) => link.id === id);
 
   it('should start with Home, then the default bar', () => {
@@ -47,13 +47,13 @@ describe('headerLinkChoices', () => {
     expect(byId('calendar-my-dvd')).toMatchObject({ title: 'My DVD & Blu-ray', href: '/calendars/my/dvd' });
   });
 
-  it('should offer Live to a director, off the bar until picked', () => {
+  it('should offer Live to a VIP or director, off the bar until picked', () => {
     expect(byId('live')).toMatchObject({ title: 'Live', href: '/live', group: 'main' });
     expect(headerLinkPrefs.DEFAULTS).not.toContain('live');
   });
 
-  it('should leave Live out for a member who is not a director', () => {
-    const member = headerLinkChoices({ slug: 'sean', signedIn: true, director: false });
+  it('should leave Live out for a member without VIP', () => {
+    const member = headerLinkChoices({ slug: 'sean', signedIn: true, live: false });
     expect(member.some(({ id }) => id === 'live')).toBe(false);
   });
 
@@ -62,7 +62,7 @@ describe('headerLinkChoices', () => {
   });
 
   describe('for a visitor', () => {
-    const visitor = headerLinkChoices({ slug: null, signedIn: false, director: false });
+    const visitor = headerLinkChoices({ slug: null, signedIn: false, live: false });
 
     it('should leave out Dashboard, Live, the profile pages and the My calendars', () => {
       expect(visitor.some(({ group }) => group === 'profile')).toBe(false);

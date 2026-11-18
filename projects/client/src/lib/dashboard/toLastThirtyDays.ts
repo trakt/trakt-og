@@ -6,6 +6,7 @@ import { countLabel } from '../utils/countLabel.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import type { LastThirtyDays, MinutesChartData, MinutesDay, MinutesLine } from './LastThirtyDays.ts';
 import { dayIn } from '../utils/dayIn.ts';
+import { formatCount } from '../utils/formatCount.ts';
 
 type Ids = { readonly ids: { readonly trakt: number }; readonly runtime?: number | null };
 
@@ -66,7 +67,7 @@ const unique = (values: readonly (number | undefined)[]) => new Set(values.filte
 function playCount(plays: readonly Play[], type: Play['type']) {
   const items = unique(plays.map(({ id }) => id));
   const replays = plays.length > items ? ` — ${countLabel(plays.length, 'play')}` : '';
-  return { value: items.toLocaleString('en-US'), noun: `${type}${items === 1 ? '' : 's'}${replays}` };
+  return { value: formatCount(items), noun: `${type}${items === 1 ? '' : 's'}${replays}` };
 }
 
 // A tooltip line, for a type played that day: "3 episodes — 4 plays", then its "1h 7m".
@@ -184,7 +185,7 @@ function toKeys({ plays, active, weeks }: { plays: readonly Play[]; active: numb
     {
       name: 'Episodes',
       type: 'episode' as const,
-      share: items(episodes).toLocaleString('en-US'),
+      share: formatCount(items(episodes)),
       counts: [
         ...timeOf(episodes),
         ...(episodes.length > 0 ? [countLabel(unique(episodes.map(({ show }) => show)), 'show')] : []),
@@ -194,7 +195,7 @@ function toKeys({ plays, active, weeks }: { plays: readonly Play[]; active: numb
     {
       name: 'Movies',
       type: 'movie' as const,
-      share: items(movies).toLocaleString('en-US'),
+      share: formatCount(items(movies)),
       counts: [...timeOf(movies), ...replays(movies)],
     },
     ...(best ? [{ name: 'Best week', share: formatRuntime(best.minutes), counts: [weekRange(best)] }] : []),

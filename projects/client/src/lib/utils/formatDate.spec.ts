@@ -55,5 +55,16 @@ describe('formatDate', () => {
       expect(formatDate(DATE, { time: true, timeZone: 'America/New_York' })).toBe('Sep 29, 2026 3:05 PM');
       expect(formatDate('2026-09-29T23:30:00Z', { timeZone: 'Asia/Tokyo', format: 'dddd' })).toBe('Wednesday');
     });
+
+    it('should keep each zone, month style and clock apart when called again', () => {
+      const calls = () => [
+        formatDate(DATE, { time: true, timeZone: 'America/New_York' }),
+        formatDate(DATE, { time: true, timeZone: 'Asia/Tokyo', hour24: true }),
+        formatDate(DATE, { format: 'LL', timeZone: 'Asia/Tokyo' }),
+      ];
+
+      expect(calls()).toEqual(['Sep 29, 2026 3:05 PM', 'Sep 30, 2026 04:05', 'September 30, 2026']);
+      expect(calls()).toEqual(calls());
+    });
   });
 });

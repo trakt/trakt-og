@@ -21,10 +21,14 @@ export type FormatDateOptions = {
 
 type Parts = Record<'weekday' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'dayPeriod', string>;
 
-function parts(
-  date: Date,
-  { month, hour24, timeZone }: { month: 'long' | 'short'; hour24: boolean; timeZone?: string },
-) {
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/** One formatter per zone and style: building one per call costs more than the formatting. */
+function formatterFor({ month, hour24, timeZone }: { month: 'long' | 'short'; hour24: boolean; timeZone?: string }) {
+  const key = `${timeZone}|${month}|${hour24}`;
+  const cached = formatters.get(key);
+  if (cached) return cached;
+
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone,
     weekday: 'long',
@@ -35,6 +39,12 @@ function parts(
     minute: '2-digit',
     hourCycle: hour24 ? 'h23' : 'h12',
   });
+  formatters.set(key, formatter);
+  return formatter;
+}
+
+function parts(date: Date, options: { month: 'long' | 'short'; hour24: boolean; timeZone?: string }) {
+  const formatter = formatterFor(options);
 
   return Object.fromEntries(formatter.formatToParts(date).map(({ type, value }) => [type, value])) as Parts;
 }

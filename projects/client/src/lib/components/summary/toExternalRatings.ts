@@ -2,6 +2,7 @@ import type { RatingsResponse } from '@trakt/api';
 import type { ExternalRating } from './ExternalRating.ts';
 import type { ExtraRating } from '../../stats/extraRatingsSchema.ts';
 import { capitalize } from '../../utils/capitalize.ts';
+import { formatCount } from '../../utils/formatCount.ts';
 
 /** The JustWatch 30-day rank from `/watchnow/:country?extended=streaming_ranks`. */
 export interface StreamingRank {
@@ -39,10 +40,10 @@ function metascoreBand(score: number) {
 function rankChange(delta?: number | null): ExternalRating['change'] {
   if (typeof delta !== 'number') return undefined;
   if (delta === 0) return { text: '0', trend: 'flat' };
-  return { text: `${delta < 0 ? '' : '+'}${delta.toLocaleString('en-US')}`, trend: delta < 0 ? 'down' : 'up' };
+  return { text: `${delta < 0 ? '' : '+'}${formatCount(delta)}`, trend: delta < 0 ? 'down' : 'up' };
 }
 
-const votes = (count?: number | null) => `${(count ?? 0).toLocaleString('en-US')} ${count === 1 ? 'vote' : 'votes'}`;
+const votes = (count?: number | null) => `${formatCount(count ?? 0)} ${count === 1 ? 'vote' : 'votes'}`;
 
 /**
  * OG's `_ratings_stats` "other sites" group, in OG's order, with Letterboxd and MyAnimeList after IMDb. Each shows only with a score above zero and a link.

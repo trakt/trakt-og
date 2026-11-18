@@ -1,12 +1,13 @@
 import type { UserStats } from '../stats/userStatsSchema.ts';
 import { formatRuntime } from '../utils/formatRuntime.ts';
 import type { PanelCount, PanelTime, StatsPanel } from './StatsPanel.ts';
+import { formatCount } from '../utils/formatCount.ts';
 
 type Progress = NonNullable<UserStats['progress']>;
 
 const MINUTES_PER_DAY = 1440;
 
-const exact = (n: number) => n.toLocaleString('en-US');
+const exact = formatCount;
 const count = (n: number, word: string): PanelCount => ({ text: exact(n), word: n === 1 ? word : `${word}s` });
 
 /** OG's `humanize_minutes` in parts, so the units can sit smaller than the numbers. */

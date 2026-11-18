@@ -3,6 +3,7 @@ import { seasonRibbon } from '../discover/seasonRibbon.ts';
 import { traktUrls } from '../traktUrls.ts';
 import { readableStat } from '../utils/readableStat.ts';
 import type { RecapMonth, RecapRibbon, RecapSpan } from './RecapRibbon.ts';
+import { formatCount } from '../utils/formatCount.ts';
 
 type ToRecapRibbonParams = {
   /** `YYYY-MM-DD` in the viewer's zone. */
@@ -14,7 +15,7 @@ type ToRecapRibbonParams = {
   slug: string;
 };
 
-const exact = (n: number) => n.toLocaleString('en-US');
+const exact = formatCount;
 const playCount = (n: number, format: (n: number) => string) => `${format(n)} ${n === 1 ? 'play' : 'plays'}`;
 const monthName = (year: number, month: number) =>
   new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });

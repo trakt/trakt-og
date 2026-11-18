@@ -1,3 +1,4 @@
+import { RELEASE_PARAM } from '../dashboard/recommendationRelease.ts';
 import type { ChartPeriod } from './chartPeriod.ts';
 import type { MediaType } from './loadChart.ts';
 import type { ReadonlyURLSearchParams } from '$app/state';
@@ -20,11 +21,14 @@ export function chartLinks({ type, current, period, search, signedIn }: ChartLin
   const params = new URLSearchParams(search.toString());
   params.delete('page');
   params.delete('cursor');
+  const withRelease = params.size > 0 ? `?${params}` : '';
+  // Only Recommendations has a release.
+  params.delete(RELEASE_PARAM);
   const query = params.size > 0 ? `?${params}` : '';
 
   const link = (label: string, path: string, keepQuery = true) => ({
     label,
-    href: `/${type}/${path}${keepQuery ? query : ''}`,
+    href: `/${type}/${path}${keepQuery ? (path === 'recommendations' ? withRelease : query) : ''}`,
     current: path.split('/').at(0) === current,
   });
 

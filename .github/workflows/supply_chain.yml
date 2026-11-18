@@ -85,7 +85,24 @@ jobs:
             fi
           fi
 
+      # The signature audit reads the whole registry, so it only runs when the dependencies could have changed.
+      - name: New Arrivals aka Did the Dependencies Change
+        id: deps
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE" ] || [ "$BASE" = 0000000000000000000000000000000000000000 ] \
+            || ! git cat-file -e "$BASE^{commit}" 2>/dev/null \
+            || ! git diff --quiet "$BASE" HEAD -- ../../package.json ../../bun.lock package.json; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No dependency changes, so the signature audit is skipped."
+          fi
+
       - name: Check the Credits aka Audit Signatures
+        if: steps.deps.outputs.changed == 'true'
         continue-on-error: true
         run: |
           set -euo pipefail

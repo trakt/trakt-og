@@ -9,7 +9,7 @@ export interface ResponseCache {
 
 /**
  * How long a viewer's settings are kept. Settings changed outside og (trakt.tv, the apps) can take this long to reach
- * a client navigation; a full page load always reads them fresh.
+ * any page load or navigation.
  */
 export const SETTINGS_TTL_SECONDS = 5 * 60;
 
@@ -23,8 +23,6 @@ interface KeptSettingsFetchParams {
   token: string;
   /** The settings revision cookie (`markSettingsChanged`), so a save in og starts a new copy. */
   revision: string;
-  /** Skip the kept copy and replace it: a full page load. */
-  fresh: boolean;
 }
 
 /**
@@ -40,13 +38,12 @@ export function keptSettingsFetch({
   origin,
   token,
   revision,
-  fresh,
 }: KeptSettingsFetchParams): typeof globalThis.fetch {
   if (!cache) return fetch;
 
   return async (input, init) => {
     const key = `${origin}/_cache/settings/${await sha256(`${revision}:${token}`)}`;
-    const kept = fresh ? undefined : await cache.match(key).catch(() => undefined);
+    const kept = await cache.match(key).catch(() => undefined);
     if (kept) return kept;
 
     const response = await fetch(input, init);

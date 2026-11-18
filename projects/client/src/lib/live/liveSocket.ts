@@ -21,7 +21,6 @@ async function mayWatch({ event, token }: { event: SocketEvent; token: string })
     origin: event.url.origin,
     token,
     revision: event.cookies.get(SETTINGS_REVISION_COOKIE) ?? '',
-    fresh: false,
   });
   // The same read as the root layout's, so the page that just loaded left it in the data center's cache.
   const response = await api({ fetch, token })

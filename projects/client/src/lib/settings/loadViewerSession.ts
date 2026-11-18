@@ -22,8 +22,6 @@ type Params = {
   locals: App.Locals;
   cookies: Pick<Cookies, 'get'>;
   request: Request;
-  /** A client navigation or reload, which may use the kept settings. A full page load reads them fresh. */
-  isDataRequest?: boolean;
   route: { id: string | null };
   untrack: <T>(fn: () => T) => T;
 };
@@ -41,18 +39,11 @@ type Params = {
  * `gifs` says the Worker has a Klipy key, so comment composers get the GIF picker.
  * It reads the route untracked, so a client navigation keeps this result and every child loader that calls `parent()`,
  * like the profile frame. Only an auth step tracks it, so leaving one loads the settings.
- * The server still reruns it for every child that calls `parent()`, so the settings are kept for a few minutes
- * (`keptSettingsFetch`). A save in og changes the revision cookie (`markSettingsChanged`), which starts a new copy.
+ * The server still reruns it for every child that calls `parent()`, and a full page load runs it too, so the settings
+ * are kept for a few minutes (`keptSettingsFetch`). A save in og changes the revision cookie (`markSettingsChanged`),
+ * which starts a new copy. A change made outside og can take those minutes to show.
  */
-export async function loadViewerSession({
-  fetch,
-  locals,
-  cookies,
-  request,
-  isDataRequest = false,
-  route,
-  untrack,
-}: Params) {
+export async function loadViewerSession({ fetch, locals, cookies, request, route, untrack }: Params) {
   const { token, tokenExpired } = locals;
   const hasSession = token !== null || tokenExpired;
   // The header search's type picker.
@@ -83,7 +74,6 @@ export async function loadViewerSession({
       origin: new URL(request.url).origin,
       token,
       revision: cookies.get(SETTINGS_REVISION_COOKIE) ?? '',
-      fresh: !isDataRequest,
     });
     const response = await api({ fetch: settingsFetch, token }).users.settings({
       // @trakt/api 0.6.0 only types browsing, but API also supports sharing.

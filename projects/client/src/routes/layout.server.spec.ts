@@ -262,35 +262,35 @@ describe('root layout kept settings', () => {
     vi.unstubAllGlobals();
   });
 
-  // One server run of the root layout: a full page load, or the data request of a client navigation or reload.
-  const visit = ({ dataRequest = true, revision = '', token = 'fake-token' } = {}) =>
+  // One server run of the root layout, for a full page load or a client navigation alike.
+  const visit = ({ revision = '', token = 'fake-token' } = {}) =>
     load({
       fetch: globalThis.fetch,
       locals: { token, tokenExpired: false },
       cookies: { get: (name: string) => (name === 'og-settings' ? revision : undefined) },
       request: request(),
-      isDataRequest: dataRequest,
       route: { id: '/' },
       untrack,
     } as unknown as Parameters<typeof load>[0]);
 
   it('should read the settings once across a page load and its client navigations', async () => {
-    await visit({ dataRequest: false });
+    await visit();
     const navigations = await Promise.all([visit(), visit(), visit(), visit(), visit()]);
 
     expect(seen).toHaveLength(1);
     navigations.forEach((data) => expect(data.settings).toEqual(SETTINGS));
   });
 
-  it('should read fresh on every full page load', async () => {
-    await visit({ dataRequest: false });
-    await visit({ dataRequest: false });
+  it('should keep the settings across full page loads too', async () => {
+    await visit();
+    await visit();
+    await visit();
 
-    expect(seen).toHaveLength(2);
+    expect(seen).toHaveLength(1);
   });
 
   it('should read fresh once og saves a setting, then keep the new copy', async () => {
-    await visit({ dataRequest: false });
+    await visit();
     await visit();
     const darkKnight = { ...SETTINGS, browsing: { ...SETTINGS.browsing, dark_knight: 'false' } };
     server.use(
@@ -308,7 +308,7 @@ describe('root layout kept settings', () => {
   });
 
   it('should read again for a renewed token', async () => {
-    await visit({ dataRequest: false });
+    await visit();
     await visit({ token: 'renewed-token' });
 
     expect(seen.map((request) => request.headers.get('authorization'))).toEqual([
@@ -318,11 +318,11 @@ describe('root layout kept settings', () => {
   });
 
   it('should render a refused token logged out on a full page load and stop keeping its settings', async () => {
-    await visit({ dataRequest: false });
+    await visit({ revision: 'old' });
     server.use(http.get('https://apiz.trakt.tv/users/settings', () => new HttpResponse(null, { status: 401 })));
 
-    expect(await visit({ dataRequest: false })).toEqual({ ...(await layout(null)), hasSession: true });
-    expect(await visit()).toEqual({ ...(await layout(null)), hasSession: true });
+    expect(await visit({ revision: 'new' })).toEqual({ ...(await layout(null)), hasSession: true });
+    expect(await visit({ revision: 'new' })).toEqual({ ...(await layout(null)), hasSession: true });
   });
 });
 

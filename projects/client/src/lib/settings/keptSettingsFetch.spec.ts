@@ -29,7 +29,6 @@ const read = async (fetch: typeof globalThis.fetch, overrides: Partial<Parameter
     origin: 'https://og.test',
     token: 'secret-token',
     revision: '',
-    fresh: false,
     ...overrides,
   });
   const response = await kept(SETTINGS_URL);
@@ -57,16 +56,6 @@ describe('keptSettingsFetch', () => {
     expect(response?.headers.get('cache-control')).toBe(`public, max-age=${SETTINGS_TTL_SECONDS}`);
   });
 
-  it('should read fresh for a full page load and replace the kept copy', async () => {
-    const { cache } = memoryCache();
-    await read(api(), { cache });
-    const fetch = vi.fn<typeof globalThis.fetch>(() => Promise.resolve(Response.json({ user: { username: 'new' } })));
-
-    expect(await read(fetch, { cache, fresh: true })).toEqual({ status: 200, body: { user: { username: 'new' } } });
-    expect(await read(api(), { cache })).toEqual({ status: 200, body: { user: { username: 'new' } } });
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
   it('should keep one copy per token and per revision', async () => {
     const { cache } = memoryCache();
     const fetch = api();
@@ -80,9 +69,11 @@ describe('keptSettingsFetch', () => {
 
   it('should never keep a refused read, and drop the copy once the token is refused', async () => {
     const { cache, entries } = memoryCache();
-    await read(api(), { cache });
+    await read(api(), { cache, revision: 'old' });
 
-    expect(await read(api(401), { cache, fresh: true })).toEqual({ status: 401, body: null });
+    expect(await read(api(401), { cache, revision: 'old' })).toEqual({ status: 200, body: SETTINGS });
+    entries.clear();
+    expect(await read(api(401), { cache })).toEqual({ status: 401, body: null });
     expect(entries.size).toBe(0);
 
     const fetch = api(401);
@@ -95,7 +86,6 @@ describe('keptSettingsFetch', () => {
     const { cache } = memoryCache();
     await read(api(), { cache });
 
-    expect(await read(api(502), { cache, fresh: true })).toEqual({ status: 502, body: null });
     expect(await read(api(502), { cache })).toEqual({ status: 200, body: SETTINGS });
   });
 

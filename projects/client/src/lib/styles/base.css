@@ -136,7 +136,7 @@ img {
   background-image: var(--image-placeholder-banner);
 }
 
-:where(img[src^="https://media.trakt.tv/"][src*="/headshot.webp"]) {
+:where(img[src^="https://media.trakt.tv/"]:is([src*="/headshot.webp"], [src*="/portrait.webp"])) {
   background-image: var(--image-placeholder-person);
 }
 

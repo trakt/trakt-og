@@ -1,9 +1,12 @@
 # From trakt-web. Exact pins, trustedDependencies drift, frozen install, provenance, dependency review.
 name: VIP Bouncer aka Supply Chain
 
+# The merge queue runs the audit again on the queued PRs together. Dependency review and the postinstall check read
+# the pull request, so they ran on it already; skipped in the queue, they count as passed.
 on:
   pull_request:
     branches: [main]
+  merge_group:
   push:
     branches: [main]
 

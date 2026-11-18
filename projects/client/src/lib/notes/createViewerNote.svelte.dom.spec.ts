@@ -1,5 +1,6 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { recentReads } from '../api/recentReads.ts';
 import { createViewerNote } from './createViewerNote.svelte.ts';
 import { fetchPrivateNote } from './fetchPrivateNote.ts';
 
@@ -10,6 +11,7 @@ const note = { id: 8, text: 'Rewatch it', createdAt: null, updatedAt: null };
 const cleanups: (() => void)[] = [];
 afterEach(() => {
   cleanups.splice(0).forEach((cleanup) => cleanup());
+  recentReads.forget();
   vi.mocked(fetchPrivateNote).mockReset();
 });
 
@@ -39,6 +41,17 @@ describe('createViewerNote', () => {
     expect(viewer.note).toBeNull();
     await vi.waitFor(() => expect(viewer.note).toEqual(note));
     expect(fetchPrivateNote).toHaveBeenCalledWith(expect.objectContaining({ token: null }));
+  });
+
+  it('should show the kept note on the next visit without reading again', async () => {
+    vi.mocked(fetchPrivateNote).mockResolvedValue(note);
+    const item = { type: 'movie', id: 1, slug: 'x' } as const;
+    const first = track(() => ({ item, signedIn: true }));
+    await vi.waitFor(() => expect(first.note).toEqual(note));
+
+    const again = track(() => ({ item, signedIn: true }));
+    await vi.waitFor(() => expect(again.note).toEqual(note));
+    expect(fetchPrivateNote).toHaveBeenCalledTimes(1);
   });
 
   it("should not show one item's note on the next", async () => {

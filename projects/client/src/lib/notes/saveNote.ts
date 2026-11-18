@@ -2,6 +2,7 @@ import { z } from 'zod/v4';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import { isApiUnavailable } from '../api/isApiUnavailable.ts';
 import { rawApiFetch } from '../api/rawApiFetch.ts';
+import { recentReads } from '../api/recentReads.ts';
 import type { NotableItem } from './NotableItem.ts';
 import { noteEvent } from './noteEvent.ts';
 import type { PrivateNote } from './PrivateNote.ts';
@@ -28,8 +29,10 @@ const writtenNote = z.object({
 
 type WriteParams = { fetch: typeof globalThis.fetch; path: string; method: string; body?: unknown };
 
-const write = ({ fetch, path, method, body }: WriteParams) =>
-  rawApiFetch({
+const write = ({ fetch, path, method, body }: WriteParams) => {
+  // The page's kept read of the note would bring the old text back on Back.
+  recentReads.forget();
+  return rawApiFetch({
     fetch,
     path,
     init: {
@@ -38,6 +41,7 @@ const write = ({ fetch, path, method, body }: WriteParams) =>
       ...(body !== undefined && { body: JSON.stringify(body) }),
     },
   });
+};
 
 /** An owned note's edit or delete: v3, or v2's `/notes/:id` for a client ID that may not call v3. */
 async function changeNote(fetch: typeof globalThis.fetch, note: PrivateNote, notes: string) {

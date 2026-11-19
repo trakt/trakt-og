@@ -75,7 +75,7 @@ const STEPS = [1, 2, 2.5, 5] as const;
 const LABEL_BEFORE_FROM = 9;
 
 /** "16%", "4.2%", "<0.1%": whole numbers from 10% up, one place under that. */
-function ratingShare(part: number, whole: number) {
+export function ratingShare(part: number, whole: number) {
   if (part === 0 || whole === 0) return '0%';
   const share = (part / whole) * 100;
   if (share < 0.1) return '<0.1%';

@@ -8,11 +8,10 @@ import type { FinishedView } from './FinishedView.ts';
 type Progress = Awaited<ReturnType<typeof fetchRecentProgress>>;
 
 const MIN_FINISHED = 5;
-const MONTH = 30;
 
 /**
  * The finished shows among the ten most recently watched, newest first, with how many days ago each was finished.
- * ponytail: only ten rows, so "this month" and "latest" miss anything finished before ten other shows were watched.
+ * ponytail: only ten rows, so "latest" misses anything finished before ten other shows were watched.
  */
 function recentlyFinished(today: number, rows: Progress | undefined) {
   return (rows ?? []).flatMap(({ show, progress }) =>
@@ -23,7 +22,9 @@ function recentlyFinished(today: number, rows: Progress | undefined) {
 }
 
 /** Stats without `progress` finished nothing as far as the box can tell. */
-const NO_PROGRESS = { finished: 0, started: 0 };
+const NO_PROGRESS = { finished: 0, started: 0, dropped: 0 };
+
+const share = (part: number, whole: number) => (part / whole) * 100;
 
 const daysLabel = (days: number) => (days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`);
 
@@ -45,17 +46,16 @@ export const finishedBox = defineProfileBox({
     );
   },
   view: ({ stats, today }, rows): FinishedView | null => {
-    const { finished, started } = stats.progress ?? NO_PROGRESS;
+    const { finished, started, dropped } = stats.progress ?? NO_PROGRESS;
     if (finished < MIN_FINISHED) return null;
-    const recent = recentlyFinished(today, rows);
-    const month = recent.filter(({ days }) => days < MONTH).length;
-    const latest = recent.at(0);
+    const latest = recentlyFinished(today, rows).at(0);
+    const total = finished + started + dropped;
     return {
-      count: finished.toLocaleString('en-US'),
-      finished,
-      started: Math.max(started, finished),
-      share: `${Math.round(boxMath.cap(finished, Math.max(started, 1)) * 100)}% of shows started`,
-      month: month > 0 ? `+${month} this month` : null,
+      finished: finished.toLocaleString('en-US'),
+      watched: Math.max(stats.shows.watched, finished).toLocaleString('en-US'),
+      inProgress: started,
+      dropped,
+      meter: total > 0 ? { finished: share(finished, total), inProgress: share(started, total) } : null,
       latest: latest
         ? {
             title: { text: latest.show.title, href: `/shows/${latest.show.ids.slug}` },

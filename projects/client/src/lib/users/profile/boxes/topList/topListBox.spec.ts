@@ -5,14 +5,13 @@ import { topListBox } from './topListBox.ts';
 const { lena, dex, maya } = boxPersonas;
 
 describe('topListBox', () => {
-  it('should show likes across the lists and the most liked one', async () => {
+  it("should show the most liked list over its first item's fanart", async () => {
     const { score, entry } = await topListBox.evaluate(lena.input, lena.extras());
     expect(score).toBe(99);
     expect(entry?.view).toMatchObject({
-      likes: '1,840',
-      lists: '23 lists',
+      image: expect.stringMatching(/\/thumb\/fanart\.webp$/),
       title: { text: '80s Horror Essentials', href: '/users/lena/lists/80s-horror-essentials' },
-      line: '87 items · 1,204 likes · 64 comments',
+      counts: { items: 87, likes: 1204, comments: 64 },
     });
     expect(entry?.view.posters).toHaveLength(3);
   });

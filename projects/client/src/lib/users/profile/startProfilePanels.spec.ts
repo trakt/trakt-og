@@ -7,6 +7,7 @@ import { createRecentReads } from '../../api/recentReads.ts';
 import type { StatsCounts } from '../../stats/StatsCounts.ts';
 import type { UserStats } from '../../stats/userStatsSchema.ts';
 import { toProfileUser } from '../toProfileUser.ts';
+import { profileBoxesVersion } from './boxes/profileBoxes.ts';
 import { startProfilePanels } from './startProfilePanels.ts';
 
 const API = 'https://apiz.trakt.tv';
@@ -147,8 +148,8 @@ describe('startProfilePanels', () => {
       expect(seen.some((request) => request.headers.has('authorization'))).toBe(false);
       expect(activities).not.toHaveBeenCalled();
       expect(storage.getItem('og-activity')).toBeNull();
-      expect(loaded?.find((box) => box.key === 'watch-time')?.view).toMatchObject({
-        allTime: { movies: '2 movies' },
+      expect(loaded?.shown.find((box) => box.key === 'watch-time')?.view).toMatchObject({
+        allTime: { movies: 2 },
       });
       expect(droppedReads()).toHaveLength(0);
     });
@@ -167,8 +168,9 @@ describe('startProfilePanels', () => {
     });
 
     it('should read every watched item for stats it counts itself, with the last 30 days alongside', async () => {
-      const { mostWatched } = start();
-      const loaded = await mostWatched;
+      const { mostWatched, boxes } = start();
+      // The boxes' own reads (Watch Time's history counts) land in this spec, not the next one.
+      const [loaded] = await Promise.all([mostWatched, boxes]);
 
       expect(new URL(wholeLists().at(0)?.url ?? '').searchParams.get('extended')).toBe('full');
       expect(loaded.movies.allTime.map(({ id }) => id)).toEqual([2, 1]);
@@ -194,6 +196,18 @@ describe('startProfilePanels', () => {
       expect(droppedReads()).toHaveLength(1);
       expect(wholeLists()).toHaveLength(1);
       expect(onUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should not draw a strip saved before the boxes last changed', async () => {
+      const storage = memory();
+      const stale = { user: 'tester', key: '', at: Date.now(), value: ['stale'] };
+      storage.setItem(
+        'og-activity',
+        JSON.stringify({ 'profile-boxes': stale, [`profile-boxes-v${profileBoxesVersion - 1}`]: stale }),
+      );
+      const { boxes } = start({ isSelf: true, storage, onUpdate: vi.fn() });
+
+      await expect(boxes).resolves.not.toEqual(['stale']);
     });
 
     it('should show the saved panels, then hand over fresh ones when your activity moved', async () => {

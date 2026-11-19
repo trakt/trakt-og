@@ -10,7 +10,7 @@ describe('biggestBingeBox', () => {
       score: 75,
       entry: {
         key: 'biggest-binge',
-        view: { episodes: 11, show: { text: 'Severance', href: '/shows/severance' }, day: 'Sat, Sep 26' },
+        view: { episodes: 11, show: { text: 'Severance', href: '/shows/severance' }, day: 'Saturday, September 26' },
       },
     });
   });
@@ -21,7 +21,7 @@ describe('biggestBingeBox', () => {
       ...maya.input,
       recent: { episodes: [...Array(4).fill(play('2026-09-20')), ...Array(4).fill(play('2026-09-22'))], movies: [] },
     };
-    expect((await biggestBingeBox.evaluate(input, maya.extras())).entry?.view.day).toBe('Tue, Sep 22');
+    expect((await biggestBingeBox.evaluate(input, maya.extras())).entry?.view.day).toBe('Tuesday, September 22');
   });
 
   it('should need four episodes', async () => {

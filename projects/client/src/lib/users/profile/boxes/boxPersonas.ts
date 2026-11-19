@@ -243,11 +243,12 @@ type Answers = {
 
 /** The boxes' extra requests, answered from a persona's data. */
 const answering =
-  (id: string, { progress = [], lists = [], latestTen }: Answers) =>
+  (id: string, joinedAt: string, { progress = [], lists = [], latestTen }: Answers) =>
   () =>
     boxExtraLoader({
       fetch: (request) => {
-        const { pathname } = new URL(request instanceof Request ? request.url : request.toString());
+        const { pathname, searchParams } = new URL(request instanceof Request ? request.url : request.toString());
+        if (pathname.endsWith('/history')) return Promise.resolve(historyCount(searchParams.get('start_at')));
         if (pathname.includes('/progress/watched')) return Promise.resolve(Response.json(progress));
         if (pathname.endsWith('/lists')) return Promise.resolve(Response.json(lists));
         const ten = latestTen ? [{ type: 'movie', rating: 10, movie: latestTen }] : [];
@@ -255,7 +256,16 @@ const answering =
       },
       token: null,
       id,
+      joinedAt,
+      today: TODAY,
     });
+
+/** A made-up, steady count of plays for a history span, by its start month, in the header the box reads. */
+function historyCount(startAt: string | null) {
+  const start = new Date(startAt ?? NOW);
+  const plays = 20 + (((start.getUTCFullYear() * 12 + start.getUTCMonth()) * 37) % 90);
+  return Response.json([], { headers: { 'x-pagination-item-count': String(plays) } });
+}
 
 type Persona = {
   readonly label: string;
@@ -298,7 +308,9 @@ const maya = ((): Persona => {
           'adventure:Adventure:14',
       ),
     },
-    extras: answering('maya', { progress: [progress(severance, 18, 19, 0), progress(slowHorses, 33, 33, 6)] }),
+    extras: answering('maya', '2019-06-14T10:00:00.000Z', {
+      progress: [progress(severance, 18, 19, 0), progress(slowHorses, 33, 33, 6)],
+    }),
   };
 })();
 
@@ -342,7 +354,7 @@ const dex = ((): Persona => {
           'comedy:Comedy:10 fantasy:Fantasy:8',
       ),
     },
-    extras: answering('dex', {
+    extras: answering('dex', '2014-03-02T10:00:00.000Z', {
       progress: [progress(theBear, 22, 46, 6)],
       lists: [
         list('Practical Effects Hall of Fame', [31, 42, 3, 40], [theThing, alien, nosferatu]),
@@ -394,7 +406,7 @@ const lena = ((): Persona => {
           'thriller:Thriller:15 adventure:Adventure:15',
       ),
     },
-    extras: answering('lena', {
+    extras: answering('lena', '2016-10-21T10:00:00.000Z', {
       progress: [progress(shogun, 7, 10, 3), progress(theBear, 46, 46, 50)],
       lists: [
         list('80s Horror Essentials', [1_204, 87, 64, 2], [theThing, alien, nosferatu]),
@@ -426,7 +438,7 @@ const sam = ((): Persona => {
       watchlist: watchlist(3, [{ movie: dune }, { movie: arrival }, { movie: sicario }]),
       genres: genres('science-fiction:Science_Fiction:100 adventure:Adventure:50'),
     },
-    extras: answering('sam', {}),
+    extras: answering('sam', '2026-10-02T10:00:00.000Z', {}),
   };
 })();
 

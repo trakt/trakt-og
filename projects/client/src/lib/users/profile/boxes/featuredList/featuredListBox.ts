@@ -1,4 +1,3 @@
-import { countLabel } from '../../../../utils/countLabel.ts';
 import { mediaImage } from '../../../../images/mediaImage.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
@@ -33,10 +32,10 @@ export const featuredListBox = defineProfileBox({
     return {
       name: 'Watchlist',
       href: `/users/${profile.slug}/watchlist`,
-      count: watchlist.count > 0 ? countLabel(watchlist.count, 'item') : null,
+      items: watchlist.count,
       image: first ? art('fanart', first) : undefined,
       posters: media.map((item) => art('poster', item)),
-      next: media.length > 0 ? `Next up: ${media.map(({ title }) => title).join(', ')}` : null,
+      next: media.map(({ title }) => title),
     };
   },
 });

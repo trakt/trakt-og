@@ -1,10 +1,13 @@
-<!-- A profile box's one big number, with its label in two short lines beside it, and an icon before the label. -->
+<!--
+  A profile box's one big number in the dashboard panels' condensed figures, then a plain space and its label on the
+  same line ("11 episodes in one day"), wrapping only when it runs out of room. An icon leads the label.
+-->
 <script lang="ts">
 import Icon from '#lib/icons/Icon.svelte';
 
 interface Props {
   value: string;
-  label: readonly string[];
+  label: string;
   /** A raw icon SVG, from `#lib/icons`. */
   icon?: string;
 }
@@ -12,33 +15,25 @@ interface Props {
 const { value, label, icon }: Props = $props();
 </script>
 
-<p class="figure">
-  <b>{value}</b>
-  <span>{#if icon}<span class="glyph"><Icon svg={icon} /></span>{/if}{#each label as line, i (i)}{#if i > 0}<br />{/if}{line}{/each}</span>
-</p>
+<p class="figure"><b>{value}</b> {#if icon}<span class="glyph"><Icon svg={icon} /></span>{/if}{label}</p>
 
 <style>
 .figure {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 2px 0 0;
+  margin: var(--profile-box-figure-gap) 0 0;
+  color: var(--color-profile-ink-soft);
+  font-family: var(--font-headings);
+  font-size: var(--font-size-profile-figure-label);
+  font-weight: var(--font-weight-headings);
+  line-height: 1.2;
 
   b {
-    font-family: var(--font-headings);
+    color: var(--color-card-text);
+    font-family: var(--font-profile-figure);
     font-size: var(--font-size-profile-figure);
     font-weight: var(--font-weight-profile-figure);
     font-variant-numeric: tabular-nums;
-    letter-spacing: var(--letter-spacing-profile-figure);
-    line-height: 1;
-  }
-
-  span {
-    color: var(--color-profile-ink-soft);
-    font-family: var(--font-headings);
-    font-size: var(--font-size-profile-figure-label);
-    font-weight: var(--font-weight-headings);
-    line-height: 1.2;
+    line-height: 0.85;
+    margin-inline-start: var(--profile-box-figure-nudge);
   }
 
   .glyph {

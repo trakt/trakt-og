@@ -11,9 +11,9 @@ describe('featuredListBox', () => {
     expect(entry?.view).toMatchObject({
       name: 'Watchlist',
       href: '/users/lena/watchlist',
-      count: '212 items',
+      items: 212,
       image: 'https://media.trakt.tv/shows/206790/thumb/fanart.webp',
-      next: 'Next up: Pluribus, The Pitt, Sicario',
+      next: ['Pluribus', 'The Pitt', 'Sicario'],
     });
     expect(entry?.view.posters).toHaveLength(3);
   });
@@ -26,7 +26,7 @@ describe('featuredListBox', () => {
     const input = { ...sam.input, watchlist: { count: 0, rows: [] } };
     expect(await featuredListBox.evaluate(input, sam.extras())).toMatchObject({
       score: null,
-      entry: { view: { count: null, posters: [], next: null } },
+      entry: { view: { items: 0, posters: [], next: [] } },
     });
   });
 });

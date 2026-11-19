@@ -1,6 +1,6 @@
-import { countLabel } from '../../../../utils/countLabel.ts';
 import type { BoxInput } from '../BoxInput.ts';
 import { boxMath } from '../boxMath.ts';
+import { ratingShare } from '../../toProfileRatings.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
 import { fetchLatestTen } from '../fetchLatestTen.ts';
 import { ratingDistribution } from '../../ratingDistribution.ts';
@@ -21,6 +21,7 @@ const ratedShare = (stats: BoxInput['stats']) =>
 export const ratingsBox = defineProfileBox({
   key: 'ratings',
   group: 'numbers',
+  fallback: true,
   component: RatingsBox,
   // The "latest 10" line. The box works without it.
   extra: { load: fetchLatestTen, when: ({ stats }) => stats.ratings.total >= MIN_RATINGS },
@@ -37,16 +38,23 @@ export const ratingsBox = defineProfileBox({
     const { counts, total, average, most, mostGiven } = ratingDistribution(stats.ratings.distribution);
     if (stats.ratings.total < MIN_RATINGS || total === 0) return null;
     return {
-      total: `${stats.ratings.total.toLocaleString('en-US')} rated`,
+      total: `${stats.ratings.total.toLocaleString('en-US')} ${stats.ratings.total === 1 ? 'Rating' : 'Ratings'}`,
       average: average.toFixed(1),
+      averageAt: ((average - 0.5) / 10) * 100,
       bars: counts.map((count, i) => ({
         height: (count / most) * 100,
         mode: i + 1 === mostGiven,
-        title: `${i + 1}: ${countLabel(count, 'rating')}`,
+        tip:
+          count > 0
+            ? {
+                count: count.toLocaleString('en-US'),
+                noun: count === 1 ? 'rating' : 'ratings',
+                share: `${ratingShare(count, total)} of all ratings`,
+              }
+            : null,
       })),
-      chartLabel: `Ratings from 1 to 10, most often ${mostGiven}.`,
+      chartLabel: `Ratings from 1 to 10, most often ${mostGiven}, averaging ${average.toFixed(1)}.`,
       latestTen: latestTen ? { text: latestTen.title, href: latestTen.href } : null,
-      comments: countLabel(comments(stats), 'comment'),
     };
   },
 });

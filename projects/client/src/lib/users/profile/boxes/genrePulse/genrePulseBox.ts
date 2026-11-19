@@ -53,17 +53,16 @@ export const genrePulseBox = defineProfileBox({
   view: (input): GenrePulseView | null => {
     const found = pulse(input);
     if (!found) return null;
-    return {
-      spike: `${found.spike.ratio.toFixed(1)}×`,
-      genre: found.spike.name,
-      // The hot genre first, then the month's biggest others.
-      rows: [found.spike, ...found.rows.filter(({ slug }) => slug !== found.spike.slug)]
-        .slice(0, 3)
-        .map(({ name, now, usual }) => ({
-          name,
-          now: Math.round(now),
-          usual: Math.round(Math.min(usual, 100)),
-        })),
-    };
+    const share = ({ slug, name, now, usual }: (typeof found.rows)[number]) => ({
+      slug,
+      name,
+      now: Math.round(now),
+      usual: Math.round(Math.min(usual, 100)),
+    });
+    const alsoUp = found.rows
+      .filter(({ slug }) => slug !== found.spike.slug)
+      .map(share)
+      .find(({ now, usual }) => now > usual);
+    return { spike: `${found.spike.ratio.toFixed(1)}×`, hot: share(found.spike), alsoUp: alsoUp ?? null };
   },
 });

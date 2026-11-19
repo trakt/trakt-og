@@ -14,7 +14,7 @@ import { boxExtraLoader } from './boxes/boxExtraLoader.ts';
 import type { BoxFrame } from './boxes/BoxFrame.ts';
 import type { BoxInput } from './boxes/BoxInput.ts';
 import { boxMath } from './boxes/boxMath.ts';
-import { profileBoxes } from './boxes/profileBoxes.ts';
+import { profileBoxes, profileBoxesVersion } from './boxes/profileBoxes.ts';
 import { toProfileBoxes } from './boxes/toProfileBoxes.ts';
 import { fetchWatchedLists } from './fetchWatchedLists.ts';
 import { hasActivity } from './hasActivity.ts';
@@ -82,9 +82,15 @@ type Boxes = { readonly frame: BoxFrame; readonly extras: ReturnType<typeof boxE
 /**
  * When the strip shows, starts every extra request a box could use. A private profile's go with the viewer's token.
  */
-function startBoxes(frame: BoxFrame, fetch: typeof globalThis.fetch): Boxes | null {
+function startBoxes(frame: BoxFrame, fetch: typeof globalThis.fetch, today: number): Boxes | null {
   if (frame.profile.isLocked || !hasActivity(frame.stats)) return null;
-  const extras = boxExtraLoader({ fetch, token: null, id: frame.profile.slug });
+  const extras = boxExtraLoader({
+    fetch,
+    token: null,
+    id: frame.profile.slug,
+    joinedAt: frame.profile.joinedAt,
+    today,
+  });
   for (const box of profileBoxes) box.prefetch(frame, extras);
   return { frame, extras };
 }
@@ -156,7 +162,7 @@ export function startProfilePanels({
     watchlist.catch(() => undefined);
     const known = await readStats(counts);
     if (!known) return null;
-    const started = startBoxes({ profile, stats: known, isSelf }, profile.isPrivate ? signedIn : plain);
+    const started = startBoxes({ profile, stats: known, isSelf }, fetch, today);
     if (!started) return null;
 
     const [list, history, lists] = await Promise.all([watchlist, recent(), watched()]);
@@ -182,10 +188,11 @@ export function startProfilePanels({
     panel: keyof ProfilePanels,
     key: (latest: LastActivitiesResponse) => unknown,
     read: () => Promise<T>,
+    saved = `profile-${panel}`,
   ) =>
     isSelf
       ? cachedOnActivity({
-          name: `profile-${panel}`,
+          name: saved,
           activities,
           user: id,
           key,
@@ -203,6 +210,7 @@ export function startProfilePanels({
           'boxes',
           (latest) => [latest.all, today, profile, stats, strip],
           () => readBoxes(strip),
+          `profile-boxes-v${profileBoxesVersion}`,
         )
       : Promise.resolve(null),
     mostWatched: keep(

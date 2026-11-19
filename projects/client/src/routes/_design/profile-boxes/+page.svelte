@@ -13,7 +13,7 @@ const { data } = $props();
 </script>
 
 <Specimen title="Each member's strip" bleed
-  note="Four boxes each: About Me first when it's written, then the best scores of 40 or more (at most two number boxes), always one image box, and floor boxes fill any slot left.">
+  note="Four boxes each: About Me first when it's written, Watch Time always third, then the best scores of 40 or more (at most two number boxes), always one image box, Ratings only for a slot nothing else fills, and floor boxes fill any slot left. More opens the next four scored boxes in a second row.">
   {#each data.strips as strip (strip.name)}
     <div class="strip-head">
       <h3>{strip.name}, {strip.label.toLowerCase()}</h3>
@@ -30,7 +30,8 @@ const { data } = $props();
   <ProfileSectionShimmer section="boxes" />
 </Specimen>
 
-<Specimen title="Each box" note="Every box alone, in each member's state, then your own empty one and nothing yet.">
+<Specimen title="Each box"
+  note="Every box alone, in each member's state, then your own empty one and nothing yet. Each is a card with its label in caps and at most one pill; colour boxes carry a faint icon, the big number and its words share a line, and an episode in Last Watched gets the purple watched bar and progress pie. Hover a fanart box to see the art grow.">
   {#each data.alone as box (box.key)}
     <h3>{box.key}</h3>
     <div class="variants">

@@ -1,11 +1,11 @@
-import { countLabel } from '../../../../utils/countLabel.ts';
 import { formatRuntime } from '../../../../utils/formatRuntime.ts';
 import { playRuntime } from '../../../playRuntime.ts';
 import type { BoxInput } from '../BoxInput.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
+import { fetchWatchHistory } from './fetchWatchHistory.ts';
 import WatchTimeBox from './WatchTimeBox.svelte';
-import type { WatchTimeView } from './WatchTimeView.ts';
+import type { WatchChart, WatchTimeView } from './WatchTimeView.ts';
 
 /** Today and the 29 days before it. */
 const DAYS = 30;
@@ -20,14 +20,13 @@ function thirtyDays({ recent, today }: BoxInput) {
   const minutes = Array.from({ length: DAYS }, (_, i) =>
     plays.filter(({ day }) => day === first + i).reduce((sum, play) => sum + play.minutes, 0),
   );
+  const counts = minutes.map((_, i) => plays.filter(({ day }) => day === first + i).length);
   const movies = plays.filter(({ movie }) => movie).length;
-  return { first, minutes, episodes: plays.length - movies, movies };
+  return { first, minutes, counts, episodes: plays.length - movies, movies };
 }
 
 const total = (minutes: readonly number[]) => minutes.reduce((sum, value) => sum + value, 0);
 const activeDays = (minutes: readonly number[]) => minutes.filter((value) => value > 0).length;
-const dayLabel = (day: number) =>
-  new Date(day * DAY).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 /** Days since the newest play, or `null` with none. */
 function sinceLastPlay({ latest, today }: BoxInput) {
@@ -38,58 +37,100 @@ function sinceLastPlay({ latest, today }: BoxInput) {
   return at ? boxMath.daysAgo(today, at) : null;
 }
 
-/** "1,667d 8h": days and hours only, so the footer fits. */
+/** "104d 7h", or "1y 290d 6h" past a year: no minutes, so the figure fits. */
 function longRuntime(minutes: number) {
   const days = Math.floor(minutes / 1440);
-  return days > 0 ? `${days.toLocaleString('en-US')}d ${Math.floor((minutes % 1440) / 60)}h` : formatRuntime(minutes);
+  const hours = `${Math.floor((minutes % 1440) / 60)}h`;
+  if (days >= 365) return `${Math.floor(days / 365)}y ${days % 365}d ${hours}`;
+  return days > 0 ? `${days}d ${hours}` : formatRuntime(minutes);
 }
 
-function toView(input: BoxInput): WatchTimeView {
-  const { first, minutes, episodes, movies } = thirtyDays(input);
-  const hours = total(minutes) / 60;
-  const top = Math.max(...minutes);
-  const peak = minutes.indexOf(top);
-  const { stats } = input;
+const dayLabel = (day: number) =>
+  new Date(day * DAY).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const playCount = (plays: number) => `${plays.toLocaleString('en-US')} ${plays === 1 ? 'play' : 'plays'}`;
 
+type Tip = { readonly title: string; readonly plays: string; readonly time: string };
+
+/** Bars scaled to the busiest, which is drawn in full white, each with its two-line tooltip. */
+function chart(values: readonly number[], tip: (i: number) => Tip, label: (peak: number) => string): WatchChart {
+  const top = Math.max(0, ...values);
+  const peak = values.indexOf(top);
   return {
-    hours: `${hours >= 10 ? Math.round(hours).toLocaleString('en-US') : hours.toFixed(1)}h`,
-    summary: [
-      episodes > 0 ? countLabel(episodes, 'ep') : null,
-      movies > 0 ? countLabel(movies, 'movie') : null,
-      countLabel(activeDays(minutes), 'active day'),
-    ]
-      .filter(Boolean)
-      .join(' · '),
-    days: minutes.map((value, i) => ({
+    bars: values.map((value, i) => ({
       height: top > 0 ? (value / top) * 100 : 0,
       peak: top > 0 && i === peak,
-      title: `${dayLabel(first + i)}: ${formatRuntime(value)}`,
+      ...tip(i),
     })),
-    chartLabel:
-      top > 0
-        ? `Time watched per day for the last 30 days. Busiest: ${dayLabel(first + peak)}, ${formatRuntime(top)}.`
-        : 'Nothing watched in the last 30 days.',
+    label: top > 0 ? label(peak) : 'Nothing watched yet.',
+  };
+}
+
+type History = Awaited<ReturnType<typeof fetchWatchHistory>>;
+
+function toView(input: BoxInput, history: History | undefined): WatchTimeView {
+  const { first, minutes, counts, episodes, movies } = thirtyDays(input);
+  const spans = history?.every(({ plays }) => plays !== null) ? history : null;
+  const plays = spans?.map(({ plays }) => plays ?? 0) ?? [];
+  const hours = total(minutes) / 60;
+  const { stats } = input;
+  // History only counts plays, so a span's time is its plays at the member's average play length.
+  const perPlay =
+    (stats.episodes.minutes + stats.movies.minutes) / Math.max(stats.episodes.plays + stats.movies.plays, 1);
+
+  const joined = input.profile.joinedAt ? boxMath.daysAgo(input.today, input.profile.joinedAt) : null;
+
+  return {
+    opens: joined !== null && joined <= DAYS ? 'month' : 'all',
+    month: {
+      hours: `${hours >= 10 ? Math.round(hours).toLocaleString('en-US') : hours.toFixed(1)}h`,
+      episodes,
+      movies,
+      activeDays: activeDays(minutes),
+      chart: chart(
+        minutes,
+        (i) => ({
+          title: dayLabel(first + i),
+          plays: playCount(counts[i] ?? 0),
+          time: formatRuntime(minutes[i] ?? 0),
+        }),
+        (peak) =>
+          `Time watched per day for the last 30 days. Busiest: ${dayLabel(first + peak)}, ${formatRuntime(minutes[peak] ?? 0)}.`,
+      ),
+    },
     allTime: {
       time: longRuntime(stats.episodes.minutes + stats.movies.minutes),
-      episodes: countLabel(stats.episodes.watched, 'ep'),
-      movies: countLabel(stats.movies.watched, 'movie'),
+      shows: stats.shows.watched,
+      episodes: stats.episodes.watched,
+      movies: stats.movies.watched,
+      chart: spans
+        ? chart(
+            plays,
+            (i) => ({
+              title: spans[i]?.label ?? '',
+              plays: playCount(plays[i] ?? 0),
+              time: `~${longRuntime(Math.round((plays[i] ?? 0) * perPlay))}`,
+            }),
+            (peak) => `Plays since joining. Busiest: ${spans[peak]?.label}, ${playCount(plays[peak] ?? 0)}.`,
+          )
+        : null,
     },
   };
 }
 
 /**
- * Hours watched in the last 30 days as one big number, the daily rhythm as bars, all time in the footer. Scores on
- * hours (80 is a lot), active days and how recent the last play was.
+ * All time and the last 30 days, pinned: always in the strip, always third. Its score (hours, 80 is a lot, active days and how recent the last play was) only shows in the design demo.
  */
 export const watchTimeBox = defineProfileBox({
   key: 'watch-time',
   group: 'numbers',
+  pinned: true,
+  at: 2,
   floor: true,
   component: WatchTimeBox,
+  extra: { load: fetchWatchHistory, when: () => true },
   score: (input) => {
     const { minutes } = thirtyDays(input);
     const hours = total(minutes) / 60;
-    if (hours === 0 && input.stats.episodes.plays + input.stats.movies.plays === 0) return null;
     const since = sinceLastPlay(input);
     return (
       100 *

@@ -203,7 +203,8 @@ function loadRecommendations(picks: DashboardSettings['recommendations']) {
   {welcome} />
 {/if}
 {#if panels.socialFeed}
-  <SocialFeedPanel feed={panels.socialFeed} {username} datePreferences={data.datePreferences} {welcome} />
+  <SocialFeedPanel feed={panels.socialFeed} {username} datePreferences={data.datePreferences}
+    following={data.stats?.network?.following ?? null} {welcome} />
 {/if}
 {#if panels.recommendations}
   <RecommendationsPanel recommendations={panels.recommendations} type={data.dashboard.recommendations.type}

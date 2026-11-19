@@ -1,3 +1,4 @@
+import type { episodeType } from '../components/media/episodeTags.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { SocialActivity } from './socialActivitySchema.ts';
 import { toSocialMedia } from './toSocialMedia.ts';
@@ -47,7 +48,13 @@ export type SocialItem = {
     readonly target: SocialTarget;
   };
   /** Set for episodes, so a sitting can say "1x06–1x08". */
-  readonly episode?: { readonly season: number; readonly number: number; readonly title?: string };
+  readonly episode?: {
+    readonly season: number;
+    readonly number: number;
+    readonly title?: string;
+    /** A premiere or finale, for its tag. */
+    readonly type?: NonNullable<ReturnType<typeof episodeType>>;
+  };
   /** "1x08", "Special 2", "Season 2". Left out for a movie or a whole show. */
   readonly code?: string;
   /** The title and code: "Lanterns 1x08". */

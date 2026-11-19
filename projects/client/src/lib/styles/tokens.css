@@ -540,6 +540,11 @@
   --font-size-heading-mark: 80px;
   --size-heading-live-dot: 14px; /* Watching Now's pulsing dot in place of the watermark */
   --space-heading-live-dot: 30px; /* that dot's left edge, out past the title's start */
+  --size-heading-hot: 20px; /* Hot in Your Network's flame in place of the watermark */
+  --space-heading-hot: 32px; /* that flame's left edge, out past the title's start */
+  --color-heading-hot: var(--brand-seventh); /* OG's orange */
+  --heading-hot-flicker: 2.4s;
+  --heading-hot-glow: 6px;
   --space-heading-mark-inline: -56px;
   --space-heading-mark-block: -12px;
   --color-heading-mark: color-mix(in srgb, currentColor 6%, transparent);
@@ -800,7 +805,6 @@
   --social-face-lift: 8px; /* how far the faces sit out past the poster's corner */
   --social-face-overlap: 9px; /* each face over the one before */
   --color-social-face-more: #3a3a3a;
-  --space-social-separator: 4px; /* around the dots in the line under a poster */
   --space-social-who-avatar: 8px; /* the avatar to the name */
   --line-height-social-who: 18px;
   --color-social-tag-live-glow: rgb(255 255 255 / 0.55);
@@ -808,6 +812,39 @@
   --social-dot: 8px;
   --social-pulse: 1.6s;
   --font-size-social-pill: 11px;
+  --space-social-circle-top: 26px; /* Hot in Your Network's dropdown to its featured title */
+  --space-social-circle-end: 34px; /* the standouts to the grid under them */
+  --space-social-circle-gap: 16px; /* between the heading, the banner and the standouts, and inside them */
+  --social-circle-banner-height: 320px; /* the featured title's fanart banner */
+  --space-social-circle-banner: 26px 28px;
+  --gradient-social-circle-banner:
+    linear-gradient(90deg, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.6) 45%, rgb(0 0 0 / 0.15)),
+    linear-gradient(rgb(0 0 0 / 0) 50%, rgb(0 0 0 / 0.6)); /* darkest behind the words on the left and along the bottom */
+  --space-social-circle-kicker: 8px; /* the faces to who's on it, and between a stat's icon and number */
+  --space-social-circle-title: 6px 0; /* the banner's title, from the line above and the line under */
+  --font-size-social-circle-title: 40px;
+  --font-size-social-circle-says: 16px;
+  --font-size-social-circle-tally: 30px;
+  --size-social-circle-tally-icon: 24px;
+  --color-social-circle-tally-bg: rgb(0 0 0 / 0.7); /* each stat's glass over the fanart */
+  --blur-social-circle-tally: var(--blur-header-glass);
+  --space-social-circle-tally-gap: 2px; /* between the stats, the fanart showing through */
+  --social-circle-tally-cell: 104px;
+  --social-circle-tally-tint: 22%; /* a stat's own color behind it: watchers, plays and the rating */
+  --space-social-circle-tally: 12px 18px;
+  --letter-spacing-social-circle-label: 0.06em; /* the tally's uppercase labels */
+  --space-social-circle-tally-icon: 6px; /* a stat's icon to its number */
+  --social-circle-face: 26px; /* who's on the featured title */
+  --color-social-circle-face-ring: rgb(0 0 0 / 0.4);
+  --space-social-circle-below: 10px; /* from a story card to the line under it */
+  --color-social-circle-plays: var(--color-progress-tip-watched); /* the watched purple, lifted for the dark banner */
+  --space-social-circle-person: 12px 14px; /* a card for each person on the featured title */
+  --color-social-together: var(--brand-secondary); /* a reason tag: several people on one title */
+  --color-social-binge: var(--brand-tertiary); /* a reason tag: three or more episodes, the watched purple */
+  --color-social-circle-person-bg: light-dark(#fff, rgb(255 255 255 / 0.04));
+  /* A poster's details in the Social Feed: the Why this? panel, washed in the watched purple. */
+  --color-social-details-mark: light-dark(var(--brand-tertiary), #c59be0);
+  --gradient-social-details-header: linear-gradient(to bottom, rgb(142 68 173 / 0.14), transparent);
 
   /* The dashboard's Show and Movie Recommendations: a dark band in both themes */
   /* The Social Feed's, the section above it, in either theme. The spotlight over its fanart stays dark. */

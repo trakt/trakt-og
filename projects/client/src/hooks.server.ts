@@ -11,10 +11,8 @@ import { withUserAgent } from './lib/api/withUserAgent.ts';
 import { readAuthCookie } from './lib/auth/readAuthCookie.ts';
 import { detectCrawler } from './lib/crawl/detectCrawler.ts';
 import { ENDPOINT_ROUTES } from './lib/crawl/endpointRoutes.ts';
-import { previewHead } from './lib/crawl/previewHead.ts';
 import { verifiedBotCategory } from './lib/crawl/verifiedBotCategory.ts';
 import { withCrawlHeaders } from './lib/crawl/withCrawlHeaders.ts';
-import { liveSocket } from './lib/live/liveSocket.ts';
 import { liveSocketPath } from './lib/live/liveSocketPath.ts';
 import { edgeCache } from './lib/utils/edgeCache.ts';
 
@@ -31,12 +29,17 @@ import { edgeCache } from './lib/utils/edgeCache.ts';
  * `locals.crawler` says whether a search engine or link-preview bot asked, and `withCrawlHeaders` sets the page's
  * cache and robots headers from it and the session. A bot that isn't a verified search engine gets a page's head alone
  * (`previewHead`), from one or two API reads; endpoints still answer it as usual, so preview art loads.
+ * `previewHead` and `liveSocket` load on first use. Every route's head mappers and the API client would otherwise run
+ * on the first request of every isolate, whatever page it asked for.
  */
 export const handle: Handle = async ({ event, resolve }) => {
   const { token, tokenExpired } = readAuthCookie({ value: event.cookies.get(AUTH_COOKIE), now: Date.now() });
   event.locals.token = token;
   event.locals.tokenExpired = tokenExpired;
-  if (event.url.pathname === liveSocketPath) return liveSocket({ event, token });
+  if (event.url.pathname === liveSocketPath) {
+    const { liveSocket } = await import('./lib/live/liveSocket.ts');
+    return liveSocket({ event, token });
+  }
   event.locals.crawler = detectCrawler({
     userAgent: event.request.headers.get('user-agent'),
     verifiedBotCategory: verifiedBotCategory(event.request),
@@ -44,13 +47,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const hasSession = token !== null || tokenExpired;
   const response = isHeadOnly(event)
-    ? await previewHead({
-        routeId: event.route.id,
-        params: event.params,
-        url: event.url,
-        fetch: event.fetch,
-        now: new Date(),
-      })
+    ? await headOnly(event)
     : await resolve(event, {
         transformPageChunk: ({ html }) =>
           html.replace('%og.theme%', event.locals.theme ?? 'dark').replace('%og.preload%', preloadData(hasSession)),
@@ -62,6 +59,17 @@ export const handle: Handle = async ({ event, resolve }) => {
     crawler: event.locals.crawler,
   });
 };
+
+async function headOnly(event: RequestEvent): Promise<Response> {
+  const { previewHead } = await import('./lib/crawl/previewHead.ts');
+  return previewHead({
+    routeId: event.route.id,
+    params: event.params,
+    url: event.url,
+    fetch: event.fetch,
+    now: new Date(),
+  });
+}
 
 const preloadData = (hasSession: boolean) => (hasSession ? 'tap' : 'off');
 

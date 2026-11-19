@@ -11,6 +11,9 @@
   // Served only on og.trakt.tv. wrangler deploy creates the DNS record and cert (same pattern as the auth worker).
   "routes": [{ "pattern": "og.trakt.tv", "custom_domain": true }],
   "workers_dev": false,
+  // og never reads the API contracts' OpenAPI metadata, and the real package's CommonJS build bundles a second zod.
+  // The browser build stubs it the same way (vite.config.ts).
+  "alias": { "@anatine/zod-openapi": "./src/lib/zodOpenApiShim.ts" },
   "observability": {
     "enabled": true
   },

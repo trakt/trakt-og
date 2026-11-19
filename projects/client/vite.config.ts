@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => ({
     {
       name: 'zod-openapi-shim',
       enforce: 'pre',
-      // The real package's CommonJS build bundles a second copy of zod into the browser. The server keeps it.
+      // The real package's CommonJS build bundles a second copy of zod. The Worker bundle stubs it in wrangler.jsonc.
       resolveId(source, _importer, options) {
         if (source !== '@anatine/zod-openapi' || options.ssr) return null;
         return fileURLToPath(new URL('./src/lib/zodOpenApiShim.ts', import.meta.url));

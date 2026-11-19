@@ -47,7 +47,8 @@ Smooth means the same page with less work. Every rule here came from a counted w
 ## Bundle
 
 - **Watch the boot closure** (the root layout's static imports). Anything there ships on every page. `@trakt/api` reaches boot through the overlay, header search and drop note.
-- **The browser build stubs `@anatine/zod-openapi`** (`src/lib/zodOpenApiShim.ts`, `vite.config.ts`). Its CommonJS build pulled a second zod into every page, and og never reads OpenAPI metadata. If a dependency upgrade starts reading it, remove the shim.
+- **The browser build and the Worker bundle stub `@anatine/zod-openapi`** (`src/lib/zodOpenApiShim.ts`, `vite.config.ts`, `wrangler.jsonc`). Its CommonJS build pulled a second zod into every page and 169 KB into the Worker, and og never reads OpenAPI metadata. If a dependency upgrade starts reading it, remove the shim.
+- **`hooks.server.ts` statically imports only what every request needs.** A new isolate evaluates it on its first request, whatever the page. `previewHead` (crawler heads) pulled in every route's head mappers and the API client, 619 modules; loading it and `liveSocket` on first use cut a cold data request's module work by about 10ms. (`hooks.server.ts`)
 - **Images in hidden markup are `loading="lazy"`**, or desktop fetches the phone splash. (`mobile-splash/MobileSplash.svelte`)
 
 ## Measuring

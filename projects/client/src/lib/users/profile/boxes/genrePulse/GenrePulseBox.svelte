@@ -1,72 +1,63 @@
-<!-- Genre Pulse: the genre running hot this month against the user's usual, with the month's top three. -->
+<!--
+  Genre Pulse: the genre running hot this month as the hero, its welcome wizard icon faint in the corner (the theater
+  masks for a genre the wizard doesn't list), with how far above its usual share as a pale pill and its
+  shares in one plain line, and the month's next genre that's up too in the band.
+-->
 <script lang="ts">
-import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
+import { genreIconFor } from '#lib/components/first-night/genreIcons.ts';
+import TagPills from '#lib/components/labels/TagPills.svelte';
 import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import up from '#lib/icons/solid/angle-up.svg?raw';
+import masks from '#lib/icons/solid/masks-theater.svg?raw';
 import type { GenrePulseView } from './GenrePulseView.ts';
 
 const { view }: { view: GenrePulseView } = $props();
+const mark = $derived(genreIconFor(view.hot.slug) ?? masks);
 </script>
 
-<ProfileBox tone="genre">
-  <BoxChips chips={[{ text: 'Genre Pulse' }, { text: 'This Month', alt: true }]} />
-  <BoxFigure value={view.spike} label={[`more ${view.genre}`, 'than usual']} />
-  <ul>
-    {#each view.rows as row (row.name)}
-      <li>
-        <span class="name">{row.name}</span>
-        <span class="shares">{row.now}% now · {row.usual}% usual</span>
-        <span
-          class="track"
-          role="img"
-          aria-label="{row.name}: {row.now}% this month, {row.usual}% all time"
-          style:--now="{row.now}%"
-          style:--usual="{row.usual}%"
-        ></span>
-      </li>
-    {/each}
-  </ul>
+{#snippet foot()}
+  {#if view.alsoUp}Also up: <b>{view.alsoUp.name}</b> {view.alsoUp.now}%, usually {view.alsoUp.usual}%{/if}
+{/snippet}
+
+<ProfileBox label="Genre Pulse" tone="genre" {mark} foot={view.alsoUp ? foot : undefined}>
+  <p class="hot">
+    {view.hot.name} <span class="jump"
+      ><TagPills tags={[{ icon: up, text: view.spike, kind: 'light', label: `${view.spike} its usual share` }]} /></span>
+  </p>
+  <p class="shares"><b>{view.hot.now}%</b> of this month, usually <b>{view.hot.usual}%</b></p>
 </ProfileBox>
 
 <style>
-ul {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
+/* The genre in the big condensed figures, wrapping onto a second line when it's long. */
+.hot {
+  margin: 0;
+  font-family: var(--font-profile-figure);
+  font-size: var(--font-size-profile-figure);
+  font-weight: var(--font-weight-profile-figure);
+  line-height: 0.8;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
-li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1px 8px;
-  margin-block-end: 6px;
-  font-size: var(--font-size-small);
+/* The pale pill's bottom on the genre's baseline (a clipped inline-block's baseline is its bottom edge), its icon in
+   the pill's own dark text. */
+.jump {
+  --color-tag-pill-icon: var(--color-tag-pill-light-text);
+  display: inline-block;
+  overflow: hidden;
+  font-family: var(--font-headings);
+  text-transform: none;
+  vertical-align: baseline;
 }
 
 .shares {
+  margin: 0;
   color: var(--color-profile-ink-soft);
-  font-size: var(--font-size-profile-chip);
-  font-variant-numeric: tabular-nums;
-}
+  font-size: var(--font-size-profile-box-subtitle);
 
-/* This month as the bar, all time as the black tick. */
-.track {
-  position: relative;
-  grid-column: 1 / -1;
-  block-size: var(--profile-box-meter-height);
-  border-radius: var(--radius-profile-box-mark);
-  background: linear-gradient(to right, var(--color-profile-mark) var(--now), var(--color-profile-track) var(--now));
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset-block: -3px;
-    inset-inline-start: var(--usual);
-    inline-size: var(--profile-box-genre-tick);
-    margin-inline-start: calc(var(--profile-box-genre-tick) / -2);
-    border-radius: 1px;
-    background-color: var(--color-profile-genre-tick);
-    box-shadow: var(--shadow-profile-genre-tick);
+  b {
+    color: var(--color-card-text);
+    font-weight: var(--font-weight-headings-heavy);
   }
 }
 </style>

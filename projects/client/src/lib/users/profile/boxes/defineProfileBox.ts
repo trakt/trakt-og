@@ -6,15 +6,19 @@ import type { BoxInput } from './BoxInput.ts';
 type ExtraLoader = ReturnType<typeof boxExtraLoader>;
 type ExtraContext = Parameters<typeof boxExtraLoader>[0];
 
-/**
- * How the picker treats a box: a `pinned` box always shows when it has something to say, at most two `numbers` boxes
- * show, and at least one `image` box when any can.
- */
-type BoxGroup = 'pinned' | 'image' | 'numbers' | 'colour';
+/** How the picker treats a box: at most two `numbers` boxes show, and at least one `image` box when any can. */
+type BoxGroup = 'image' | 'numbers' | 'colour';
 
 type ProfileBoxDefinition<K extends string, V, E> = {
   readonly key: K;
   readonly group: BoxGroup;
+  /** Always shows when it has a score, ahead of the ranking: About Me when it's written, and Watch Time. */
+  readonly pinned?: boolean;
+  /** Its place in the strip, from 0, whatever the registry order: Watch Time is always third. */
+  readonly at?: number;
+  /** Left out of the ranking, it only fills a slot nothing else clears the bar for: Ratings, which the profile shows
+   * in full further down. */
+  readonly fallback?: boolean;
   /** One of the boxes that fill the strip when fewer than four score high enough. Its view must handle no data. */
   readonly floor?: boolean;
   /**
@@ -37,13 +41,16 @@ type ProfileBoxDefinition<K extends string, V, E> = {
  * view stay paired in the types all the way to the page.
  */
 export function defineProfileBox<K extends string, V, E = never>(definition: ProfileBoxDefinition<K, V, E>) {
-  const { key, group, floor = false, extra, score, view, component } = definition;
+  const { key, group, pinned = false, at, fallback = false, floor = false, extra, score, view, component } = definition;
   const extraFor = (frame: BoxFrame, loader: ExtraLoader) =>
     extra?.when(frame) ? loader(extra.load) : Promise.resolve(undefined);
 
   return {
     key,
     group,
+    pinned,
+    at,
+    fallback,
     floor,
     component,
     /** Starts the extra request early, if this profile could use it. */
@@ -55,6 +62,9 @@ export function defineProfileBox<K extends string, V, E = never>(definition: Pro
       return {
         key,
         group,
+        pinned,
+        at,
+        fallback,
         floor,
         score: points === null ? null : Math.round(points),
         entry: mapped === null ? null : { key, view: mapped },

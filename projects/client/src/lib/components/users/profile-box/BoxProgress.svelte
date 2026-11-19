@@ -1,51 +1,41 @@
-<!-- A thin white progress bar on a profile box, with a caption at each end under it. -->
+<!-- A profile box's progress bar, the summary watched button's purple one: Last Watched's way through a show. -->
 <script lang="ts">
 interface Props {
   value: number;
   max: number;
   /** What the bar measures, for screen readers: "18 of 20 episodes watched". */
   label: string;
-  caption: readonly [string, string];
 }
 
-const { value, max, label, caption }: Props = $props();
+const { value, max, label }: Props = $props();
 </script>
 
 <progress {value} {max} aria-label={label}></progress>
-<p class="caption" aria-hidden="true"><span>{caption[0]}</span><span>{caption[1]}</span></p>
 
 <style>
 progress {
   display: block;
   inline-size: 100%;
-  block-size: var(--profile-box-meter-height);
+  block-size: var(--watch-progress-height);
   margin-block-start: 8px;
   border: 0;
-  border-radius: var(--radius-profile-box-mark);
+  border-radius: var(--radius-watch-progress);
   overflow: hidden;
   appearance: none;
-  background-color: var(--color-profile-track);
+  background-color: var(--color-watch-progress-track);
 
   &::-webkit-progress-bar {
-    background-color: var(--color-profile-track);
+    background-color: var(--color-watch-progress-track);
   }
 
   &::-webkit-progress-value {
-    border-radius: var(--radius-profile-box-mark);
-    background-color: var(--color-profile-mark);
+    border-radius: inherit;
+    background-color: var(--brand-tertiary);
   }
 
   &::-moz-progress-bar {
-    border-radius: var(--radius-profile-box-mark);
-    background-color: var(--color-profile-mark);
+    border-radius: inherit;
+    background-color: var(--brand-tertiary);
   }
-}
-
-.caption {
-  display: flex;
-  justify-content: space-between;
-  margin: 4px 0 0;
-  color: var(--color-profile-ink-soft);
-  font-size: var(--font-size-profile-chip);
 }
 </style>

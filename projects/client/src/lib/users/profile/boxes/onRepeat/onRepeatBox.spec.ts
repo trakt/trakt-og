@@ -5,7 +5,7 @@ import { onRepeatBox } from './onRepeatBox.ts';
 const { maya, dex, lena } = boxPersonas;
 
 describe('onRepeatBox', () => {
-  it('should show the movie seen most, with its fanart and how many others were rewatched', async () => {
+  it('should show the movie seen most, with its fanart', async () => {
     expect(await onRepeatBox.evaluate(dex.input, dex.extras())).toMatchObject({
       score: 90,
       entry: {
@@ -13,8 +13,7 @@ describe('onRepeatBox', () => {
           times: 9,
           image: 'https://media.trakt.tv/movies/295/thumb/fanart.webp',
           title: { text: 'Alien', href: '/movies/alien-1979' },
-          line: 'Seen 9 times · last on Sep 23',
-          others: '+22 more rewatched',
+          last: 'Sep 23',
         },
       },
     });
@@ -27,8 +26,7 @@ describe('onRepeatBox', () => {
         view: {
           times: 3,
           title: { text: 'The Office' },
-          line: '3 full runs · and counting',
-          others: '+4 more rewatched',
+          last: null,
         },
       },
     });
@@ -39,7 +37,6 @@ describe('onRepeatBox', () => {
     expect((await onRepeatBox.evaluate(input, maya.extras())).entry?.view).toMatchObject({
       title: { text: 'Severance' },
       image: 'https://media.trakt.tv/shows/154997/thumb/fanart.webp',
-      others: null,
     });
   });
 

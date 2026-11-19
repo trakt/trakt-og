@@ -1,24 +1,22 @@
-<!-- Biggest Binge: the most episodes of one show in one day this month, one pip per episode. -->
+<!-- Recent Binge: the most episodes of one show in one day this month, one pip per episode, the day in the band. -->
 <script lang="ts">
-import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
 import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
 import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
 import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import fire from '#lib/icons/solid/fire.svg?raw';
 import type { BiggestBingeView } from './BiggestBingeView.ts';
 
 const { view }: { view: BiggestBingeView } = $props();
 </script>
 
-{#snippet bottom()}
-  <BoxTitle title={view.show} subtitle={{ text: view.day }} />
-{/snippet}
+{#snippet foot()}{view.day}{/snippet}
 
-<ProfileBox tone="binge" {bottom}>
-  <BoxChips chips={[{ text: 'Biggest Binge' }, { text: 'Last 30 Days', alt: true }]} />
-  <BoxFigure value={String(view.episodes)} label={['episodes', 'in one day']} />
+<ProfileBox label="Recent Binge" tone="binge" mark={fire} {foot}>
+  <BoxFigure value={String(view.episodes)} label="episodes in one day" />
   <div class="pips" aria-hidden="true">
     {#each { length: view.episodes }, i (i)}<i></i>{/each}
   </div>
+  <BoxTitle title={view.show} />
 </ProfileBox>
 
 <style>
@@ -27,7 +25,7 @@ const { view }: { view: BiggestBingeView } = $props();
   flex-wrap: wrap;
   gap: 3px;
   max-block-size: 19px;
-  margin-block-start: 10px;
+  margin-block: 6px 10px;
   overflow: hidden;
 
   i {

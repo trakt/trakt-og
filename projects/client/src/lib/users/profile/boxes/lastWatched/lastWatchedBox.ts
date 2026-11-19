@@ -20,7 +20,7 @@ function newest({ episode, movie }: Latest): Newest | null {
   return movie ? { kind: 'movie', row: movie } : null;
 }
 
-const whenLabel = (days: number) => (days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`);
+const whenLabel = (days: number) => (days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`);
 
 function progressOf(show: number, rows: Progress | undefined) {
   const row = rows?.find((candidate) => candidate.show.ids.trakt === show);
@@ -38,7 +38,7 @@ function toPlay(input: BoxInput, progress: Progress | undefined): LastWatchedVie
     return {
       image: mediaImage({ type: 'movie', id: movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
       title: { text: movie.title, href: `/movies/${movie.ids.slug}` },
-      subtitle: movie.year ? { text: String(movie.year) } : undefined,
+      year: movie.year ? String(movie.year) : undefined,
       when,
     };
   }
@@ -49,7 +49,8 @@ function toPlay(input: BoxInput, progress: Progress | undefined): LastWatchedVie
     image: mediaImage({ type: 'show', id: show.ids.trakt, slot: 'fanart', size: 'thumb' }),
     title: { text: show.title, href: showHref },
     subtitle: {
-      text: [episodeNumber(episode, show.genres), episode.title].filter(Boolean).join(' '),
+      lead: episodeNumber(episode, show.genres),
+      text: episode.title ?? '',
       href: `${showHref}/seasons/${episode.season}/episodes/${episode.number}`,
     },
     when,

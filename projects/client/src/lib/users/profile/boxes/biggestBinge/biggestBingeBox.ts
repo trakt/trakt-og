@@ -43,8 +43,8 @@ export const biggestBingeBox = defineProfileBox({
       episodes: binge.plays.length,
       show: { text: show.title, href: `/shows/${show.ids.slug}` },
       day: new Date(binge.day * DAY).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
+        weekday: 'long',
+        month: 'long',
         day: 'numeric',
         timeZone: 'UTC',
       }),

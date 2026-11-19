@@ -1,8 +1,7 @@
-import { countLabel } from '../../../../utils/countLabel.ts';
-import { imageUrl } from '../../../../utils/imageUrl.ts';
 import { boxMath } from '../boxMath.ts';
 import { defineProfileBox } from '../defineProfileBox.ts';
 import { fetchUserLists } from '../fetchUserLists.ts';
+import { posterArt } from './posterArt.ts';
 import TopListBox from './TopListBox.svelte';
 import type { TopListView } from './TopListView.ts';
 
@@ -42,15 +41,10 @@ export const topListBox = defineProfileBox({
     if (!found) return null;
     const { top } = found;
     return {
-      likes: found.likes.toLocaleString('en-US'),
-      lists: countLabel(found.count, 'list'),
-      posters: (top.images?.posters ?? []).slice(0, 3).flatMap((poster) => imageUrl(poster, 'thumb') ?? []),
+      image: posterArt(top.images?.posters?.at(0), 'fanart'),
+      posters: (top.images?.posters ?? []).slice(0, 3).flatMap((poster) => posterArt(poster, 'poster') ?? []),
       title: { text: top.name, href: `/users/${profile.slug}/lists/${top.ids.slug}` },
-      line: [
-        countLabel(top.item_count, 'item'),
-        countLabel(top.likes, 'like'),
-        countLabel(top.comment_count, 'comment'),
-      ].join(' · '),
+      counts: { items: top.item_count, likes: top.likes, comments: top.comment_count },
     };
   },
 });

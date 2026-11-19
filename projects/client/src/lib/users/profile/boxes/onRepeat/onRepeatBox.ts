@@ -46,21 +46,22 @@ export const onRepeatBox = defineProfileBox({
   view: (input): OnRepeatView | null => {
     const best = mostRewatched(input);
     if (!best) return null;
-    const { row, times, others } = best;
-    const common = { times, others: others > 0 ? `+${others.toLocaleString('en-US')} more rewatched` : null };
+    const { row, times } = best;
     if ('movie' in row) {
       return {
-        ...common,
+        times,
         image: mediaImage({ type: 'movie', id: row.movie.ids.trakt, slot: 'fanart', size: 'thumb' }),
         title: { text: row.movie.title, href: `/movies/${row.movie.ids.slug}` },
-        line: `Seen ${times} times · last on ${shortDate(row.last_watched_at)}`,
+        year: row.movie.year ? String(row.movie.year) : undefined,
+        last: shortDate(row.last_watched_at),
       };
     }
     return {
-      ...common,
+      times,
       image: mediaImage({ type: 'show', id: row.show.ids.trakt, slot: 'fanart', size: 'thumb' }),
       title: { text: row.show.title, href: `/shows/${row.show.ids.slug}` },
-      line: `${times} full runs · and counting`,
+      year: row.show.year ? String(row.show.year) : undefined,
+      last: null,
     };
   },
 });

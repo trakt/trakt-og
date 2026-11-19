@@ -22,7 +22,7 @@ import skull from '#lib/icons/solid/skull.svg?raw';
 import stopwatch from '#lib/icons/solid/stopwatch.svg?raw';
 import userSecret from '#lib/icons/solid/user-secret.svg?raw';
 import video from '#lib/icons/solid/video.svg?raw';
-import type { tasteGenres } from '../../firstNight/taste.ts';
+import { tasteGenres } from '../../firstNight/taste.ts';
 
 /** Each genre's solid icon, by the name `tasteGenres` gives it. */
 export const genreIcons: Readonly<Record<(typeof tasteGenres)[number]['icon'], string>> = {
@@ -50,4 +50,10 @@ export const genreIcons: Readonly<Record<(typeof tasteGenres)[number]['icon'], s
   stopwatch: stopwatch,
   'user-secret': userSecret,
   video: video,
+};
+
+/** A genre's solid icon by its API slug, or `undefined` for one the picker doesn't list. */
+export const genreIconFor = (slug: string): string | undefined => {
+  const genre = tasteGenres.find((row) => row.slug === slug);
+  return genre && genreIcons[genre.icon];
 };

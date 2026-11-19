@@ -1966,75 +1966,106 @@
 
   /* Profile summary: the stat boxes, favorites and welcome hero on /users/:id */
   --profile-box-height: 200px;
-  --profile-box-padding: 20px;
-  --profile-about-max-height: 100px;
+  --profile-box-padding: 16px;
   --profile-chip-padding: 3px 5px;
-  --profile-placeholder-size: 240px 240px;
-  --profile-placeholder-blur: 4px;
-  --opacity-profile-placeholder: 0.3;
   --radius-profile-chip: var(--radius-tag);
   --font-size-profile-box-title: 18px;
   --font-size-profile-box-subtitle: 13px;
   --font-size-profile-chip: 11px;
   --color-profile-boxes-bg: #111;
+  /* The boxes are cards: rounded, apart, and clear of the tabs above and Favorites below. */
+  --profile-boxes-padding-block: 20px;
+  --profile-boxes-padding-more: 36px; /* below the boxes, with room for the less and more pill */
+  --profile-box-gap: 16px;
+  --radius-profile-box: var(--radius-container);
+  --shadow-profile-box-edge: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  --scale-profile-box-zoom: 1.04; /* an image box's art under the pointer */
+  --transition-profile-box-zoom: 0.35s ease;
+  --profile-box-shadow-room: 14px; /* around a clipped line, so its text shadow isn't cut off */
+  --profile-box-head-gap: 8px; /* between a box's label and its pill */
+  --color-profile-box-band: rgb(0 0 0 / 0.16); /* the foot band along a box's bottom: Shows Finished's latest */
+  --profile-box-band-gap: 12px;
+  --profile-about-lines: 7; /* About Me's words, then an ellipsis */
+  --transition-profile-about-expand: 0.25s ease; /* About Me growing over its neighbours */
+  --profile-box-about-gap: 6px; /* About Me's words under its label */
+  --profile-box-tab-gap: 12px; /* Watch Time's All Time and Last 30 Days, in place of its label */
+  --color-profile-box-tab-idle: var(--color-profile-ink-faint);
+  --profile-box-band-padding: 9px;
+  --profile-box-band-blur: 12px; /* the art behind the band, frosted */
+  --profile-box-head-height: 21px; /* a pill's height, so every label sits at the same height */
+  --color-profile-box-pill-bg: rgb(0 0 0 / 0.2); /* the pill a shade darker than TagPills' own, on colour and art */
+  --profile-box-stats-gap: 14px; /* between icon-and-number stats, like the dashboard panels' */
+  --font-size-profile-box-stat: 13px; /* a row of stats on its own: Watch Time's and the lists' */
+  --font-size-profile-label: var(--font-size-dashboard-panel-label); /* the dashboard panels' label: caps, tracked */
+  --letter-spacing-profile-label: var(--letter-spacing-dashboard-panel-label);
+  --text-shadow-profile-label: 0 1px 6px rgb(0 0 0 / 0.25);
   --color-profile-placeholder-bg: #000;
-  --color-profile-chip: rgb(0 0 0 / 0.25);
   --color-profile-chip-alt: rgb(255 255 255 / 0.2);
   --color-profile-play-count: rgb(255 255 255 / 0.7);
-  --gradient-profile-box-shade: linear-gradient(to bottom, rgb(0 0 0 / 0), rgb(0 0 0 / 0.9));
+  --gradient-profile-box-shade: linear-gradient(to bottom, rgb(0 0 0 / 0.3), rgb(0 0 0 / 0) 32%, rgb(0 0 0 / 0.9));
   --gradient-profile-about: linear-gradient(to bottom, var(--brand-primary), var(--brand-primary-darken));
   --gradient-profile-stats: linear-gradient(to bottom, #0199d8, #0175a5); /* darken */
+  --color-profile-stats-band: rgb(0 0 0 / 0.28); /* Watch Time's band, dark enough for blue icons */
+  --color-profile-stats-icon: var(--brand-secondary); /* the stats' icons on Watch Time and Shows Finished */
+  --filter-profile-stats-shadow: drop-shadow(
+    0 0 3px rgb(0 0 0 / 0.55)
+  ); /* ...lifting them off Shows Finished's green */
   --gradient-profile-binge: linear-gradient(to bottom, #d9541a, #a8380b);
   --gradient-profile-ratings: linear-gradient(to bottom, #8e44ad, #6a2c86);
   --gradient-profile-finished: linear-gradient(to bottom, #1f9d55, #13703a);
   --gradient-profile-genre: linear-gradient(to bottom, #138a7a, #0b6156);
   /* The boxes' contents: white marks on the box colour, one series each, dark in both themes like the strip. */
-  --profile-box-padding-block: 18px;
-  --profile-box-foot-inset: 14px;
+  --profile-box-padding-block: 16px;
+  --profile-box-padding-top: 8px; /* less than the sides: the label's pill row is taller than its caps */
   --profile-box-foot-gap: 7px;
-  --profile-box-quote-size: 70px;
-  --profile-box-check-size: 44px;
+  /* A colour box's icon, faint behind its corner: About Me's quote, Ratings' heart, Finished's check... */
+  --profile-box-watermark-size: 92px;
+  --profile-box-watermark-top: 6px;
+  --profile-box-watermark-end: -4px;
+  --profile-box-bars-height: 64px; /* Watch Time's charts */
+  --profile-box-bars-gap: 2px;
+  --profile-box-bars-below: 6px; /* between the figure and the bars under it */
+  --profile-box-tab-figure-gap: 9px; /* Watch Time's figure, close under its tabs */
+  --profile-box-bar-min: 2px; /* an empty span, still a sliver */
   --profile-box-pip-width: 14px;
   --profile-box-pip-height: 8px;
-  --profile-box-hist-height: 46px;
-  --profile-box-genre-tick: 2px;
-  --font-size-profile-multiplier: 74px;
-  --font-size-profile-multiplier-sign: 40px;
-  --letter-spacing-profile-multiplier: -3px;
+  --profile-box-hist-height: 84px;
+  --profile-box-average-room: 16px; /* above Ratings' bars, for the average's label */
+  --color-profile-average: rgb(255 255 255 / 0.75);
+  --font-size-profile-multiplier: 68px;
+  --font-size-profile-multiplier-sign: 28px; /* the × icon, centred on the number */
+  --profile-box-multiplier-top: 18px;
+  --profile-box-multiplier-gap: 6px;
   --color-profile-multiplier: rgb(255 255 255 / 0.92);
-  --text-shadow-profile-multiplier: 0 0 30px rgb(0 0 0 / 0.6);
-  --color-profile-genre-tick: #000;
-  --shadow-profile-genre-tick: 0 0 0 1px rgb(255 255 255 / 0.85);
-  --profile-box-bars-height: 38px;
-  --profile-box-bars-gap: 2px;
+  --text-shadow-profile-multiplier: 0 0 20px rgb(0 0 0 / 0.9), 0 0 4px rgb(0 0 0 / 0.5);
+  --filter-profile-multiplier-sign: drop-shadow(0 0 6px rgb(0 0 0 / 0.8)); /* the ×, an icon, shadowed to match */
   --profile-box-meter-height: 4px;
   --profile-box-poster-width: 40px;
   --profile-box-poster-height: 60px;
   --profile-box-poster-overlap: -14px;
   --profile-box-poster-tilt: 6deg;
-  --profile-box-shimmer-tag-width: 70px; /* a box's chip, its title and its subtitle while the strip streams in */
+  --profile-box-shimmer-tag-width: 70px; /* a box's label, its title and its subtitle while the strip streams in */
   --profile-box-shimmer-tag-height: 18px;
   --profile-box-shimmer-title-width: 60%;
   --profile-box-shimmer-subtitle-width: 40%;
   --radius-profile-box-mark: 2px;
-  --font-size-profile-figure: 44px;
-  --font-weight-profile-figure: 800;
-  --letter-spacing-profile-figure: -1px;
+  --font-profile-figure: var(--font-box-office-figures); /* the dashboard panels' condensed numbers */
+  --font-size-profile-figure: 48px;
+  --profile-box-figure-gap: 10px; /* above a figure */
+  --profile-box-figure-nudge: -0.04em; /* the condensed digits' side bearing, so they line up with the label */
+  --font-weight-profile-figure: 700;
   --font-size-profile-figure-label: 13px;
-  --font-size-profile-lead: 15px;
+  --font-size-profile-figure-label-large: 16px; /* a figure's second number: Shows Finished's "of 114" */
   --font-size-profile-axis: 10px;
   --color-profile-ink-soft: rgb(255 255 255 / 0.78);
   --color-profile-ink-faint: rgb(255 255 255 / 0.55);
   --color-profile-mark: rgb(255 255 255 / 0.9);
   --color-profile-mark-dim: rgb(255 255 255 / 0.32);
   --color-profile-track: rgb(255 255 255 / 0.18);
-  --color-profile-chip-image: rgb(0 0 0 / 0.6);
-  --color-profile-quote: rgb(255 255 255 / 0.12);
+  --color-profile-watermark: rgb(255 255 255 / 0.12);
   --color-profile-cta-bg: rgb(0 0 0 / 0.25);
   --color-profile-cta-border: rgb(255 255 255 / 0.5);
-  --color-profile-box-poster-border: rgb(255 255 255 / 0.25);
   --shadow-profile-box-poster: 0 2px 8px rgb(0 0 0 / 0.6);
-  --filter-profile-box-collage: brightness(0.55);
   --favorite-poster-width: 30%;
   --favorite-padding: 20px;
   --radius-favorite: var(--radius-object); /* the card and its poster alike */

@@ -1,6 +1,7 @@
 /**
  * The row count each dashboard panel remembers. OG saved it on the account (`/settings/row_count`), and the API has no
- * field for it, so og keeps it in this browser, per user and panel.
+ * field for it, so og keeps it in this browser, per user and panel. The profile's box strip keeps its rows here too,
+ * one count for every profile.
  */
 export const savedRows = {
   read(key: string): number | null {

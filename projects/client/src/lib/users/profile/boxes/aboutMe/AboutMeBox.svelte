@@ -1,63 +1,130 @@
 <!--
-  About Me: the owner's words under a faint quote mark, with their VIP years and join date. Empty, your own
-  profile prompts you to write one, and anyone else's lists a few facts.
+  About Me: its label, then the owner's words on red under a faint quote mark, cut with an ellipsis. Words that don't
+  fit get an expand icon by the label, which grows the card two slots wide over the box beside it; its compress icon,
+  or Escape, shrinks it back. On your own empty profile it says so,
+  with a button to write one.
 -->
 <script lang="ts">
+import LinkButton from '#lib/components/button/LinkButton.svelte';
 import CommentText from '#lib/components/comments/CommentText.svelte';
 import { parseComment } from '#lib/components/comments/text/parseComment.ts';
-import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
 import Icon from '#lib/icons/Icon.svelte';
+import shrinkIcon from '#lib/icons/solid/down-left-and-up-right-to-center.svg?raw';
 import pen from '#lib/icons/solid/pen.svg?raw';
+import growIcon from '#lib/icons/solid/up-right-and-down-left-from-center.svg?raw';
 import quote from '#lib/icons/solid/quote-left.svg?raw';
 import type { AboutMeView } from './AboutMeView.ts';
 
 const { view }: { view: AboutMeView } = $props();
-const chips = $derived([
-  { text: 'About Me' },
-  ...(view.kind === 'filled' && view.vip ? [{ text: view.vip, alt: true }] : []),
-]);
+const id = $props.id();
+
+let expanded = $state(false);
+let overflowing = $state(false);
+/** Growing or shrinking: the words' room is in between, so they aren't measured. */
+let moving = $state(false);
+let toggle = $state<HTMLButtonElement>();
+
+function setExpanded(value: boolean) {
+  moving = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  expanded = value;
+}
+
+/** Whether the words run past the card. Measured only while it's narrow and still, since the wide card fits more. */
+const measure = (element: HTMLElement) => {
+  let frame = 0;
+  const observer = new ResizeObserver(() => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      if (!expanded && !moving) overflowing = element.scrollHeight > element.clientHeight + 1;
+    });
+  });
+  observer.observe(element);
+  return () => {
+    cancelAnimationFrame(frame);
+    observer.disconnect();
+  };
+};
+
+function collapse(event: KeyboardEvent) {
+  if (event.key !== 'Escape' || !expanded) return;
+  setExpanded(false);
+  toggle?.focus();
+}
 </script>
 
-{#snippet foot()}
-  {#if view.kind === 'filled'}On Trakt since <b>{view.joined}</b>{/if}
+{#snippet more()}
+  <Tooltip text={expanded ? 'Show less' : 'Show all'}>
+    {#snippet trigger(tooltip)}
+      <button bind:this={toggle} type="button" class="grow" aria-expanded={expanded} aria-controls="{id}-words"
+        aria-label={expanded ? 'Show less' : 'Show all'} onclick={() => setExpanded(!expanded)} {...tooltip}>
+        <Icon svg={expanded ? shrinkIcon : growIcon} />
+      </button>
+    {/snippet}
+  </Tooltip>
 {/snippet}
 
-<ProfileBox tone="about" foot={view.kind === 'filled' && view.joined ? foot : undefined}>
-  {#if view.kind === 'filled'}<span class="quote"><Icon svg={quote} /></span>{/if}
-  <BoxChips {chips} />
+{#snippet top()}
   {#if view.kind === 'filled'}
-    <!-- Focusable because it scrolls, so the keyboard can reach it. -->
+    <!-- Focusable because it can scroll, so the keyboard can reach it. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <div class="about" role="region" aria-label="About Me" tabindex="0">
+    <div id="{id}-words" class={['about', { clamped: !expanded }]} role="region" aria-label={view.label} tabindex="0"
+      {@attach measure}>
       <CommentText blocks={parseComment(view.about)} />
     </div>
-  {:else if view.kind === 'self'}
-    <p class="lead">Your About Me is empty.</p>
-    <p class="subtle">Tell people what you watch, what you rewatch every winter, and what they'd better not spoil.</p>
-    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-    <a class="cta" href={view.settingsHref} target="_blank" rel="noopener"><Icon svg={pen} /> Write your About Me</a>
   {:else}
-    <p class="lead">{view.name} hasn't written one yet.</p>
-    <ul class="facts">
-      {#each view.facts as fact (fact.text)}<li>{fact.text} <b>{fact.bold}</b></li>{/each}
-    </ul>
+    <div class="about"><CommentText blocks={parseComment('Your About Me is empty.')} /></div>
   {/if}
-</ProfileBox>
+{/snippet}
+
+<div class="slot">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class={['sheet', { expanded }]} onkeydown={collapse}
+    ontransitionend={(event) => event.propertyName === 'inline-size' && (moving = false)}>
+    <ProfileBox label={view.label} tone="about" mark={quote} {top} aside={overflowing || expanded ? more : undefined}>
+      {#if view.kind === 'self'}
+        <LinkButton href={view.settingsHref} variant="tinted" arrow={false}><Icon svg={pen} /> Write your About Me</LinkButton>
+      {/if}
+    </ProfileBox>
+  </div>
+</div>
 
 <style>
-.quote {
+/* The card's place in the strip; the card itself sits over it, so it can grow past it. */
+.slot {
+  position: relative;
+  block-size: var(--profile-box-height);
+}
+
+/* Grown: two slots wide, over the box beside it. */
+.sheet {
+  --profile-box-height: 100%;
   position: absolute;
-  inset-block-start: 6px;
-  inset-inline-end: 12px;
-  z-index: -1;
-  color: var(--color-profile-quote);
-  font-size: var(--profile-box-quote-size);
-  line-height: 1;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: var(--radius-profile-box);
+  transition:
+    inline-size var(--transition-profile-about-expand),
+    box-shadow var(--transition-profile-about-expand);
+
+  &.expanded {
+    inline-size: calc(200% + var(--profile-box-gap));
+    box-shadow: var(--shadow-profile-box-poster);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 .about {
-  max-block-size: var(--profile-about-max-height);
+  flex: 1;
+  min-block-size: 0;
+  margin-block-start: var(--profile-box-about-gap);
   margin-inline-end: calc(-1 * var(--profile-box-padding));
   padding-inline-end: var(--profile-box-padding);
   overflow-y: auto;
@@ -66,60 +133,30 @@ const chips = $derived([
   :global(p) {
     margin: 0;
   }
+
+  /* As many lines as fit, the last cut with an ellipsis. */
+  &.clamped {
+    display: -webkit-box;
+    flex: none;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--profile-about-lines);
+  }
 }
 
-.lead {
-  margin: 0 0 6px;
-  font-family: var(--font-headings);
-  font-size: var(--font-size-profile-lead);
-  font-weight: var(--font-weight-headings);
-  line-height: 1.3;
-}
-
-.subtle {
-  margin: 0 0 10px;
-  color: var(--color-profile-ink-soft);
-  font-size: var(--font-size-profile-box-subtitle);
-}
-
-.cta {
+/* A bare icon by the label, white under the pointer. */
+.grow {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid var(--color-profile-cta-border);
-  border-radius: var(--radius-profile-chip);
-  background-color: var(--color-profile-cta-bg);
-  font-family: var(--font-headings);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-headings);
-  line-height: 1;
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-profile-ink-soft);
+  font-size: var(--font-size-profile-label);
+  cursor: pointer;
 
   &:is(:hover, :focus-visible) {
-    background-color: var(--color-card-text);
-    color: var(--brand-primary);
-    text-decoration: none;
-  }
-}
-
-.facts {
-  margin: 0;
-  padding: 0;
-  font-size: var(--font-size-profile-box-subtitle);
-  list-style: none;
-
-  li {
-    padding-block: 3px;
-    border-block-start: 1px solid var(--color-profile-chip-alt);
-
-    &:first-child {
-      border-block-start: 0;
-    }
-  }
-
-  b {
-    font-family: var(--font-headings);
-    font-weight: var(--font-weight-headings);
+    color: var(--color-card-text);
   }
 }
 </style>

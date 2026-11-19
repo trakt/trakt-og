@@ -1,30 +1,43 @@
-<!-- Ratings: the average, the spread from 1 to 10 with the most used score in full white, and the latest 10. -->
+<!--
+  Ratings: the spread from 1 to 10 with the most used score in full white, the average as a dotted line where it falls
+  (the profile chart's way), each bar's share of all ratings in its tooltip, and the latest 10 in the band.
+-->
 <script lang="ts">
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
-import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
-import BoxFigure from '#lib/components/users/profile-box/BoxFigure.svelte';
 import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import heart from '#lib/icons/solid/heart.svg?raw';
 import type { RatingsView } from './RatingsView.ts';
 
 const { view }: { view: RatingsView } = $props();
 </script>
 
-<ProfileBox tone="ratings">
-  <BoxChips chips={[{ text: 'Ratings' }, { text: view.total, alt: true }]} />
-  <BoxFigure value={view.average} label={['average', 'out of 10']} />
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
+{#snippet foot()}
+  {#if view.latestTen}Latest 10: <a href={view.latestTen.href}><b>{view.latestTen.text}</b></a>{:else}No 10s yet{/if}
+{/snippet}
+
+<ProfileBox label={view.total} tone="ratings" mark={heart} {foot}>
   <div class="bars" role="img" aria-label={view.chartLabel}>
-    {#each view.bars as bar, i (i)}<Tooltip toggles text={bar.title}>{#snippet trigger(tooltip)}<i class={{ mode: bar.mode }}
-            style:--height="{bar.height}%" {...tooltip}></i>{/snippet}</Tooltip>{/each}
+    <span class={['average', { before: view.averageAt > 80 }]} style:--at="{view.averageAt}%" aria-hidden="true"
+      ><span>{view.average} avg</span></span>
+    {#each view.bars as bar, i (i)}{#if bar.tip}<Tooltip toggles>{#snippet trigger(tooltip)}<i
+              class={{ mode: bar.mode }} style:--height="{bar.height}%" {...tooltip}></i>{/snippet}<span class="tip"
+            ><span><b>{bar.tip.count}</b> {bar.tip.noun}</span><span class="detail">{bar.tip.share}</span></span
+          ></Tooltip>{:else}<i style:--height="0%"></i>{/if}{/each}
   </div>
   <div class="axis" aria-hidden="true">{#each view.bars as _, i (i)}<span>{i + 1}</span>{/each}</div>
-  <p class="line">
-    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-    {#if view.latestTen}Latest 10: <a href={view.latestTen.href}><b>{view.latestTen.text}</b></a> ·{/if}
-    {view.comments}
-  </p>
 </ProfileBox>
 
 <style>
+/* A bar's tooltip: its count, the number in bold, over its share in gray. */
+.tip {
+  display: grid;
+}
+
+.detail {
+  color: var(--color-tooltip-muted);
+}
+
 .bars,
 .axis {
   display: grid;
@@ -33,9 +46,10 @@ const { view }: { view: RatingsView } = $props();
 }
 
 .bars {
+  position: relative;
   align-items: end;
   block-size: var(--profile-box-hist-height);
-  margin-block-start: 8px;
+  padding-block-start: var(--profile-box-average-room);
 
   i {
     block-size: var(--height);
@@ -56,18 +70,29 @@ const { view }: { view: RatingsView } = $props();
   text-align: center;
 }
 
-.line {
-  margin: 6px 0 0;
-  overflow: hidden;
-  color: var(--color-profile-ink-soft);
-  font-size: var(--font-size-small);
-  white-space: nowrap;
-  text-overflow: ellipsis;
 
-  b {
-    color: var(--color-card-text);
+/* The average: a dotted line across the bars where it falls, its number at the top, before the line near the end. */
+.average {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--at);
+  z-index: 1;
+  border-inline-start: 1px dashed var(--color-profile-average);
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 4px;
     font-family: var(--font-headings);
-    font-weight: var(--font-weight-headings);
+    font-size: var(--font-size-profile-axis);
+    font-weight: var(--font-weight-headings-heavy);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  &.before span {
+    inset-inline: auto 4px;
   }
 }
 </style>

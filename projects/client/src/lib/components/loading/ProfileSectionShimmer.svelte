@@ -60,12 +60,14 @@ const COLUMNS = [
 /* ProfileBoxStrip's strip: dark in both themes, so the bars are the light ones. */
 .profile-shimmer.boxes {
   --shimmer: var(--shimmer-on-art);
+  padding-block: var(--profile-boxes-padding-block);
   background-color: var(--color-profile-boxes-bg);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--profile-box-gap);
 
   @media (max-width: 991px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -82,6 +84,9 @@ const COLUMNS = [
   justify-content: space-between;
   block-size: var(--profile-box-height);
   padding: var(--profile-box-padding);
+  border-radius: var(--radius-profile-box);
+  background-color: var(--color-card-bg);
+  box-shadow: var(--shadow-profile-box-edge);
 }
 
 .foot {

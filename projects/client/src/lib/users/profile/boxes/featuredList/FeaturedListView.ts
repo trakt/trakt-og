@@ -2,12 +2,12 @@
 export type FeaturedListView = {
   readonly name: string;
   readonly href: string;
-  /** "34 items", or `null` when the list is empty. */
-  readonly count: string | null;
+  /** How many items, 0 when the list is empty. */
+  readonly items: number;
   /** The first item's fanart. */
   readonly image?: string;
   /** Up to three posters for the fanned stack. */
   readonly posters: readonly string[];
-  /** "Next up: The Pitt, Andor, Slow Horses". */
-  readonly next: string | null;
+  /** The first titles on it, next up: "The Pitt", "Andor", "Slow Horses". */
+  readonly next: readonly string[];
 };

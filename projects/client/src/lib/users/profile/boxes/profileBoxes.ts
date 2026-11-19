@@ -22,12 +22,18 @@ import { watchTimeBox } from './watchTime/watchTimeBox.ts';
  *
  * The picker, the loader and the strip need no changes.
  */
+/**
+ * Your own profile saves its strip between visits. Bump this when a box's view changes shape or the picker picks
+ * differently, so a strip saved before isn't drawn with the new boxes.
+ */
+export const profileBoxesVersion = 11;
+
 export const profileBoxes = [
   aboutMeBox,
+  watchTimeBox,
   lastWatchedBox,
   onRepeatBox,
   biggestBingeBox,
-  watchTimeBox,
   genrePulseBox,
   ratingsBox,
   finishedBox,

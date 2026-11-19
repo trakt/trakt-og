@@ -11,12 +11,8 @@ describe('genrePulseBox', () => {
       entry: {
         view: {
           spike: '3.5×',
-          genre: 'Horror',
-          rows: [
-            { name: 'Horror', now: 42, usual: 12 },
-            { name: 'Mystery', now: 17, usual: 12 },
-            { name: 'Comedy', now: 8, usual: 10 },
-          ],
+          hot: { slug: 'horror', name: 'Horror', now: 42, usual: 12 },
+          alsoUp: { slug: 'mystery', name: 'Mystery', now: 17, usual: 12 },
         },
       },
     });

@@ -4,6 +4,10 @@ type BoxExtraContext = {
   readonly token: string | null;
   /** The profile's slug. */
   readonly id: string;
+  /** When the member joined, for Watch Time's All Time chart. */
+  readonly joinedAt: string | null;
+  /** Today's UTC day number. */
+  readonly today: number;
 };
 
 type BoxExtra<T> = (context: BoxExtraContext) => Promise<T>;

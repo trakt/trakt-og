@@ -5,16 +5,15 @@ import { finishedBox } from './finishedBox.ts';
 const { maya, dex, sam } = boxPersonas;
 
 describe('finishedBox', () => {
-  it('should show shows finished, the share of started ones and the latest finish', async () => {
+  it('should show shows finished of those watched, in progress and dropped, and the latest finish', async () => {
     expect(await finishedBox.evaluate(maya.input, maya.extras())).toMatchObject({
       score: 55,
       entry: {
         view: {
-          count: '64',
-          finished: 64,
-          started: 90,
-          share: '71% of shows started',
-          month: '+1 this month',
+          finished: '64',
+          inProgress: 90,
+          dropped: 0,
+          meter: { finished: (64 / 154) * 100, inProgress: (90 / 154) * 100 },
           latest: { title: { text: 'Slow Horses', href: '/shows/slow-horses' }, when: '6 days ago' },
         },
       },
@@ -24,7 +23,7 @@ describe('finishedBox', () => {
   it('should say nothing was finished lately when none of the recent shows is complete', async () => {
     expect(await finishedBox.evaluate(dex.input, dex.extras())).toMatchObject({
       score: 11,
-      entry: { view: { latest: null, month: null } },
+      entry: { view: { latest: null } },
     });
   });
 

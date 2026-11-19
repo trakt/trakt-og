@@ -1,53 +1,71 @@
-<!-- Featured List: the watchlist over its first item's fanart, with its size, a fanned poster stack and what's next. -->
+<!--
+  Featured List: the watchlist over its first item's fanart, a fanned poster stack over its name, then its item count
+  and what's next up in the band, cut with an ellipsis when the titles run long, each with a tooltip. Empty, a plain card with its name.
+-->
 <script lang="ts">
-import BoxChips from '#lib/components/users/profile-box/BoxChips.svelte';
+import Stat from '#lib/components/stats/Stat.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import BoxPosterFan from '#lib/components/users/profile-box/BoxPosterFan.svelte';
 import BoxTitle from '#lib/components/users/profile-box/BoxTitle.svelte';
 import ProfileBox from '#lib/components/users/profile-box/ProfileBox.svelte';
+import Icon from '#lib/icons/Icon.svelte';
+import forward from '#lib/icons/regular/forward.svg?raw';
+import postersIcon from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
 import type { FeaturedListView } from './FeaturedListView.ts';
 
 const { view }: { view: FeaturedListView } = $props();
-const chips = $derived([{ text: 'Featured List', alt: true }, ...(view.count ? [{ text: view.count }] : [])]);
+const items = $derived(view.items.toLocaleString('en-US'));
 </script>
 
-{#snippet bottom()}
-  <BoxChips {chips} />
-  <BoxTitle title={{ text: view.name, href: view.href }} subtitle={view.next ? { text: view.next } : undefined} />
+{#snippet foot()}
+  <p class="meta">
+    <Stat svg={postersIcon} value={items} noun={view.items === 1 ? 'item' : 'items'} label="Items" bare />
+    {#if view.next.length > 0}
+      <Tooltip text="Next up: {view.next.join(', ')}">
+        {#snippet trigger(tooltip)}
+          <!-- A focus stop so the tooltip, with the titles the ellipsis cut, shows from the keyboard too. -->
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <span class="next" tabindex="0" {...tooltip}><Icon svg={forward} /><span class="visually-hidden">Next up:</span>
+            <span class="titles">{view.next.join(', ')}</span></span>
+        {/snippet}
+      </Tooltip>
+    {/if}
+  </p>
 {/snippet}
 
-<ProfileBox image={view.count ? view.image ?? null : undefined} placeholder={!view.count} {bottom}>
-  {#if view.posters.length > 0}
-    <div class="posters">
-      {#each view.posters as poster (poster)}<img src={poster} alt="" decoding="async" />{/each}
-    </div>
-  {/if}
+<ProfileBox label="Featured List" image={view.items ? view.image : null} foot={view.items ? foot : undefined}>
+  <BoxPosterFan posters={view.posters} />
+  <BoxTitle title={{ text: view.name, href: view.href }} />
 </ProfileBox>
 
 <style>
-.posters {
-  position: absolute;
-  inset-block-start: var(--profile-box-padding-block);
-  inset-inline-end: var(--profile-box-padding-block);
+.meta {
+  --font-size-stat-number: var(--font-size-profile-box-stat);
+  --font-size-stat-icon: var(--font-size-profile-box-stat);
   display: flex;
+  align-items: center;
+  gap: var(--profile-box-stats-gap);
+  margin: 0;
+  font-size: var(--font-size-profile-box-stat);
+}
 
-  img {
-    inline-size: var(--profile-box-poster-width);
-    block-size: var(--profile-box-poster-height);
-    border: 1px solid var(--color-profile-box-poster-border);
-    border-radius: var(--radius-profile-chip);
-    box-shadow: var(--shadow-profile-box-poster);
-    object-fit: cover;
+/* Up Next's forward icon, then the titles, cut with an ellipsis. */
+.next {
+  display: flex;
+  align-items: center;
+  gap: var(--space-stat);
+  min-inline-size: 0;
+  color: var(--color-profile-ink-soft);
 
-    & + img {
-      margin-inline-start: var(--profile-box-poster-overlap);
-    }
-
-    &:first-child {
-      rotate: calc(-1 * var(--profile-box-poster-tilt));
-    }
-
-    &:last-child:not(:first-child) {
-      rotate: var(--profile-box-poster-tilt);
-    }
+  :global(svg) {
+    flex: none;
+    color: var(--color-stat-count);
   }
+}
+
+.titles {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

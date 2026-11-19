@@ -9,6 +9,8 @@ describe('lastWatchedBox', () => {
     expect(await lastWatchedBox.evaluate(maya.input, maya.extras())).toEqual({
       key: 'last-watched',
       group: 'image',
+      pinned: false,
+      fallback: false,
       floor: true,
       score: 80,
       entry: {
@@ -17,8 +19,8 @@ describe('lastWatchedBox', () => {
           play: {
             image: 'https://media.trakt.tv/shows/154997/thumb/fanart.webp',
             title: { text: 'Severance', href: '/shows/severance' },
-            subtitle: { text: '2x09 The After Hours', href: '/shows/severance/seasons/2/episodes/9' },
-            when: 'Today',
+            subtitle: { lead: '2x09', text: 'The After Hours', href: '/shows/severance/seasons/2/episodes/9' },
+            when: 'today',
             progress: { completed: 18, aired: 19 },
           },
         },
@@ -31,8 +33,8 @@ describe('lastWatchedBox', () => {
     expect(score).toBe(64);
     expect(entry?.view.play).toMatchObject({
       title: { text: 'The Thing' },
-      subtitle: { text: '1982' },
-      when: 'Yesterday',
+      year: '1982',
+      when: 'yesterday',
     });
     expect(entry?.view.play?.progress).toBeUndefined();
   });

@@ -189,7 +189,7 @@ const textLinks = $derived(movie.links.filter(({ icon }) => !icon));
       {#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}
     </LazySection>
   {/key}
-  <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast }]} crew={movie.crew} creditsHref="{movie.href}/people" />
+  <ActorsStrip groups={[{ id: 'cast', label: 'Cast', cast: movie.cast, portraitOf: movie.portraitOf }]} crew={movie.crew} creditsHref="{movie.href}/people" />
   {#key media.slug}
     <LazySection id="videos" load={() => lazy().videos(media)}>
       {#snippet pending()}<SummarySectionShimmer section="videos" />{/snippet}

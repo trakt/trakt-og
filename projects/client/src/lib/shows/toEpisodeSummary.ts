@@ -140,8 +140,9 @@ export function toEpisodeSummary(params: Params) {
       duringCredits: episode.during_credits,
       afterCredits: episode.after_credits,
     },
-    cast: toCastMembers(params.people.cast, false, portraitOf),
-    guestStars: toCastMembers(params.people.guest_stars, false, portraitOf),
+    portraitOf,
+    cast: toCastMembers(params.people.cast, false),
+    guestStars: toCastMembers(params.people.guest_stars, false),
     crew: toCrewGroups(params.people.crew, false),
     episodeLinks: (params.seasons.find(({ number }) => number === episode.season)?.episodes ?? [])
       .toSorted((a, b) => a.number - b.number)

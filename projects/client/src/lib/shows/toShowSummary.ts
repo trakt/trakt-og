@@ -176,6 +176,16 @@ function facts({ show, studios, people, now, day, airs }: Facts) {
   };
 }
 
+/**
+ * The guest stars' count, and the stars themselves only when there are no series regulars to show first. A long-running
+ * show has thousands (Grey's Anatomy's were about 470 KB of its page), so the actors strip loads them when picked.
+ */
+function guestStars(people: ShowPeople | null, actorSpoilers: boolean) {
+  const stars = people?.guest_stars ?? [];
+  const cast = people?.cast?.length ? null : toCastMembers(stars, actorSpoilers);
+  return { count: stars.length, cast };
+}
+
 /** Everything the show summary shows, from the loader's API responses. */
 export function toShowSummary(params: ShowSummaryParams) {
   const { show, stats, seasons, now, datePreferences } = params;
@@ -267,8 +277,10 @@ export function toShowSummary(params: ShowSummaryParams) {
     tagline: show.tagline ?? null,
     overview: show.overview ?? null,
     links: toShowLinks({ show: params.show, justwatch: params.rank?.link }),
-    cast: toCastMembers(params.people?.cast, params.actorSpoilers, portraitOf),
-    guestStars: toCastMembers(params.people?.guest_stars, params.actorSpoilers, portraitOf),
+    portraitOf,
+    actorSpoilers: params.actorSpoilers,
+    cast: toCastMembers(params.people?.cast, params.actorSpoilers),
+    guestStars: guestStars(params.people, params.actorSpoilers),
     crew: toCrewGroups(params.people?.crew, params.actorSpoilers),
     /** Next Episode and the aired ones, as a signed-out visit sees them. */
     recent: {

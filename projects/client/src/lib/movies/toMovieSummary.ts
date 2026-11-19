@@ -149,11 +149,8 @@ export function toMovieSummary(params: MovieSummaryParams) {
       afterCredits: movie.after_credits ?? null,
     },
     links: toMovieLinks({ movie: params.movie, justwatch: params.rank?.link }),
-    cast: toCastMembers(
-      params.people?.cast,
-      false,
-      params.portraits ? { media: 'movie', id: movie.ids.trakt } : undefined,
-    ),
+    portraitOf: params.portraits ? ({ media: 'movie', id: movie.ids.trakt } as const) : undefined,
+    cast: toCastMembers(params.people?.cast, false),
     crew: toCrewGroups(params.people?.crew, false),
   };
 }

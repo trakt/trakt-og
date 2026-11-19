@@ -2528,6 +2528,8 @@
   --cast-card-line-gap: 2px;
   --cast-card-headshot-gap: 6px; /* the headshot to the name, on top of the line gap */
   --cast-card-count-gap: 4px;
+  --cast-card-shimmer-name-width: 70%; /* a card's place while a group of actors loads */
+  --cast-card-shimmer-role-width: 50%;
   /* The cast & crew page's list view: rows of a small headshot, the name and role, then the episodes pill. */
   --cast-row-headshot: 64px;
   --cast-row-gap: 16px;

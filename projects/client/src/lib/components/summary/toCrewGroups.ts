@@ -1,6 +1,4 @@
 import { crewDepartments } from '../../credits/crewDepartments.ts';
-import { mediaImage } from '../../images/mediaImage.ts';
-import { countLabel } from '../../utils/countLabel.ts';
 import type { CastMember } from './CastMember.ts';
 
 type CrewMember = {
@@ -26,11 +24,11 @@ export function toCrewGroups(
     label,
     cast: members.map((member) => ({
       name: member.person.name,
-      href: `/people/${member.person.ids.slug}`,
+      slug: member.person.ids.slug,
+      id: member.person.ids.trakt,
       characters: (member.jobs ?? []).join(', '),
-      image: mediaImage({ type: 'person', id: member.person.ids.trakt, slot: 'headshot', size: 'thumb' }),
       gender: member.person.gender ?? undefined,
-      episodes: episodeCounts && member.episode_count ? countLabel(member.episode_count, 'episode') : undefined,
+      episodes: episodeCounts ? (member.episode_count ?? 0) : 0,
     })),
   }));
 }

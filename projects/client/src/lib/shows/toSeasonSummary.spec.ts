@@ -61,7 +61,7 @@ describe('toSeasonSummary', () => {
     expect(view.facts.premiere).toEqual({ label: 'Premiered', date: '20 January 2008' });
     expect(view.facts.totalRuntime).toEqual({ time: '1h 33m', episodes: '2 episodes' });
     expect(view.episodeIds).toEqual([101, 102]);
-    expect(view.cast.at(0)).toMatchObject({ name: 'Actor', characters: 'Walter', episodes: '2 episodes' });
+    expect(view.cast.at(0)).toMatchObject({ name: 'Actor', characters: 'Walter', episodes: 2 });
     expect(view.episodes.at(0)).toMatchObject({ aired: '20 January 2008', airTime: '18:00' });
   });
 
@@ -96,7 +96,7 @@ describe('toSeasonSummary', () => {
       episodeTypeTags: false,
       season: { ...base.season, total_runtime: 120 },
     });
-    expect(view.cast.at(0)?.episodes).toBe('');
+    expect(view.cast.at(0)?.episodes).toBe(0);
     expect(view.episodes.at(0)?.type).toBeUndefined();
     expect(view.facts.country?.href).toBe('/shows/popular?countries=us');
     expect(view.facts.totalRuntime?.time).toBe('2h');

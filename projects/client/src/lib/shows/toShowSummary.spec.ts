@@ -235,9 +235,20 @@ describe('toShowSummary', () => {
     };
     const people = { cast: [member], guest_stars: [{ ...member, episode_count: 1 }] } as never;
 
-    expect(toShowSummary({ ...base, people }).cast[0]?.episodes).toBe('62 episodes');
-    expect(toShowSummary({ ...base, people }).guestStars[0]?.episodes).toBe('1 episode');
-    expect(toShowSummary({ ...base, people, actorSpoilers: false }).cast[0]?.episodes).toBe('');
+    expect(toShowSummary({ ...base, people }).cast[0]?.episodes).toBe(62);
+    expect(toShowSummary({ ...base, people, actorSpoilers: false }).cast[0]?.episodes).toBe(0);
+  });
+
+  it('should count the guest stars and leave them for the strip to load, unless there are no regulars', () => {
+    const member = { characters: ['Nurse'], episode_count: 3, person: { name: 'Guest', ids: { trakt: 9, slug: 'g' } } };
+    const withRegulars = { cast: [member], guest_stars: [member, member] } as never;
+    const guestsOnly = { cast: [], guest_stars: [member] } as never;
+
+    expect(toShowSummary({ ...base, people: withRegulars }).guestStars).toEqual({ count: 2, cast: null });
+    expect(toShowSummary({ ...base, people: guestsOnly }).guestStars).toMatchObject({
+      count: 1,
+      cast: [{ name: 'Guest' }],
+    });
   });
 
   it('should link TVDB and Fanart.tv by TVDB id', () => {

@@ -31,11 +31,11 @@ describe('toCrewGroups', () => {
 
     expect(toCrewGroups(crew, true).at(0)?.cast.at(0)).toEqual({
       name: 'Michelle MacLaren',
-      href: '/people/michelle-maclaren',
+      slug: 'michelle-maclaren',
+      id: 7,
       characters: 'Executive Producer, Director',
-      image: 'https://media.trakt.tv/people/7/thumb/headshot.webp',
-      episodes: '62 episodes',
+      episodes: 62,
     });
-    expect(toCrewGroups(crew, false).at(0)?.cast.at(0)?.episodes).toBeUndefined();
+    expect(toCrewGroups(crew, false).at(0)?.cast.at(0)?.episodes).toBe(0);
   });
 });

@@ -30,6 +30,7 @@ import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
 import { browserSectionsClient } from '#lib/summary/browserSectionsClient.ts';
 import { countLabel } from '#lib/utils/countLabel.ts';
 import { createViewerShowProgress } from './createViewerShowProgress.svelte.ts';
+import { fetchGuestStars } from './fetchGuestStars.ts';
 import type { loadShow } from './loadShow.ts';
 import RecentEpisodes from './RecentEpisodes.svelte';
 import SeasonsGrid from './SeasonsGrid.svelte';
@@ -63,6 +64,14 @@ const media = $derived({
   totalRuntime: show.totalRuntime,
 });
 const lazy = () => browserSectionsClient(data.user !== null);
+const guestStars = $derived(
+  show.guestStars.cast
+    ? { cast: show.guestStars.cast }
+    : {
+        count: show.guestStars.count,
+        load: () => fetchGuestStars({ show: show.id, actorSpoilers: show.actorSpoilers }),
+      },
+);
 
 const sections = $derived([
   { label: 'Overview', href: '#overview' },
@@ -70,7 +79,7 @@ const sections = $derived([
   { label: 'Parental Guide', href: `${show.href}/parental-guide`, page: true },
   { label: 'Activity', href: '#activity' },
   { label: 'Recent Episodes', href: '#recent-episodes' },
-  ...(show.cast.length > 0 || show.guestStars.length > 0
+  ...(show.cast.length > 0 || show.guestStars.count > 0
     ? [{ label: 'People', href: '#people', more: { href: `${show.href}/people`, text: 'All people', drilldown: 'social' } }]
     : []),
   ...(show.seasonCount > 0
@@ -146,8 +155,8 @@ const sections = $derived([
   />
   <ActorsStrip
     groups={[
-      { id: 'season-regulars', label: 'Series Regulars', cast: show.cast },
-      { id: 'guest-stars', label: 'Guest Stars', cast: show.guestStars },
+      { id: 'season-regulars', label: 'Series Regulars', cast: show.cast, portraitOf: show.portraitOf },
+      { id: 'guest-stars', label: 'Guest Stars', portraitOf: show.portraitOf, ...guestStars },
     ]}
     crew={show.crew}
     creditsHref="{show.href}/people"

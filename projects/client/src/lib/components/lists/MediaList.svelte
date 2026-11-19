@@ -28,6 +28,7 @@ import SummaryActionTile from '#lib/components/summary/SummaryActionTile.svelte'
 import type { ListTarget } from '#lib/components/lists/ListTarget.ts';
 import type { PickerList } from '#lib/components/lists/PickerList.ts';
 import { listRowIcon } from '#lib/components/lists/listRowIcon.ts';
+import { pickerListPath } from '#lib/components/lists/pickerListPath.ts';
 import Icon from '#lib/icons/Icon.svelte';
 import listIcon from '#lib/icons/solid/list.svg?raw';
 import pen from '#lib/icons/solid/pen.svg?raw';
@@ -368,7 +369,7 @@ async function save(draft: Parameters<typeof createList>[0]['draft'] & { collabo
           {#if rowId === 0}
             {@render row(null, 'Watchlist', watchlisted, watchlistCount, `/users/${page.data.user?.slug ?? 'me'}/watchlist`, page.data.settings?.limits?.watchlist?.item_count)}
           {:else if list}
-            {@render row(list, list.name, list.selected, list.count, `/lists/${list.id}`, listLimit?.item_count)}
+            {@render row(list, list.name, list.selected, list.count, pickerListPath(list), listLimit?.item_count)}
           {/if}
         {/each}
       </ul>

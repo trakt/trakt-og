@@ -2,10 +2,15 @@
   One person in a summary's people row or on a people page: a rounded headshot (or a Futurama silhouette by gender), the name, the characters or jobs
   and an optional "62 episodes" tag pill. Name and role wrap to two lines each instead of cutting off. As a card it fills
   the width it's given, so the row or grid around it sets the size; as a `row` it's a small headshot beside the same
-  lines, for the cast & crew page's list view.
+  lines, for the cast & crew page's list view, where the role gets three lines. When the name or role is still cut off,
+  hovering or focusing the card shows both in full in a tooltip: the name in bold, the role in gray.
 -->
 <script lang="ts">
+import type { Attachment } from 'svelte/attachments';
 import TagPills from '#lib/components/labels/TagPills.svelte';
+import { fitLines } from '#lib/components/tooltip/fitLines.ts';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import { cutsOff } from './cutsOff.ts';
 import { personPlaceholder } from './personPlaceholder.ts';
 
 interface Props {
@@ -22,22 +27,45 @@ interface Props {
 }
 
 const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $props();
+
+let cut = $state(false);
+
+const measure: Attachment<HTMLElement> = (text) => {
+  void [name, role, layout];
+  const observer = new ResizeObserver(() => {
+    cut = [...text.querySelectorAll<HTMLElement>('.name, .role')].some(cutsOff);
+  });
+  observer.observe(text);
+  return () => observer.disconnect();
+};
 </script>
 
 <!-- Person pages og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<a class={['cast-card', layout]} {href}>
-  <img class="headshot" src={image ?? personPlaceholder(gender)} alt="" loading="lazy" decoding="async"
-    data-placeholder={personPlaceholder(gender)} style:--image-placeholder-person={`url("${personPlaceholder(gender)}")`} />
-  <span class="text">
-    <span class="name">{name}</span>
-    <span class="role">{role || '\u00a0'}</span>
-    {#if episodes}
-      <span class="count"><TagPills tags={[{ text: episodes }]} /></span>
-    {/if}
+{#snippet full()}
+  <span class="full">
+    <strong {@attach fitLines}>{name}</strong>
+    {#if role}<span class="full-role" {@attach fitLines}>{role}</span>{/if}
   </span>
-</a>
+{/snippet}
+
+<Tooltip content={cut ? full : undefined}>
+  {#snippet trigger(tooltip)}
+    <!-- The card's own text already says it all to a screen reader. -->
+    <a class={['cast-card', layout]} {href} {...tooltip} aria-describedby={undefined}>
+      <img class="headshot" src={image ?? personPlaceholder(gender)} alt="" loading="lazy" decoding="async"
+        data-placeholder={personPlaceholder(gender)} style:--image-placeholder-person={`url("${personPlaceholder(gender)}")`} />
+      <span class="text" {@attach measure}>
+        <span class="name">{name}</span>
+        <span class="role">{role || '\u00a0'}</span>
+        {#if episodes}
+          <span class="count"><TagPills tags={[{ text: episodes }]} /></span>
+        {/if}
+      </span>
+    </a>
+  {/snippet}
+</Tooltip>
 
 <style>
 .cast-card {
@@ -126,6 +154,24 @@ const { name, href, image, gender, role, episodes, layout = 'card' }: Props = $p
 .role {
   color: var(--color-actor-character);
   font-size: var(--font-size-cast-card-role);
+
+  .row & {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+}
+
+.full {
+  display: grid;
+  justify-items: center;
+
+  & > * {
+    display: inline-block;
+  }
+}
+
+.full-role {
+  color: var(--color-tooltip-muted);
 }
 
 .count {

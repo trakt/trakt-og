@@ -1,5 +1,5 @@
 import type { SocialMedia } from './socialMediaSchema.ts';
-import { episodeNumber } from '../components/media/episodeTags.ts';
+import { episodeNumber, episodeType } from '../components/media/episodeTags.ts';
 import type { SocialItem } from './toSocialItem.ts';
 import { mediaImage } from '../images/mediaImage.ts';
 import { seasonName } from '../utils/seasonName.ts';
@@ -66,7 +66,8 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
     return { ...common, code: seasonName(number), href: `${showHref}/seasons/${number}` };
   }
 
-  const { season, number, ids, rating, runtime, title } = activity.episode;
+  const { season, number, ids, rating, runtime, title, episode_type } = activity.episode;
+  const type = episodeType({ season, number, episode_type });
   return {
     ...common,
     target: {
@@ -77,7 +78,7 @@ export function toSocialMedia(activity: SocialMedia): SocialItemMedia {
       runtime: runtime ?? show.runtime ?? undefined,
       season: { show: show.ids.trakt, number: season, episode: number },
     },
-    episode: { season, number, ...(title && { title }) },
+    episode: { season, number, ...(title && { title }), ...(type && { type }) },
     code: episodeNumber({ season, number }, null),
     href: `${showHref}/seasons/${season}/episodes/${number}`,
     still: mediaImage({ type: 'episode', id: ids.trakt, slot: 'screenshot', size: 'medium', fallback: showFanart }),

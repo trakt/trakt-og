@@ -15,6 +15,8 @@ interface Props {
   icon?: string;
   /** The pulsing live dot before the title, in place of the icon. */
   live?: boolean;
+  /** The flickering flame before the title, in place of the icon. */
+  hot?: boolean;
   seeMore?: { href: string; text: string };
   /** OG's `h2.section`, with 28px above it instead of 20px (Recently Watched). */
   section?: boolean;
@@ -22,12 +24,12 @@ interface Props {
   aside?: Snippet;
 }
 
-const { id, title, icon, live = false, seeMore, section = false, aside }: Props = $props();
+const { id, title, icon, live = false, hot = false, seeMore, section = false, aside }: Props = $props();
 </script>
 
 <div class={['heading', { section }]}>
   <h2 {id}>
-    <HeadingMark svg={icon} {live} />{title}
+    <HeadingMark svg={icon} {live} {hot} />{title}
   </h2>
   <div class="links">
     {@render aside?.()}

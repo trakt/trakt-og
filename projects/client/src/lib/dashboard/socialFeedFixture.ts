@@ -113,13 +113,29 @@ const KRISTINS_DAY: readonly (readonly [Show, number, number, number])[] = [
   ['munsters', 1, 1, 1930],
 ];
 
+// Slow Horses' new season, two to five days ago: five members, eleven episodes between them.
+const SLOW_HORSES_WEEK: readonly (readonly [keyof typeof USERS, number, number])[] = [
+  ['ana', 1, 3250],
+  ['ana', 2, 3200],
+  ['rook', 1, 4650],
+  ['rook', 2, 4600],
+  ['rook', 3, 4550],
+  ['noor', 1, 6050],
+  ['sefer', 1, 5350],
+  ['sefer', 2, 5300],
+  ['damien', 1, 7000],
+  ['damien', 2, 6950],
+  ['damien', 3, 6900],
+];
+
 const ago = (now: Date, minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
 
 /**
  * A week of the people you follow, newest first, with made-up members and public titles: Kristin's two sittings with
  * other members' rows between them (the second a 33-episode day), Sefer's check-in and rating, Damien's two shows,
  * comment and rating, MajorMercyFlush binging Lanterns 1x06 to 1x08 over two calendar days, Technicolour's review, a
- * movie, Justin's two PAW Patrol episodes and Rook's spoiler comment from two days ago.
+ * movie, Justin's two PAW Patrol episodes, Rook's spoiler comment from two days ago, and five members on Slow Horses'
+ * new season earlier in the week, with ratings and a comment, while Ana and Noor catch up on Severance.
  */
 function rows(now: Date): readonly SocialActivity[] {
   const watch = (id: number, minutes: number, by: keyof typeof USERS, method = 'scrobble') => ({
@@ -193,6 +209,19 @@ function rows(now: Date): readonly SocialActivity[] {
       }),
       ...episode('severance', 2, 10),
     },
+    ...SLOW_HORSES_WEEK.map(([by, number, minutes], i) => ({
+      ...watch(200 + i, minutes, by),
+      ...episode('slowHorses', 5, number),
+    })),
+    { ...rating(220, 3300, 'ana', 9), ...whole('slowHorses') },
+    { ...rating(221, 4710, 'rook', 10), ...whole('slowHorses') },
+    { ...rating(222, 6100, 'noor', 9), ...whole('slowHorses') },
+    {
+      ...comment(223, 5400, 'sefer', 'Lamb gets the best lines again. This season might be the best one yet.'),
+      ...whole('slowHorses'),
+    },
+    { ...watch(224, 3500, 'ana'), ...episode('severance', 2, 9) },
+    { ...watch(225, 4200, 'noor'), ...episode('severance', 2, 9) },
   ].toSorted((a, b) => Date.parse(b.activity_at) - Date.parse(a.activity_at));
 }
 

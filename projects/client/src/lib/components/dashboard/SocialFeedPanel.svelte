@@ -28,8 +28,17 @@
   import { pollWatching } from '#lib/dashboard/pollWatching.ts';
   import { rowCount } from '#lib/dashboard/rowCount.ts';
   import { savedRows } from '#lib/dashboard/savedRows.ts';
-  import { type SocialPeriod, socialWindows } from '#lib/dashboard/socialWindows.ts';
-import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } from '#lib/dashboard/toSocialBoard.ts';
+  import { type SocialPeriod, type SocialSpan, socialWindows } from '#lib/dashboard/socialWindows.ts';
+import {
+  type SocialCard,
+  type SocialLinePart,
+  type SocialView,
+  toSocialBoard,
+} from '#lib/dashboard/toSocialBoard.ts';
+  import type { SocialTag } from '#lib/dashboard/toSocialTag.ts';
+  import { socialTagLook } from './socialTagLook.ts';
+  import CardTag from '#lib/components/media/CardTag.svelte';
+  import EpisodeTypeBadge from '#lib/components/media/EpisodeTypeBadge.svelte';
   import type { SocialItem, SocialMember } from '#lib/dashboard/toSocialItem.ts';
   import userGroup from '#lib/icons/regular/user-group.svg?raw';
   import { overlay } from '#lib/overlay/overlay.ts';
@@ -41,7 +50,10 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
   import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
   import posterStack from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
   import fire from '#lib/icons/solid/fire.svg?raw';
+  import { toCircleEvents } from '#lib/dashboard/toCircleEvents.ts';
+  import CircleHighlights from './CircleHighlights.svelte';
   import DashboardPanel from './DashboardPanel.svelte';
+  import SocialDetails from './SocialDetails.svelte';
   import SocialTile from './SocialTile.svelte';
   import { viewerFetch } from '../../auth/viewerFetch.ts';
 
@@ -53,7 +65,9 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
     /** Who the viewer follows is watching now. Defaults to asking the API with the viewer's token. */
     watching?: () => Promise<readonly LiveWatch[]>;
     /** The rows of a period past today. Defaults to asking the API with the viewer's token. */
-    rowsFor?: (period: Exclude<SocialPeriod, 'today'>) => Promise<readonly SocialItem[]>;
+    rowsFor?: (period: Exclude<SocialSpan, 'today'>) => Promise<readonly SocialItem[]>;
+    /** How many people the viewer follows, for the featured title's share; null when that didn't load. */
+    following?: number | null;
     /** Welcome mode: following nobody offers the team to follow instead of a link. */
   welcome?: boolean;
   }
@@ -66,10 +80,13 @@ import { type SocialCard, type SocialLinePart, type SocialView, toSocialBoard } 
     username,
     watching = () => fetchFollowingWatching({ get }),
     rowsFor,
+    following = null,
   welcome = false,
   }: Props = $props();
 
   const PERIODS: Readonly<Record<SocialPeriod, string>> = { today: 'Today', yesterday: 'Yesterday', week: 'Week' };
+  type CircleSpan = Extract<SocialSpan, 'week' | 'month'>;
+  const SPANS: Readonly<Record<CircleSpan, string>> = { week: 'Week', month: 'Month' };
   const VIEWS: Readonly<Record<SocialView, string>> = { title: 'Title', person: 'Person', time: 'Time' };
 const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' : 'people'}` };
   /** What each view's count counts. */
@@ -78,6 +95,8 @@ const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' 
     person: { one: 'person', many: 'people' },
     time: { one: 'activity', many: 'activities' },
   };
+  /** Between the parts of the line under a poster, which may be links. */
+  const SPACE = ' ';
   const PER_ROW = 6;
   const LIVE_PER_ROW = 3;
   /** Less and more step two rows at a time: a page. One to start, and more adds up to six. */
@@ -91,7 +110,7 @@ const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' 
   let view = $state<SocialView>('title');
   let live = $state<readonly LiveWatch[]>([]);
   let now = $state(new Date());
-  let loaded = $state<Partial<Record<Exclude<SocialPeriod, 'today'>, readonly SocialItem[]>>>({});
+  let loaded = $state<Partial<Record<Exclude<SocialSpan, 'today'>, readonly SocialItem[]>>>({});
   let fetching = $state<SocialPeriod | null>(null);
   // The grid's width, so a smaller tablet's four columns get whole rows.
   let width = $state(0);
@@ -101,14 +120,42 @@ const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' 
   // Half the poster grid's columns, as the live grid's container query below sets: three, two on smaller tablets.
   const livePerRow = $derived(Math.max(2, visibleColumns(liveWidth, PER_ROW) / 2));
   let failed = $state<SocialPeriod | null>(null);
+  let span = $state<CircleSpan>('week');
+  let spanFetching = $state(false);
+  let spanFailed = $state(false);
 
   const storageKey = $derived(`social_feed_pages:${username}`);
   // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved pages.
   let saved = $derived(browser ? savedRows.read(storageKey) : null);
 
-  const windowsOf = (which: SocialPeriod) => socialWindows(which, opened, datePreferences.timeZone);
-const fromApi = (which: Exclude<SocialPeriod, 'today'>) =>
+  const windowsOf = (which: SocialSpan) => socialWindows(which, opened, datePreferences.timeZone);
+const fromApi = (which: Exclude<SocialSpan, 'today'>) =>
   fetchSocialItems({ get, windows: windowsOf(which), datePreferences });
+
+  // Each period loads once, for Hot in Your Network and the feed both. A failed load is dropped, so picking it again retries.
+  const requests: Partial<Record<Exclude<SocialSpan, 'today'>, Promise<readonly SocialItem[]>>> = {};
+  function rowsOf(which: Exclude<SocialSpan, 'today'>) {
+    const request = requests[which] ?? (rowsFor ?? fromApi)(which);
+    requests[which] = request;
+    request.catch(() => delete requests[which]);
+    return request;
+  }
+
+  /** Hot in Your Network's period, loaded the first time it's picked. */
+  function pickSpan(next: CircleSpan) {
+    span = next;
+    spanFailed = false;
+    if (loaded[next]) return;
+    spanFetching = true;
+    void rowsOf(next)
+      .then((items) => loaded = { ...loaded, [next]: items })
+      .catch(() => {
+        if (span === next) spanFailed = true;
+      })
+      .finally(() => {
+        if (span === next) spanFetching = false;
+      });
+  }
 
   function pick(next: SocialPeriod) {
     period = next;
@@ -117,7 +164,7 @@ const fromApi = (which: Exclude<SocialPeriod, 'today'>) =>
 
     fetching = next;
 
-    void (rowsFor ?? fromApi)(next).then((items) => loaded = { ...loaded, [next]: items }).catch(() => failed = next).finally(() => {
+    void rowsOf(next).then((items) => loaded = { ...loaded, [next]: items }).catch(() => failed = next).finally(() => {
       if (fetching === next) fetching = null;
     });
 }
@@ -157,6 +204,27 @@ function changePages(pages: number) {
     };
   });
 
+  // After the feed lands: the week, for what the most people the viewer follows were on.
+  $effect(() => {
+    let cancelled = false;
+    void feed.then(({ follows }) => {
+      if (cancelled || !follows || loaded.week) return;
+      return rowsOf('week').then((items) => {
+        if (!cancelled) loaded = { ...loaded, week: items };
+      });
+    }).catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  });
+
+  const circleOf = (which: SocialSpan, items: readonly SocialItem[] | undefined) =>
+    items && toCircleEvents(items, following, windowsOf(which));
+  const hasEvents = (events: ReturnType<typeof circleOf>) =>
+    events !== undefined && (events.featured !== null || events.standouts.length > 0);
+  // Hot in Your Network shows when the week has something to show, and then stays for every period.
+  const weekEvents = $derived(circleOf('week', loaded.week));
   const tiles = $derived(liveTiles(live, now));
   const livePages = $derived(rowCount({ rows: liveRows, items: tiles.length, perRow: livePerRow, maxRows: tiles.length }));
   /** Who's watching now, in a period that runs up to now, for the counts and the band. */
@@ -224,6 +292,18 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     <span>{part.text}</span>
   {/if}
 {/snippet}
+<!-- What stands out about a poster, over its bottom-left corner, as Hot in Your Network's story cards tag it. An episode's type
+     goes through its badge, which the viewer can turn off. -->
+{#snippet tag(tag: SocialTag)}
+  {@const { band: _, ...look } = socialTagLook(tag)}
+  <span class="tag">
+    {#if tag.kind === 'episode'}
+      <EpisodeTypeBadge label={tag.episode.text} kind={tag.episode.kind} inline />
+    {:else}
+      <CardTag {...look} />
+    {/if}
+  </span>
+{/snippet}
 {#snippet card(item: SocialCard)}
   {@const target = item.target}
   {@const state = overlay.state(target.type, target.id, target.season)}
@@ -249,6 +329,8 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     }}
 >
     {#snippet posterOverlay()}
+      {#if item.details}<SocialDetails card={item} {now} />{/if}
+      {#if item.tag}{@render tag(item.tag)}{/if}
       <span class="faces">
         {#each item.members.slice(0, 3) as member (member.key)}
           {@render face(member)}
@@ -259,8 +341,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     {/snippet}
     {#if item.line.length > 0}
       <span class="line">
-        {#each item.line as part, i (i)}{#if i > 0}<span class="separator" aria-hidden="true">·</span>{/if}{@render
-            linePart(part)}{/each}
+        {#each item.line as part, i (i)}{#if i > 0}{SPACE}{/if}{@render linePart(part)}{/each}
       </span>
     {/if}
     {#if item.rating}
@@ -354,6 +435,38 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
               <SocialTile tile={tile} />
             {/each}
           </PosterGrid>
+        </div>
+      </DashboardPanel>
+    {/if}
+    {#if hasEvents(weekEvents)}
+      {@const events = circleOf(span, loaded[span])}
+      {#snippet circleCount()}
+        {#if following !== null}<span class="stats">{@render stat(userGroup, following, 'person you follow',
+            'people you follow')}</span>{/if}
+      {/snippet}
+      <DashboardPanel --panel-bg="var(--color-panel-gray)" title="Hot in Your Network" hot
+        loading={spanFetching} aside={circleCount}>
+        <div class="circle" {@attach trackDrilldowns({ source: 'social-feed' })}>
+          <div class="controls">
+            <Dropdown section="Period">
+              {#snippet trigger()}{SPANS[span]}{/snippet}
+              <ul>
+                {#each Object.entries(SPANS) as [key, label] (key)}
+                  <li><button type="button" aria-current={key === span ? 'true' : undefined}
+                      onclick={() => pickSpan(key as CircleSpan)}>{label}</button></li>
+                {/each}
+              </ul>
+            </Dropdown>
+          </div>
+          {#if spanFailed}
+            <div class="notice"><LoadFailed what={SPANS[span]} onretry={() => pickSpan(span)} /></div>
+          {:else if events && hasEvents(events)}
+            <div class="highlights"><CircleHighlights {events} {following} {now} /></div>
+          {:else if events}
+            <p class="quiet">Nothing three or more of the people you follow were on.</p>
+          {:else}
+            <div class="highlights"><Shimmer inline="100%" block="var(--social-circle-banner-height)" /></div>
+          {/if}
         </div>
       </DashboardPanel>
     {/if}
@@ -463,6 +576,21 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     margin-block-start: var(--space-social-live-top);
   }
 
+  /* Under its heading, as the feed's dropdowns sit under "Social Feed". */
+  .circle {
+    container-type: inline-size;
+    padding-block: var(--space-heading-dropdowns) var(--space-social-circle-end);
+  }
+
+  .highlights {
+    margin-block-start: var(--space-social-circle-top);
+  }
+
+  .quiet {
+    margin: var(--space-social-circle-top) 0 0;
+    color: var(--color-card-subtitle);
+  }
+
   .grid {
     margin-block-end: calc(var(--space-social-grid-end) - var(--gutter));
   }
@@ -548,8 +676,15 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     }
   }
 
-  .separator {
-    margin-inline: var(--space-social-separator);
+  /* Over the poster's bottom-left corner, where an episode's type tag goes on other cards. */
+  .tag {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: var(--episode-tag-inset);
+    inset-block-end: var(--episode-tag-inset);
+    display: flex;
+    max-inline-size: calc(100% - 2 * var(--episode-tag-inset));
+    pointer-events: none;
   }
 
   .rating {

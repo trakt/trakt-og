@@ -23,7 +23,7 @@
   import type { ScheduleDay } from '#lib/dashboard/ScheduleDay.ts';
   import { scheduleFixture } from '#lib/dashboard/scheduleFixture.ts';
   import { fetchSocialFeed, fetchSocialItems, type SocialFeed } from '#lib/dashboard/fetchSocialFeed.ts';
-  import { type SocialPeriod, socialWindows } from '#lib/dashboard/socialWindows.ts';
+  import { type SocialSpan, socialWindows } from '#lib/dashboard/socialWindows.ts';
   import { socialFeedFixture } from '#lib/dashboard/socialFeedFixture.ts';
   import { toLastThirtyDays } from '#lib/dashboard/toLastThirtyDays.ts';
   import { type RecentPlay, toRecentPlay } from '#lib/dashboard/toRecentPlay.ts';
@@ -152,7 +152,7 @@ const recentPlays = $derived(
     });
     return Promise.resolve(Response.json(rows));
   };
-const socialRowsFor = (period: Exclude<SocialPeriod, 'today'>) =>
+const socialRowsFor = (period: Exclude<SocialSpan, 'today'>) =>
   fetchSocialItems({
     get: socialWorker,
     windows: socialWindows(period, socialNow, data.datePreferences.timeZone),
@@ -168,11 +168,13 @@ const socialRowsFor = (period: Exclude<SocialPeriod, 'today'>) =>
   // Seven puts four behind the "+4 watching" tile.
   const watchingNow = (count: number) => () => Promise.resolve(socialFeedFixture.live(new Date()).slice(0, count));
   const socialEmpty = Promise.resolve<SocialFeed>({ follows: true, items: [] });
+  const quietWeek = () => Promise.resolve([]);
   const socialNobody = Promise.resolve<SocialFeed>({ follows: false, items: [] });
   const socialLoading = new Promise<SocialFeed>(() => {});
   const socialFailed = browser ? Promise.reject(new Error('demo')) : socialLoading;
   const socials = $derived([
-    { label: 'Nobody watching now', feed: social, live: 0 },
+    { label: 'Nobody watching now: Slow Horses featured, 5 of the 8 people you follow', feed: social, live: 0 },
+    { label: 'Following 120: too small a share to feature, standouts only', feed: social, live: 0, following: 120 },
     { label: 'One watching now', feed: social, live: 1 },
     { label: 'Three watching now', feed: social, live: 3 },
     { label: 'Seven watching now', feed: social, live: 7 },
@@ -374,16 +376,17 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
 </Specimen>
 
 <Specimen title="Social Feed" bleed
-  note="Watching Now is its own panel while anyone is, with the pulsing live dot as its mark: three cards, and More adds a row. Hover a count for what it counts, and a face for their name. By title, Kristin's titles past two fold into one poster that opens her history.">
+  note="Watching Now is its own panel while anyone is, with the pulsing live dot as its mark: three cards, and More adds a row. Hover a count for what it counts, and a face for their name. By title, Kristin's titles past two fold into one poster that opens her history. Hot in Your Network is a panel of its own, with a slowly flickering flame as its mark, with a period from today to a month (the week by default): it features the title the most people you follow are on, once it's 5 or more people and 5% of who you follow, and Details opens a card for each of them. Up to three story cards of 3 or more follow, each with its reason's tag and band. Under each poster: what they did and when. A tag over its bottom-left corner says what stands out: a premiere or finale, a rating of 9 or 10, a binge of 3 or more episodes, or several friends. Rest the mouse on a poster for who did what; what each one watched links to their history for the period.">
   <div class="states">
-    {#each socials as { label, feed, live, welcome } (label)}
+    {#each socials as { label, feed, live, welcome, following = 8 } (label)}
       <Variant label={label}>
         <SocialFeedPanel
           feed={feed}
           watching={watchingNow(live)}
-          rowsFor={socialRowsFor}
+          rowsFor={feed === socialEmpty ? quietWeek : socialRowsFor}
           username="me"
           datePreferences={data.datePreferences}
+          {following}
           welcome={welcome}
         />
       </Variant>
@@ -443,7 +446,7 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
     {/if}
     {#if !custom.hidden.socialFeed}
       <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me"
-        datePreferences={data.datePreferences} />
+        datePreferences={data.datePreferences} following={8} />
     {/if}
     <RecentlyWatchedPanel plays={recentPlays} username="me" datePreferences={data.datePreferences} />
   </div>

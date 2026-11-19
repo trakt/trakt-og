@@ -5,6 +5,9 @@ import { formatDate } from '../utils/formatDate.ts';
 import type { LiveWatch } from './fetchWatching.ts';
 import type { SocialWindow } from './socialWindows.ts';
 import type { SocialItem, SocialMember, SocialTarget } from './toSocialItem.ts';
+import { memberPageHref } from './memberPageHref.ts';
+import { type SocialDetail, toSocialDetails, toTitleDetails } from './toSocialDetails.ts';
+import { type SocialTag, tagOf } from './toSocialTag.ts';
 import { uniqueBy } from '../utils/uniqueBy.ts';
 import { dayIn } from '../utils/dayIn.ts';
 
@@ -32,6 +35,11 @@ export type SocialCard = {
   readonly target: SocialTarget;
   /** A member's titles past their share, folded into this one card: how many it stands for. */
   readonly folded?: number;
+  /** A person's card: their face heads its details instead of a poster. */
+  readonly member?: SocialMember;
+  readonly tag?: SocialTag;
+  /** Each member's part, latest first, for the card's details. */
+  readonly details?: readonly SocialDetail[];
 };
 
 export type SocialBoard = {
@@ -91,29 +99,28 @@ function dayWord(at: string, { now, datePreferences }: Context): string {
   return formatDate(at, { ...datePreferences, format: days < 7 ? 'dddd' : 'll' });
 }
 
-/** "10:23 PM" today, the day after that: "Yesterday", "Saturday". */
+/** When, to end a line: "at 10:23 PM" today, then "yesterday", "on Saturday", "on Oct 3, 2026". */
 function shortWhen(at: string, context: Context): string {
   const day = dayWord(at, context);
-  return day === 'Today' ? clock(at, context.datePreferences) : day;
+  if (day === 'Today') return `at ${clock(at, context.datePreferences)}`;
+  return day === 'Yesterday' ? 'yesterday' : `on ${day}`;
 }
 
-/** "Today, 10:23 PM", "Saturday, 9:14 PM". */
-const fullWhen = (at: string, context: Context) => `${dayWord(at, context)}, ${clock(at, context.datePreferences)}`;
-
-/**
- * A member's page. Their history is limited to the period, and to one title with `item`; their ratings and comments
- * pages take no dates.
- */
-function memberHref(member: SocialMember, { windows }: Context, page = 'history', item?: SocialTarget) {
-  const start = windows.at(-1)?.start;
-  const end = windows.at(0)?.end;
-  if (!member.href) return undefined;
-  if (!page.startsWith('history') || !start || !end) return `${member.href}/${page}`;
-
-  const search = new URLSearchParams({ start_at: start, end_at: end });
-  if (item) search.set(item.type, `${item.id}`);
-  return `${member.href}/${page}?${search}`;
+/** "today at 10:23 PM", "Saturday at 9:14 PM". */
+function fullWhen(at: string, context: Context): string {
+  const day = dayWord(at, context);
+  return `${day === 'Today' || day === 'Yesterday' ? day.toLowerCase() : day} at ${clock(at, context.datePreferences)}`;
 }
+
+/** A line that starts with when: "Yesterday at 9:14 PM". */
+const capitalized = ({ text, href }: SocialLinePart): SocialLinePart => ({
+  text: text.charAt(0).toUpperCase() + text.slice(1),
+  ...(href && { href }),
+});
+
+/** A member's page for the period's windows. */
+const memberHref = (member: SocialMember, { windows }: Context, page?: string, item?: SocialTarget) =>
+  memberPageHref(member, windows, page, item);
 
 function activitiesOf(items: readonly SocialItem[], live: readonly LiveWatch[]): readonly Activity[] {
   const watching = live.toSorted((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt));
@@ -148,19 +155,17 @@ function ratingOf(items: readonly (SocialItem | undefined)[], context: Context):
   return rated?.rating ? { value: rated.rating, href: memberHref(rated.member, context, 'ratings') } : undefined;
 }
 
-/** What one member did with a title: "Watched 1x09 · 10:30 PM", "Watched 3 episodes", "Commented". */
+/** What one member did with a title, then when: "Watched 1x09 at 10:30 PM", "Watched 3 episodes on Saturday". */
 function soloLine(group: readonly Activity[], context: Context): readonly SocialLinePart[] {
   const items = group.flatMap(({ item }) => (item ? [item] : []));
   const watches = items.filter(isWatch);
   const [latest] = watches;
   if (!latest) {
     const comment = items.find(({ kind }) => kind === 'comment' || kind === 'review');
-    if (comment) return [commentLine(comment)];
-    // Only rated: the heart has a line of its own, so this one says when.
-    const [rated] = items;
-    return rated
-      ? [{ text: 'Rated', href: memberHref(rated.member, context, 'ratings') }, { text: shortWhen(rated.at, context) }]
-      : [];
+    const [first] = items;
+    if (!first) return [];
+    const what = comment ? commentLine(comment) : { text: 'Rated', href: memberHref(first.member, context, 'ratings') };
+    return [what, { text: shortWhen((comment ?? first).at, context) }];
   }
 
   const when = { text: shortWhen(latest.at, context) };
@@ -169,7 +174,20 @@ function soloLine(group: readonly Activity[], context: Context): readonly Social
   const episodes = unique(watches.map(({ code }) => code));
   return episodes.length === 1 && latest.code
     ? [{ text: `Watched ${latest.code}`, href: latest.href }, when]
-    : [{ text: `Watched ${countLabel(episodes.length, 'episode')}`, href: history }];
+    : [{ text: `Watched ${countLabel(episodes.length, 'episode')}`, href: history }, when];
+}
+
+/** What several members did with a title, each counted once: "3 watched, 2 rated". */
+function groupLine(items: readonly SocialItem[]): readonly SocialLinePart[] {
+  const who = (match: (item: SocialItem) => boolean) => unique(items.filter(match).map(({ member }) => member.key));
+  const text = [
+    { word: 'watched', count: who(isWatch).length },
+    { word: 'rated', count: who(({ kind }) => kind === 'rating').length },
+    { word: 'commented', count: who(({ kind }) => kind === 'comment' || kind === 'review').length },
+  ]
+    .flatMap(({ word, count }) => (count > 0 ? [`${count} ${word}`] : []))
+    .join(', ');
+  return text ? [{ text }] : [];
 }
 
 function byTitle(activities: readonly Activity[], context: Context): SocialCard[] {
@@ -178,12 +196,13 @@ function byTitle(activities: readonly Activity[], context: Context): SocialCard[
     const [first] = group;
     const title = first ? titleOf(first) : null;
     if (!title) throw new Error('An empty title group');
+    const items = group.flatMap(({ item }) => (item ? [item] : []));
 
     return {
       key: `title:${title.key}`,
       href: title.href,
       title: title.name,
-      line: members.length > 1 ? [{ text: countLabel(members.length, 'friend') }] : soloLine(group, context),
+      line: members.length > 1 ? groupLine(items) : soloLine(group, context),
       rating:
         members.length > 1
           ? undefined
@@ -194,6 +213,8 @@ function byTitle(activities: readonly Activity[], context: Context): SocialCard[
       poster: title.poster,
       members,
       target: title.target,
+      tag: tagOf(items),
+      details: toSocialDetails(items, context.windows),
     };
   });
 }
@@ -251,6 +272,7 @@ function byPerson(activities: readonly Activity[], context: Context): SocialCard
     const title = titleOf(latest);
     const titles = unique(group.map((activity) => titleOf(activity).key)).length;
     const history = memberHref(member, context);
+    const items = group.flatMap(({ item }) => (item ? [item] : []));
 
     return {
       key: `person:${member.key}`,
@@ -260,6 +282,9 @@ function byPerson(activities: readonly Activity[], context: Context): SocialCard
       poster: title.poster,
       members: [member],
       target: title.target,
+      member,
+      tag: tagOf(items.filter((item) => item.title.key === title.key)),
+      details: toTitleDetails(items, context.windows),
     };
   });
 }
@@ -290,7 +315,12 @@ function byTime(activities: readonly Activity[], context: Context): SocialCard[]
     const [item] = items;
     if (!item) throw new Error('An empty run');
     const when = { text: fullWhen(item.at, context) };
-    const common = { key: `time:${item.key}`, poster: item.title.poster, members: [item.member] };
+    const common = {
+      key: `time:${item.key}`,
+      poster: item.title.poster,
+      members: [item.member],
+      tag: tagOf(items),
+    };
     const episodes = unique(items.map(({ code }) => code)).length;
 
     if (episodes > 1) {
@@ -308,7 +338,7 @@ function byTime(activities: readonly Activity[], context: Context): SocialCard[]
       href: item.comment?.href ?? item.href,
       title: item.title.name,
       number: item.code,
-      line: item.comment ? [commentLine(item), when] : [when],
+      line: item.comment ? [commentLine(item), when] : [capitalized(when)],
       rating: ratingOf([item], context),
       target: item.target,
     };

@@ -51,7 +51,7 @@ describe('loadShowData', () => {
   it('should validate and retain extended episodes and guest stars', async () => {
     const data = await loadShowData(params([season]));
     expect(data.seasons.at(0)?.episodes?.at(0)?.ids.trakt).toBe(101);
-    expect(data.summary.guestStars.at(0)?.name).toBe('Guest');
+    expect(data.summary.guestStars.cast?.at(0)?.name).toBe('Guest');
   });
   it('should keep the seasons when an announced season has no air date yet', async () => {
     const data = await loadShowData(params([season, { number: 2, ids: { trakt: 12 }, first_aired: null }]));
@@ -63,7 +63,7 @@ describe('loadShowData', () => {
       params([{ ...season, episodes: [{ ids: { trakt: 'bad' } }] }], { guest_stars: 'bad' }),
     );
     expect(data.seasons).toEqual([]);
-    expect(data.summary.guestStars).toEqual([]);
+    expect(data.summary.guestStars).toEqual({ count: 0, cast: [] });
   });
   it("should leave the viewer's progress and note to the browser", async () => {
     const paths: string[] = [];

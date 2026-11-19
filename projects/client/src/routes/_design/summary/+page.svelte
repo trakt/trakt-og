@@ -35,6 +35,7 @@ import { type ActivityTab, toActivity } from '#lib/summary/toActivity.ts';
 import { socialFeedFixture } from '#lib/dashboard/socialFeedFixture.ts';
 import type { RelatedCard } from '#lib/summary/toRelatedCard.ts';
 import type { VideoCard } from '#lib/videos/toVideoCards.ts';
+import { countLabel } from '#lib/utils/countLabel.ts';
 import { formatting, movie, review, spoiler } from '../comments/fixtures.ts';
 import { breakingBad, noWayHome, pilot } from './fixtures.ts';
 
@@ -42,28 +43,32 @@ import { breakingBad, noWayHome, pilot } from './fixtures.ts';
 $effect(() => newComment.mount());
 let view = $state<'grid' | 'list'>('grid');
 // Made-up people with no headshots, so each Futurama silhouette shows: Leela, Fry, then Zoidberg.
-const person = (name: string, characters: string, gender?: string, episodes?: string) => ({
+const person = (name: string, characters: string, gender?: string, episodes = 0) => ({
   name,
-  href: `/people/${name.toLowerCase().replace(/ /g, '-')}`,
+  slug: name.toLowerCase().replace(/ /g, '-'),
+  id: 0,
   characters,
   gender,
   episodes,
 });
 const regulars = [
-  person('Avery Stone', 'Captain Mara Vell', 'female', '24 episodes'),
-  person('Jonah Pike', 'Dr. Felix Brandt Jr.', 'male', '24 episodes'),
-  person('Sam Okafor', 'The Archivist', 'non_binary', '18 episodes'),
-  person('Riley Quinn', 'Officer Dale Hart', undefined, '9 episodes'),
+  person('Avery Stone', 'Captain Mara Vell', 'female', 24),
+  person('Jonah Pike', 'Dr. Felix Brandt Jr.', 'male', 24),
+  person('Sam Okafor', 'The Archivist', 'non_binary', 18),
+  person('Riley Quinn', 'Officer Dale Hart', undefined, 9),
   person(
     'Maximilian Ashworth-Delacroix',
     'Commander Elias Thorne / Young Elias Thorne / The Voice of the Archive / Narrator / Himself / Thorne (Future)',
     'male',
-    '22 episodes',
+    22,
   ),
 ];
+const guestStars = [person('Ines Varga', 'Nurse Kepler', 'female', 3), person('Omar Reyes', 'Dock Worker', 'male', 1)];
+// Guest Stars waits two seconds the first time it's picked, then shows; Failed Guests never loads, for Try again.
+const loadGuestStars = () => new Promise<typeof guestStars>((resolve) => setTimeout(() => resolve(guestStars), 2000));
 const crew = [
-  { id: 'directing', label: 'Directing', cast: [person('Noor Haddad', 'Director', 'female', '6 episodes')] },
-  { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', '12 episodes')] },
+  { id: 'directing', label: 'Directing', cast: [person('Noor Haddad', 'Director', 'female', 6)] },
+  { id: 'writing', label: 'Writing', cast: [person('Theo Marsh', 'Writer, Story', 'male', 12)] },
 ];
 const ratingTarget = { type: 'movie', id: noWayHome.id, title: noWayHome.fullTitle } as const;
 
@@ -300,15 +305,18 @@ const videos: readonly VideoCard[] = [
 </Specimen>
 
 <Specimen title="People"
-  note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender, which also shows while a headshot loads. Local OG: /shows/breaking-bad.">
-  <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
-    creditsHref="/shows/demo/people" />
+  note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. Guest Stars loads when picked, with shimmers meanwhile; Failed Guests shows its Try again. People without a headshot get a silhouette by gender, which also shows while a headshot loads. Local OG: /shows/breaking-bad.">
+  <ActorsStrip groups={[
+    { id: 'season-regulars', label: 'Series Regulars', cast: regulars },
+    { id: 'guest-stars', label: 'Guest Stars', count: guestStars.length, load: loadGuestStars },
+    { id: 'failed-guests', label: 'Failed Guests', count: 12, load: async () => null },
+  ]} {crew} creditsHref="/shows/demo/people" />
   <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row. Hover the last card: a name or role cut off shows in full in a tooltip, and the list row gives roles three lines first.</p>
   <ul class={['people-demo', view]}>
-    {#each regulars as member (member.href)}
+    {#each regulars as member (member.slug)}
       <li>
-        <CastCard name={member.name} href={member.href} gender={member.gender} role={member.characters}
-          episodes={member.episodes} layout={view === 'list' ? 'row' : 'card'} />
+        <CastCard name={member.name} href="/people/{member.slug}" gender={member.gender} role={member.characters}
+          episodes={countLabel(member.episodes, 'episode')} layout={view === 'list' ? 'row' : 'card'} />
       </li>
     {/each}
   </ul>

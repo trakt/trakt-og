@@ -110,7 +110,7 @@ const sections = $derived([
   {#key episode.href}
     <LazySection id="activity" load={()=>lazy().activity(media)}>{#snippet children(tabs)}<ActivityTabs {tabs} />{/snippet}</LazySection>
   {/key}
-  <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars}]} crew={episode.crew} creditsHref="{episode.href}/people" />
+  <ActorsStrip groups={[{id:'season-regulars',label:'Season Regulars',cast:episode.cast,portraitOf:episode.portraitOf},{id:'guest-stars',label:'Guest Stars',cast:episode.guestStars,portraitOf:episode.portraitOf}]} crew={episode.crew} creditsHref="{episode.href}/people" />
   {#key episode.href}
     <LazySection id="videos" load={() => lazy().videos(media)}>
       {#snippet children(videos)}<VideosRail {videos} href={episode.href} />{/snippet}

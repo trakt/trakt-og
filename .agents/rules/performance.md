@@ -44,6 +44,11 @@ Smooth means the same page with less work. Every rule here came from a counted w
 - **A read that needs only the layout starts on `parent()`**, not after the page's own reads. A loader starts what doesn't need the layout before it awaits `parent()`, and chains what needs only the layout on `parent().then`. A read by the requested id is dropped when a non-canonical id redirects; catch it so a failed page read doesn't leave it unhandled. Item subpages' Watch Now also waited on the item's reads; starting it on the layout cut their API time by about 80ms logged out. (`subpage/loadSubpageMedia.ts`, `discover/loadDiscover.ts`)
 - **Stream the slow read, not the page.** A loader returns a section that waits on a slow read as a promise, and the page holds its place with a shimmer at its loaded size; fast reads stay awaited, so the server HTML keeps them. The profile's whole watched lists took 0.6 to 1s; streaming the boxes and Most Watched that need them cut its first byte from about 1.1s to 0.2s. Catch a streamed read that a cancelled or failed load can strand, or it's an unhandled rejection. The profile has since moved those reads to the browser (`users/profile/startProfilePanels.ts`), so the Worker never pages through them. (`users/profile/loadProfile.ts`)
 
+## Page data
+
+- **A full load's HTML carries every load's data, so page data holds what the first view shows.** A group offered only behind a pick ships as a count and loads when picked: a show's guest stars were 474 KB of Grey's Anatomy's 1 MB page and 186 KB of The Simpsons'. (`components/summary/ActorsStrip.svelte`, `shows/fetchGuestStars.ts`)
+- **Send ids and numbers, not what's built from them.** A cast member carries its slug, Trakt id and episode count; the strip builds the link, headshot URL and "62 episodes". (`components/summary/CastMember.ts`)
+
 ## Bundle
 
 - **Watch the boot closure** (the root layout's static imports). Anything there ships on every page. `@trakt/api` reaches boot through the overlay, header search and drop note.

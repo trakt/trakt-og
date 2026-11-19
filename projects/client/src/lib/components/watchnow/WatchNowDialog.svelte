@@ -18,9 +18,9 @@ import Icon from '#lib/icons/Icon.svelte';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import heart from '#lib/icons/solid/heart.svg?raw';
 import play from '#lib/icons/solid/play.svg?raw';
-import { fetchWatchNow } from './fetchWatchNow.ts';
-import { readWatchNow } from './readWatchNow.ts';
+import { toast } from '#lib/components/toast/toast.svelte.ts';
 import { fetchWatchNowShared } from './fetchWatchNowShared.ts';
+import { loadWatchNowItem } from './loadWatchNowItem.ts';
 import ServiceTile from './ServiceTile.svelte';
 import {
   countryCounts,
@@ -32,14 +32,7 @@ import {
   toWatchNowSections,
   type WatchNowButton,
 } from './watchNow.ts';
-import {
-  justWatchLinksSchema,
-  watchNowCountriesSchema,
-  type WatchNowCountry,
-  type WatchNowOffers,
-  watchNowOffersSchema,
-  watchNowSourcesSchema,
-} from './watchNowSchema.ts';
+import { type WatchNowCountry, type WatchNowOffers, watchNowSourcesSchema } from './watchNowSchema.ts';
 
 interface Props {
   open: boolean;
@@ -68,16 +61,16 @@ const tags = $derived([
   { text: button.path.startsWith('/movies/') ? 'Movie' : 'Show', color: 'var(--color-dialog-art-media-tag)' },
 ]);
 
+// A failed read closes the modal with a toast that says why, instead of claiming there are no links; opening again
+// retries.
 async function loadItem() {
-  const [all, list, links] = await Promise.all([
-    readWatchNow({ path: `${button.path}/watchnow`, schema: watchNowOffersSchema }),
-    fetchWatchNowShared({ path: '/watchnow/countries', schema: watchNowCountriesSchema }),
-    fetchWatchNow({ path: `${justwatchPath}/watchnow/justwatch_links`, schema: justWatchLinksSchema }),
-  ]);
-  offers = all.data;
-  unavailable = all.unavailable;
-  countries = list ?? [];
-  justwatch = links ?? {};
+  const item = await loadWatchNowItem({ path: button.path, justwatchPath });
+  if (item.failed) {
+    open = false;
+    toast.error(item.message);
+    return;
+  }
+  ({ offers, unavailable, countries, justwatch } = item);
   loaded = true;
 }
 

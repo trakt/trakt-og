@@ -14,6 +14,10 @@ type WatchNowRead<T> = {
   readonly data: T | null;
   /** The client ID may not call watch-now routes, which are Official-only. */
   readonly unavailable: boolean;
+  /** The API answered 429. */
+  readonly rateLimited?: boolean;
+  /** No response the browser may read: offline, or a Cloudflare block, which answers without CORS headers. */
+  readonly unanswered?: boolean;
 };
 
 /**
@@ -26,7 +30,9 @@ export async function readWatchNow<T extends z.ZodType>({
   schema,
 }: ReadWatchNowParams<T>): Promise<WatchNowRead<z.output<T>>> {
   const response = await rawApiFetch({ fetch, path }).catch(() => null);
-  if (!response?.ok) return { data: null, unavailable: isApiUnavailable(response) };
+  if (!response) return { data: null, unavailable: false, unanswered: true };
+  if (response.status === 429) return { data: null, unavailable: false, rateLimited: true };
+  if (!response.ok) return { data: null, unavailable: isApiUnavailable(response) };
 
   const parsed = schema.safeParse(await response.json().catch(() => null));
   return { data: parsed.success ? parsed.data : null, unavailable: false };

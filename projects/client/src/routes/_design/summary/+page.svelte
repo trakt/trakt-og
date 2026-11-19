@@ -54,6 +54,12 @@ const regulars = [
   person('Jonah Pike', 'Dr. Felix Brandt Jr.', 'male', '24 episodes'),
   person('Sam Okafor', 'The Archivist', 'non_binary', '18 episodes'),
   person('Riley Quinn', 'Officer Dale Hart', undefined, '9 episodes'),
+  person(
+    'Maximilian Ashworth-Delacroix',
+    'Commander Elias Thorne / Young Elias Thorne / The Voice of the Archive / Narrator / Himself / Thorne (Future)',
+    'male',
+    '22 episodes',
+  ),
 ];
 const crew = [
   { id: 'directing', label: 'Directing', cast: [person('Noor Haddad', 'Director', 'female', '6 episodes')] },
@@ -297,7 +303,7 @@ const videos: readonly VideoCard[] = [
   note="One dropdown of the actor and crew groups, eight cards across that scroll sideways, and All People linking to the picked group. People without a headshot get a silhouette by gender, which also shows while a headshot loads. Local OG: /shows/breaking-bad.">
   <ActorsStrip groups={[{ id: 'season-regulars', label: 'Series Regulars', cast: regulars }]} {crew}
     creditsHref="/shows/demo/people" />
-  <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row.</p>
+  <p>The people page's cards: <ViewToggle bind:view /> flips them between the grid card and the list row. Hover the last card: a name or role cut off shows in full in a tooltip, and the list row gives roles three lines first.</p>
   <ul class={['people-demo', view]}>
     {#each regulars as member (member.href)}
       <li>

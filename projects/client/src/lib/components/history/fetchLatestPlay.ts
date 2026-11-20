@@ -1,7 +1,8 @@
 import { z } from 'zod/v4';
+import { watchedDateSchema } from '../../utils/watchedDateSchema.ts';
 import type { HistoryPlay } from './HistoryPlay.ts';
 
-const historySchema = z.array(z.object({ id: z.number(), watched_at: z.string() }));
+const historySchema = z.array(z.object({ id: z.number(), watched_at: watchedDateSchema }));
 
 /**
  * `/sync/history/{movies|episodes}/:id?limit=1`: the viewer's most recent play, for a page that has no history id.

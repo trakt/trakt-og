@@ -1,4 +1,5 @@
 import { z } from 'zod/v4';
+import { watchedDateSchema } from '../../utils/watchedDateSchema.ts';
 
 const media = z.object({
   ids: z.object({ trakt: z.number(), slug: z.string() }),
@@ -9,7 +10,7 @@ const media = z.object({
   aired_episodes: z.number().nullish(),
 });
 
-const row = { plays: z.number(), last_watched_at: z.string() };
+const row = { plays: z.number(), last_watched_at: watchedDateSchema };
 
 /** Only with `extended=progress`: the episodes watched, season by season. */
 const seasons = z

@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { rawApiFetch } from '../../api/rawApiFetch.ts';
+import { UNKNOWN_DATE } from '../../utils/unknownDate.ts';
 import { fetchLatestPlay } from './fetchLatestPlay.ts';
 
 const API = 'https://apiz.trakt.tv';
@@ -22,6 +23,13 @@ describe('fetchLatestPlay', () => {
     expect(await fetchLatestPlay({ target: { type, id: 7 }, request })).toEqual({
       id: 900,
       watchedAt: '2026-10-01T20:00:00.000Z',
+    });
+  });
+  it('should read an undated play as the unknown date', async () => {
+    server.use(http.get(`${API}/sync/history/movies/7`, () => HttpResponse.json([{ id: 900, watched_at: null }])));
+    expect(await fetchLatestPlay({ target: { type: 'movie', id: 7 }, request })).toEqual({
+      id: 900,
+      watchedAt: UNKNOWN_DATE,
     });
   });
   it('should throw when there is no play', async () => {

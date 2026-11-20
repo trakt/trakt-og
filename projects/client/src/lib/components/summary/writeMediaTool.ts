@@ -10,8 +10,27 @@ type Action = {
   readonly reason: string;
   readonly message: string;
 };
-const messageSchema = z.object({ message: z.string().optional() });
+const errorSchema = z.object({ error: z.string().optional() });
 const failed = 'Doh! We ran into some sort of error. Please try again.';
+
+// OG's wording for each refusal the API names.
+const refusal = (code: string | undefined, type: ReportTarget['type']) => {
+  switch (code) {
+    case 'report_pending':
+      return `You already have a pending report for this ${type}!`;
+    case 'recently_reported':
+      return `You've recently reported this ${type}, please try again soon!`;
+    case 'reporting_banned':
+      return 'Your reporting privileges have been temporarily suspended. Please contact support if you have any questions.';
+    case 'comment_not_found':
+    case 'user_not_found':
+      return `This ${type} no longer exists.`;
+    case 'invalid_reason':
+      return 'Please choose a different reason.';
+    default:
+      return undefined;
+  }
+};
 
 /** Reports have no overlay slice to patch. Keep pending state in the calling control. */
 export async function writeMediaTool({ fetch, action }: { fetch: typeof globalThis.fetch; action: Action }) {
@@ -29,14 +48,16 @@ export async function writeMediaTool({ fetch, action }: { fetch: typeof globalTh
         body: JSON.stringify({ reason: action.reason, message: action.message.trim() }),
       },
     });
-    // API normally returns an empty 201. Pending reports and reporting bans carry a JSON message.
+    // API returns an empty 201, or a JSON error code when it refuses the report.
     const text = await response.text();
-    const body = text.trim() ? messageSchema.parse(JSON.parse(text)) : null;
+    const body = text.trim() ? errorSchema.parse(JSON.parse(text)) : null;
     if (!response.ok) {
       return {
         ok: false,
         status: response.status,
-        message: body?.message ?? (response.status === 403 ? 'This action requires VIP membership.' : failed),
+        message:
+          refusal(body?.error, target.type) ??
+          (response.status === 403 ? 'This action requires VIP membership.' : failed),
       };
     }
     return {

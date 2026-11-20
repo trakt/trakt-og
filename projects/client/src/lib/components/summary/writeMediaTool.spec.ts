@@ -94,13 +94,34 @@ describe('writeMediaTool', () => {
     expect((await writeMediaTool({ fetch, action: { ...report, message: ' ' } })).ok).toBe(false);
   });
 
-  it('should retain the API explanation for pending reports and reporting bans', async () => {
-    respond(409, { message: 'You already have a pending report for this item.' });
-    expect(await writeMediaTool({ fetch, action: report })).toEqual({
-      ok: false,
-      status: 409,
-      message: 'You already have a pending report for this item.',
-    });
+  it.each([
+    [409, 'report_pending', 'You already have a pending report for this comment!'],
+    [409, 'recently_reported', "You've recently reported this comment, please try again soon!"],
+    [
+      409,
+      'reporting_banned',
+      'Your reporting privileges have been temporarily suspended. Please contact support if you have any questions.',
+    ],
+    [404, 'comment_not_found', 'This comment no longer exists.'],
+    [400, 'invalid_reason', 'Please choose a different reason.'],
+  ])('should explain a %i %s refusal', async (status, error, message) => {
+    respond(status, { error });
+    expect(await writeMediaTool({ fetch, action: report })).toEqual({ ok: false, status, message });
+  });
+
+  it('should name the user when a reported user is gone', async () => {
+    respond(404, { error: 'user_not_found' });
+    const user = { type: 'user', id: 'gone', title: 'Gone', href: '/users/gone' } as const;
+    expect((await writeMediaTool({ fetch, action: { ...report, reason: 'spam', target: user } })).message).toBe(
+      'This user no longer exists.',
+    );
+  });
+
+  it('should fall back to the generic failure for an unknown code', async () => {
+    respond(400, { error: 'invalid_request_body' });
+    expect((await writeMediaTool({ fetch, action: report })).message).toBe(
+      'Doh! We ran into some sort of error. Please try again.',
+    );
   });
 
   it.each([401, 403, 429, 500])('should fail without a success message on %i', async (status) => {
@@ -109,7 +130,7 @@ describe('writeMediaTool', () => {
   });
 
   it('should reject a malformed proxied response', async () => {
-    respond(201, { message: 42 });
+    respond(201, { error: 42 });
     expect((await writeMediaTool({ fetch, action: report })).ok).toBe(false);
   });
 

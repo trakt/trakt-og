@@ -18,7 +18,7 @@ import { episodeSeasonsSchema } from './episodeSeasonsSchema.ts';
 import { seasonSchema } from './seasonSchema.ts';
 import { toEpisodeSummary } from './toEpisodeSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
-import { canSeePortraits } from '../images/canSeePortraits.ts';
+import { loadPortraitToken } from '../images/loadPortraitToken.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -103,6 +103,7 @@ export async function loadEpisode({
     layout,
     watchNow,
     note,
+    portraitToken,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full' } }),
     episodeRead,
@@ -114,6 +115,7 @@ export async function loadEpisode({
     layoutRead,
     watchNowRead,
     noteRead,
+    layoutRead.then(({ user }) => loadPortraitToken({ fetch, user })),
   ]);
   const show = body(showResponse, showResponseSchema, 'Show');
   const info = body(episodeResponse, episodeResponseSchema, 'Episode');
@@ -134,7 +136,7 @@ export async function loadEpisode({
     now: new Date(),
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
     otherSiteRatings: layout.settings?.browsing?.other_site_ratings ?? true,
-    portraits: canSeePortraits(layout.user),
+    portraitToken,
   });
   return {
     episode: view,

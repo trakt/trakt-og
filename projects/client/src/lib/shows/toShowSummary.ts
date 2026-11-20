@@ -39,8 +39,8 @@ interface ShowSummaryParams {
   actorSpoilers: boolean;
   /** Off when the viewer hides episode type tags ("Season Premiere"). */
   episodeTypeTags: boolean;
-  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
-  portraits?: boolean;
+  /** The week's portrait link token (`loadPortraitToken`), for viewers who see the cast in character. */
+  portraitToken?: string | null;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -189,7 +189,9 @@ function guestStars(people: ShowPeople | null, actorSpoilers: boolean) {
 /** Everything the show summary shows, from the loader's API responses. */
 export function toShowSummary(params: ShowSummaryParams) {
   const { show, stats, seasons, now, datePreferences } = params;
-  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
+  const portraitOf: PortraitOf | undefined = params.portraitToken
+    ? { media: 'show', id: show.ids.trakt, token: params.portraitToken }
+    : undefined;
   const slug = show.ids.slug;
   const href = `/shows/${slug}`;
   const timeZone = params.signedIn ? datePreferences.timeZone : (show.airs?.timezone ?? datePreferences.timeZone);

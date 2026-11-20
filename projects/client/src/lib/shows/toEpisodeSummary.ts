@@ -36,14 +36,16 @@ interface Params {
   now: Date;
   episodeTypeTags: boolean;
   otherSiteRatings: boolean;
-  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
-  portraits?: boolean;
+  /** The week's portrait link token (`loadPortraitToken`), for viewers who see the cast in character. */
+  portraitToken?: string | null;
 }
 
 /** Episode facts, the season number strip and neighbours across seasons in broadcast order. */
 export function toEpisodeSummary(params: Params) {
   const { show, episode, season, ratings, stats, now } = params;
-  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
+  const portraitOf: PortraitOf | undefined = params.portraitToken
+    ? { media: 'show', id: show.ids.trakt, season: episode.season, token: params.portraitToken }
+    : undefined;
   // An unaired episode shows no ratings and only its list count, whatever the viewer's early-ratings setting.
   const releasedAt = episodeReleasedAt(episode);
   const aired = hasEpisodeAired(releasedAt, now.getTime());

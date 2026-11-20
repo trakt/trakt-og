@@ -6,19 +6,26 @@ import { seasonPeopleSchema } from '../shows/seasonPeopleSchema.ts';
 import { loadSubpageMedia } from '../subpage/loadSubpageMedia.ts';
 import { subpageApiPath } from '../subpage/subpageApiPath.ts';
 import { toCredits } from './toCredits.ts';
-import { canSeePortraits } from '../images/canSeePortraits.ts';
 import type { PortraitOf } from '../images/castHeadshot.ts';
+import { loadPortraitToken } from '../images/loadPortraitToken.ts';
 
 type Params = Omit<Parameters<typeof loadSubpageMedia>[0], 'suffix'>;
 
 type People = z.infer<typeof seasonPeopleSchema>;
 
-const portraitOf = (item: CommentItem): PortraitOf | undefined =>
-  item.type === 'movie' || item.type === 'show'
-    ? { media: item.type, id: item.id }
-    : item.type === 'season' || item.type === 'episode'
-      ? { media: 'show', id: item.show }
-      : undefined;
+function portraitOf(item: CommentItem, token: string): PortraitOf | undefined {
+  switch (item.type) {
+    case 'movie':
+    case 'show':
+      return { media: item.type, id: item.id, token };
+    case 'season':
+      return { media: 'show', id: item.show, season: item.number, token };
+    case 'episode':
+      return { media: 'show', id: item.show, season: item.season, token };
+    default:
+      return undefined;
+  }
+}
 
 async function readPeople(fetch: typeof globalThis.fetch, path: string): Promise<People> {
   const response = await rawApiFetch({ fetch, path });
@@ -36,10 +43,12 @@ async function readPeople(fetch: typeof globalThis.fetch, path: string): Promise
  */
 export async function loadCredits({ fetch, parent, item }: Params) {
   const path = subpageApiPath(item);
-  const [subpage, people, regulars] = await Promise.all([
-    loadSubpageMedia({ fetch, parent, item, suffix: 'people' }),
+  const layout = parent();
+  const [subpage, people, regulars, portraitToken] = await Promise.all([
+    loadSubpageMedia({ fetch, parent: () => layout, item, suffix: 'people' }),
     readPeople(fetch, `${path}/people${item.type === 'show' || item.type === 'season' ? '?extended=guest_stars' : ''}`),
     item.type === 'episode' ? readPeople(fetch, `${subpageApiPath({ ...item, type: 'season' })}/people`) : null,
+    layout.then(({ user }) => loadPortraitToken({ fetch, user })),
   ]);
   const actors =
     item.type === 'movie'
@@ -60,7 +69,7 @@ export async function loadCredits({ fetch, parent, item }: Params) {
       crew: people.crew,
       episodeCounts:
         (item.type === 'show' || item.type === 'season') && subpage.settings?.browsing?.spoilers?.actors !== 'hide',
-      portraitOf: canSeePortraits(subpage.user) ? portraitOf(subpage.media.item) : undefined,
+      portraitOf: portraitToken ? portraitOf(subpage.media.item, portraitToken) : undefined,
     }),
   };
 }

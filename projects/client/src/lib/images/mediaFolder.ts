@@ -1,7 +1,9 @@
 import type { MediaImageType } from './MediaImageType.ts';
 
-/** An actor in character on media.trakt.tv: the show or movie and its Trakt id, then the person's. */
-export type PortraitId = `${'show' | 'movie'}-${number}-${number}`;
+/** An actor in character on media.trakt.tv: the show or movie and its Trakt id, a season's `s{n}`, then the person's. */
+export type PortraitId =
+  | `${'show' | 'movie'}-${number}-${number}`
+  | `${'show' | 'movie'}-${number}-s${number}-${number}`;
 
 const FOLDERS: Readonly<Record<MediaImageType | 'portrait', string>> = {
   movie: 'movies',

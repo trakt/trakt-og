@@ -11,7 +11,7 @@ import { toMovieSummary } from './toMovieSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
 import { OFFICIAL_LISTS_LIMIT, pickCollectionList } from '../lists/pickCollectionList.ts';
-import { canSeePortraits } from '../images/canSeePortraits.ts';
+import { loadPortraitToken } from '../images/loadPortraitToken.ts';
 
 type LoadMovieParams = {
   fetch: typeof fetch;
@@ -60,6 +60,7 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
     ),
     collection,
     layout.then(({ user }) => fetchParentalGuide({ fetch, token: user ? token : null, type: 'movie', id })),
+    layout.then(({ user }) => loadPortraitToken({ fetch, user })),
   ]);
   extras.catch(() => {});
 
@@ -70,10 +71,10 @@ export async function loadMovie({ fetch, token, parent, id: requested }: LoadMov
   if (requested !== movie.ids.slug) redirect(301, `/movies/${movie.ids.slug}`);
   const notable = { type: 'movie', id: movie.ids.trakt, slug: movie.ids.slug } as const;
 
-  const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide] = await extras;
+  const [ratings, stats, people, studios, releases, watchnow, official, parentalGuide, portraitToken] = await extras;
 
   const view = toMovieSummary({
-    portraits: canSeePortraits(user),
+    portraitToken,
     movie,
     ratings,
     stats,

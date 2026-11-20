@@ -35,8 +35,8 @@ interface MovieSummaryParams {
   rank: StreamingRank | null;
   /** The viewer's "other site ratings" setting; on when logged out. */
   otherSiteRatings: boolean;
-  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
-  portraits?: boolean;
+  /** The week's portrait link token (`loadPortraitToken`), for viewers who see the cast in character. */
+  portraitToken?: string | null;
   now: Date;
 }
 
@@ -149,7 +149,9 @@ export function toMovieSummary(params: MovieSummaryParams) {
       afterCredits: movie.after_credits ?? null,
     },
     links: toMovieLinks({ movie: params.movie, justwatch: params.rank?.link }),
-    portraitOf: params.portraits ? ({ media: 'movie', id: movie.ids.trakt } as const) : undefined,
+    portraitOf: params.portraitToken
+      ? ({ media: 'movie', id: movie.ids.trakt, token: params.portraitToken } as const)
+      : undefined,
     cast: toCastMembers(params.people?.cast, false),
     crew: toCrewGroups(params.people?.crew, false),
   };

@@ -75,6 +75,8 @@
   import pencil from '#lib/icons/regular/pen.svg?raw';
   import type { ProfileUser } from '#lib/users/ProfileUser.ts';
   import { createListManager } from '#lib/lists/createListManager.svelte.ts';
+  import { createDragReorder } from '#lib/lists/createDragReorder.svelte.ts';
+  import DragGhost from '#lib/components/lists/DragGhost.svelte';
   import { listGenreOptions } from '#lib/lists/listGenreOptions.ts';
   import { listHref } from '#lib/lists/listHref.ts';
   import ListItemPoster from '#lib/lists/ListItemPoster.svelte';
@@ -565,28 +567,6 @@ const request = (path: string, init?: Parameters<typeof rawApiFetch>[0]['init'])
     noteOpen = false;
     deleteNotes(item);
   }
-  function dragItem(item: ListItemCard, event: PointerEvent) {
-    if (ownerBusy || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
-    event.preventDefault();
-    const handle = event.currentTarget;
-    handle.setPointerCapture(event.pointerId);
-    const end = (endEvent: PointerEvent) => {
-      const target = document.elementFromPoint(endEvent.clientX, endEvent.clientY)?.closest('[data-list-item]');
-      const key = Number(target?.getAttribute('data-list-item'));
-      const row = allItems?.find((item) => item.key === key);
-      cleanup();
-      if (row) moveItem(item, row.rank);
-    };
-    const cancel = () => cleanup();
-    const cleanup = () => {
-      handle.removeEventListener('pointerup', end);
-      handle.removeEventListener('pointercancel', cancel);
-      if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-    };
-    handle.addEventListener('pointerup', end, { once: true });
-    handle.addEventListener('pointercancel', cancel, { once: true });
-  }
-
   // Manage mode. The watchlist and favorites get it with their own endpoints in.
   const canManage = $derived(Boolean(actions?.manage) && data.list?.kind === 'personal');
   let transferBusy = $state(false);
@@ -624,6 +604,13 @@ const draggable = $derived(
     pageMeta.total === 1,
 );
   const duration = $derived(prefersReducedMotion.current ? 0 : 300);
+  const reorder = createDragReorder({
+    items: () => displayCards,
+    key: (item) => item.key,
+    selector: '[data-list-item]',
+    canDrag: () => !writing,
+    drop: (item, rank) => owner ? moveItem(item, rank) : manager.move(item, rank, { scroll: false }),
+  });
   const rankInputs: Record<number, RankInput> = $state({});
 
   // `m` toggles manage mode, except while typing or in a dialog.
@@ -941,17 +928,10 @@ const draggable = $derived(
         <CardShimmerRow columns={6} ratio="poster" />
       {:else if displayCards.length > 0}
         {#if !(owner && managing) && pageMeta?.type === 'paginated'}<Pagination meta={pageMeta} label="List pages" />{/if}
-        <div class="grid" {@attach manager.dragEvents}>
+        <div class="grid" {@attach reorder.attach}>
           <PosterGrid>
-            {#each displayCards as item (item.key)}
-              <div
-                data-list-item={item.key}
-                class={{
-                  dragging: manager.dragging?.key === item.key,
-                  'drop-target': manager.dragging && manager.dropRank === item.rank
-                }}
-                animate:flip={{ duration }}
-              >
+            {#each reorder.items as item (item.key)}
+              <div data-list-item={item.key} class={{ dragging: reorder.dragging === item.key }} animate:flip={{ duration }}>
                 <ListItemPoster
                   item={item}
                   sortBy={data.sort.by}
@@ -971,12 +951,15 @@ const draggable = $derived(
             {/each}
           </PosterGrid>
         </div>
+        {#if reorder.ghost}
+          <DragGhost ghost={reorder.ghost} {duration} onlanded={reorder.landed} poster={reorder.ghost.item.image} />
+        {/if}
         {#snippet edit(item: ListItemCard)}
           <RankInput bind:this={rankInputs[item.key]} name={item.title} rank={item.rank} busy={writing}
             onmove={(rank) => owner ? moveItem(item, rank) : manager.move(item, rank)} />
           <ListItemEdit name={item.title} rank={item.rank} total={owner && allItems ? allItems.length : data.total} notes={Boolean(item.notes)} draggable={owner ? data.sort.by === 'rank' : draggable}
             changeRank={data.sort.by !== 'rank'} busy={writing} onmove={(rank) => owner ? moveItem(item, rank) : manager.move(item, rank)}
-            ondrag={(event) => owner ? dragItem(item, event) : manager.startDrag(item, event)} onchangerank={() => rankInputs[item.key]?.focus()}
+            ondrag={(event) => reorder.start(item, event)} onchangerank={() => rankInputs[item.key]?.focus()}
             onremove={() => owner ? void removeItems([item]) : manager.remove(item)} onnotes={() => owner ? editNotes(item) : openNotes(item)} />
         {/snippet}
         {#if !(owner && managing) && pageMeta?.type === 'paginated'}<Pagination meta={pageMeta} label="List pages" />{/if}
@@ -1074,12 +1057,9 @@ const draggable = $derived(
     opacity: var(--opacity-list-manage-quick-icons);
   }
 
+  /* The dragged poster's place, faded until its copy lands. */
   .dragging {
     opacity: var(--list-reorder-drag-opacity);
-  }
-
-  .drop-target {
-    outline: var(--list-reorder-rank-border) solid var(--brand-primary);
   }
 
   /* With no pagination above them, the first posters sit 30px under the band. */

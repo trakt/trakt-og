@@ -413,6 +413,11 @@
   --transition-rank-edit: 0.15s ease;
   --list-reorder-scroll-offset: 50px;
   --list-reorder-drag-opacity: 0.5;
+  /* A dragged item's copy under the pointer, lifted off the page while the other items make room for it. */
+  --list-reorder-ghost-lift: scale(1.04) rotate(-1.5deg);
+  --color-list-reorder-ghost-bg: var(--color-surface);
+  --shadow-list-reorder-ghost: 0 12px 28px rgb(0 0 0 / 0.35);
+  --z-list-reorder-ghost: var(--z-dropdown);
 
   /* List page manage mode */
   --space-list-manage-actions: var(--space-list-title-actions); /* the manage icons, spaced as the title's own */

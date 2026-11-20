@@ -41,6 +41,8 @@ describe('toDashboardSettings', () => {
         socialFeed: false,
         recommendations: false,
       },
+      pins: [],
+      watchlist: { sort: null, hide: [] },
     });
   });
 

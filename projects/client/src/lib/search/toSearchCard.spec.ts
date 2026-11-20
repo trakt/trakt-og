@@ -182,7 +182,14 @@ describe('toSearchListRow', () => {
       kind: 'personal',
       href: '/users/preethi/lists/based-on-a-book',
       name: 'Based on a Book',
-      owner: { slug: 'preethi', name: 'preethi', href: '/users/preethi', avatar: undefined, vip: null },
+      owner: {
+        slug: 'preethi',
+        name: 'preethi',
+        username: 'preethi',
+        href: '/users/preethi',
+        avatar: undefined,
+        vip: null,
+      },
       posters: [
         {
           title: 'Based on a Book',

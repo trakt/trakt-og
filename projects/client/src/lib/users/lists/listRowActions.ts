@@ -1,4 +1,5 @@
 import type { ListRowActions } from '../../components/media/ListRowActions.ts';
+import { pinFor } from '../../dashboard/listPins.ts';
 import { listProgressHref } from '../../lists/listProgressHref.ts';
 import type { UserListRow } from './UserListRow.ts';
 
@@ -21,8 +22,12 @@ type ListRowActionsParams = {
 export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowActionsParams): ListRowActions {
   const owner = viewer?.slug === row.owner.slug;
   const { kind } = row;
+  const id = kind === 'smart' ? (row.smart?.slug ?? '') : (row.id ?? '');
+  const list =
+    viewer && pinFor({ list: { ...row, id, ownerSlug: row.owner.slug }, viewer: viewer.slug, owner: row.owner });
+  const pin = viewer && list && { pin: { viewer: viewer.slug, list } };
   if (kind === 'smart') {
-    return { ...(owner && { edit: {}, delete: {} }), shareUrl: `${origin}${row.href}` };
+    return { ...(owner && { edit: {}, delete: {} }), shareUrl: `${origin}${row.href}`, ...pin };
   }
   const progressHref = viewer
     ? listProgressHref({ list: { ...row, kind, ownerSlug: row.owner.slug }, viewerSlug: viewer.slug })
@@ -34,5 +39,6 @@ export function listRowActions({ row, viewer, isCollaborator, origin }: ListRowA
     ...(!owner && isCollaborator && { leave: {} }),
     ...(progressHref && { progressHref }),
     shareUrl: `${origin}${row.href}`,
+    ...pin,
   };
 }

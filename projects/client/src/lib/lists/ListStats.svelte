@@ -4,7 +4,8 @@
   Watched and Collected percentages with "2 / 10 items" in gray in their tooltips (signed in), the
   time to watch, then the items, the Like button and the comments button, as on a list row but with only their numbers.
   The whole-list numbers come in `stats`, a promise when the loader streams them; until then the bar shows the page's
-  item count, with shimmers for the percentages and the time.
+  item count, with shimmers for the percentages and the time. `progressOnly` keeps just the two percentages, for a
+  pinned list's panel on the dashboard.
     <ListStats itemCount={57} stats={data.stats} progress likeCount={3} comments={{ count: 1, href }} />
 -->
 <script lang="ts">
@@ -42,6 +43,8 @@ interface Props {
   stateOf?: typeof overlay.state;
   /** The one media type the list is filtered to: the item count takes its icon and name. */
   itemType?: MediaTypeIcon;
+  /** Watched and Collected alone. */
+  progressOnly?: boolean;
 }
 
 const {
@@ -53,6 +56,7 @@ const {
   comments,
   stateOf = overlay.state,
   itemType,
+  progressOnly = false,
 }: Props = $props();
 const itemStat = $derived(
   itemType
@@ -110,7 +114,9 @@ const number = (count: number) => count.toLocaleString('en-US');
       {@render percentage('Watched', pieSvg(watched.percent / 100), watched, total, 'watched')}
       {@render percentage('Collected', collectionThick, collected, total, 'collected')}
     {/if}
-    {#if resolved === undefined}
+    {#if progressOnly}
+      <!-- Only the percentages. -->
+    {:else if resolved === undefined}
       {@render counting(clock, 'var(--list-stat-shimmer-runtime-width)')}
     {:else if resolved && resolved.runtime > 0}
       <Tooltip text="Time to watch">
@@ -123,8 +129,8 @@ const number = (count: number) => count.toLocaleString('en-US');
         {/snippet}
       </Tooltip>
     {/if}
-    {@render count(itemStat.label, itemStat.svg, resolved?.count ?? itemCount, itemStat.word, 'items',
-      mediaTypeIconShift(itemType))}
+    {#if !progressOnly}{@render count(itemStat.label, itemStat.svg, resolved?.count ?? itemCount, itemStat.word, 'items',
+      mediaTypeIconShift(itemType))}{/if}
     <!-- Like and Comments, as the list rows' buttons with only their numbers: Comments opens the comments page. -->
     {#if likeCount !== undefined}
       {#if likeTarget}<span class="likes"><ListLikeButton {...likeTarget} count={likeCount} button /></span>

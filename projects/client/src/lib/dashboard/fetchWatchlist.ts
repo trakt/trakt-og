@@ -1,54 +1,45 @@
-import { canonicalSortBy, listItemSorts } from '../lists/listItemSorts.ts';
-import type { SortHow } from '../lists/ListQuery.ts';
-import { fetchListItems, usedListSort } from '../lists/loadListItems.ts';
-import { type ListItemCard, toListItemCard } from '../lists/toListItemCard.ts';
+import { fetchListItems } from '../lists/loadListItems.ts';
+import type { ListSort } from '../lists/resolveListSort.ts';
 import type { DatePreferences } from '../settings/DatePreferences.ts';
+import { type ListPanel, readPanelItems, toListPanel } from './toListPanel.ts';
 
 type FetchWatchlistParams = {
   fetch: typeof globalThis.fetch;
   /** Null from the browser, whose `viewerFetch` signs the request itself. */
   token: string | null;
   datePreferences: DatePreferences;
+  /** The panel's own sort. Left out, the watchlist's. */
+  sort?: ListSort | null;
+  /** The panel's hides, which read the whole watchlist. */
+  hide?: readonly string[];
 };
 
-export type DashboardWatchlist = {
-  readonly cards: readonly ListItemCard[];
-  /** Every item on the watchlist, for "All N items". */
-  readonly total: number;
-  /** The watchlist's own sort, as the worker applied it: "RT Tomatometer". */
-  readonly sortName: string;
-  readonly sortHow: SortHow;
-};
-
-/** OG's dashboard shows up to three rows of six. */
-const LIMIT = 18;
+export type DashboardWatchlist = ListPanel;
 
 /**
- * The viewer's watchlist panel: the first 18 items in the watchlist's own sort, which the worker applies
- * when the request names none and reports in `X-Sort-By` and `X-Sort-How`. The cards carry the list page's
- * sort-dependent lines.
+ * The viewer's watchlist panel: the first 18 items in the sort picked on the panel, or else the watchlist's own, which
+ * the worker applies when the request names none. While the panel hides some, the whole watchlist. The cards carry the
+ * list page's sort-dependent lines.
  */
 export async function fetchWatchlist({
   fetch,
   token,
   datePreferences,
+  sort,
+  hide = [],
 }: FetchWatchlistParams): Promise<DashboardWatchlist> {
-  const items = await fetchListItems({
-    fetch,
-    token,
-    base: '/users/me/watchlist',
-    query: { types: [], genres: [], page: 1, limit: LIMIT },
+  const { items, scope } = await readPanelItems({
+    read: (page, limit, by) =>
+      fetchListItems({
+        fetch,
+        token,
+        base: '/users/me/watchlist',
+        query: { types: [], genres: [], page, limit },
+        ...(by && { sort: by }),
+      }),
+    sort: sort ?? undefined,
+    hiding: hide.length > 0,
   });
   if (items.status !== 200) throw new Error(`The watchlist failed with ${items.status}`);
-
-  const used = usedListSort(items.headers);
-  const sortBy = used.by ?? 'rank';
-  const cards = items.rows.map((row) => toListItemCard(row, { sortBy, datePreferences }));
-
-  return {
-    cards,
-    total: Number(items.headers.get('x-pagination-item-count')) || cards.length,
-    sortName: listItemSorts.find(({ by }) => by === canonicalSortBy(sortBy))?.label ?? 'Rank',
-    sortHow: used.how === 'desc' ? 'desc' : 'asc',
-  };
+  return toListPanel({ items, sort: sort ?? undefined, scope, datePreferences });
 }

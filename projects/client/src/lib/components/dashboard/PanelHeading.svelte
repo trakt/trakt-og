@@ -22,14 +22,21 @@ interface Props {
   section?: boolean;
   /** On the right before the see-more link: a section's counts. */
   aside?: Snippet;
+  /** Makes the title a link: the list a list panel shows. */
+  titleHref?: string;
+  /** After the title: a pinned list's tags. */
+  tags?: Snippet;
 }
 
-const { id, title, icon, live = false, hot = false, seeMore, section = false, aside }: Props = $props();
+const { id, title, icon, live = false, hot = false, seeMore, section = false, aside, titleHref, tags }: Props = $props();
 </script>
 
+<!-- The panel builds the list's href. -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <div class={['heading', { section }]}>
   <h2 {id}>
-    <HeadingMark svg={icon} {live} {hot} />{title}
+    <HeadingMark svg={icon} {live} {hot} />{#if titleHref}<a class="title-link" href={titleHref}>{title}</a>{:else}{title}{/if}{#if tags}<span
+        class="tags">{@render tags()}</span>{/if}
   </h2>
   <div class="links">
     {@render aside?.()}
@@ -40,9 +47,10 @@ const { id, title, icon, live = false, hot = false, seeMore, section = false, as
 </div>
 
 <style>
+/* Centred on the title, with the margins above both alike, so the taller sort and eye line up with it. */
 .heading {
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--gutter);
 }
@@ -50,7 +58,32 @@ const { id, title, icon, live = false, hot = false, seeMore, section = false, as
 h2 {
   position: relative;
   isolation: isolate;
+  min-inline-size: 0;
   margin-block-end: 0;
+}
+
+.title-link {
+  color: inherit;
+  text-decoration: none;
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-link);
+  }
+}
+
+/* Spaced like a list page's tags beside its title, centred on the title's line rather than its lowercase letters. */
+h2:has(> .tags) {
+  display: flex;
+  align-items: center;
+}
+
+.tags {
+  display: inline-flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--list-title-pill-gap);
+  margin-inline-start: var(--list-title-pill-gap);
 }
 
 .links {

@@ -76,10 +76,8 @@ export function toDashboardSettings({
       startDay: prefs.upcoming_start_day,
       poster: prefs.upcoming_poster,
     },
+    watchlist: { sort: prefs.watchlist_sort, hide: prefs.watchlist_hide },
     recommendations: { type: prefs.recommendations_type, release: prefs.recommendations_release },
-    order: prefs.order,
-    hidden: Object.fromEntries(
-      dashboardPrefs.PANELS.map((panel) => [panel, prefs[dashboardPrefs.HIDE_KEYS[panel]]]),
-    ) as DashboardSettings['hidden'],
+    ...dashboardPrefs.layoutOf(prefs),
   };
 }

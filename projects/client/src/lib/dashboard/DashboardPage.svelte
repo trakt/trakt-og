@@ -22,16 +22,24 @@ import RecommendationsPanel from '#lib/components/dashboard/RecommendationsPanel
 import SocialFeedPanel from '#lib/components/dashboard/SocialFeedPanel.svelte';
 import WatchingNowPanel from '#lib/components/dashboard/WatchingNowPanel.svelte';
 import HotInNetworkPanel from '#lib/components/dashboard/HotInNetworkPanel.svelte';
+import PinnedListPanel from '#lib/components/dashboard/PinnedListPanel.svelte';
 import { api } from '#lib/api/api.ts';
 import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
 import type { RecapSpan } from '#lib/dashboard/RecapRibbon.ts';
-import { type DashboardPanel, dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { type DashboardLayout, type DashboardSection, dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { isPinKey, type ListPin, type PinKey, pinKey } from '#lib/dashboard/listPins.ts';
 import { SocialCircle } from '#lib/dashboard/socialCircle.svelte.ts';
+import { separatedPanels } from '#lib/dashboard/separatePanels.ts';
 import { fetchRecapSplit } from '#lib/dashboard/fetchRecapSplit.ts';
 import { fetchRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import { fetchSchedule } from '#lib/dashboard/fetchSchedule.ts';
 import { fetchRecentlyWatched } from '#lib/dashboard/fetchRecentlyWatched.ts';
 import { fetchUpNext } from '#lib/dashboard/fetchUpNext.ts';
+import { fetchPinnedList } from '#lib/dashboard/fetchPinnedList.ts';
+import { fetchPinnedListStats } from '#lib/dashboard/fetchPinnedListStats.ts';
+import { fetchWatchlist } from '#lib/dashboard/fetchWatchlist.ts';
+import type { ListSort } from '#lib/lists/resolveListSort.ts';
+import { type ListStats, toCardListStats } from '#lib/lists/toListStats.ts';
 import { lastActivities } from '#lib/activity/lastActivities.ts';
 import { cachedComputedStats } from '#lib/stats/cachedComputedStats.ts';
 import { fetchComputedStats } from '#lib/stats/fetchComputedStats.ts';
@@ -159,14 +167,86 @@ function loadRecommendations(picks: DashboardSettings['recommendations']) {
   return fetchRecommendations({ fetch: viewerFetch(), token: null, settings: picks });
 }
 
-// The panels' order and hide switches: the saved ones until the customize popup changes them. A change shows at once
-// and saves to this browser.
-let layout = $derived({ order: data.dashboard.order, hidden: data.dashboard.hidden });
-const shownPanels = $derived(layout.order.filter((panel) => !layout.hidden[panel]));
+// The sections' order, hide switches and pinned lists: the saved ones until the customize popup or a panel's tack
+// changes them. A change shows at once and saves to this browser.
+let layout = $derived<DashboardLayout>({
+  order: data.dashboard.order,
+  hidden: data.dashboard.hidden,
+  pins: data.dashboard.pins,
+});
+const shownPanels = $derived(layout.order.filter((section) => dashboardPrefs.isShown(layout, section)));
+const pinOf = (key: PinKey) => layout.pins.find((pin) => pinKey(pin) === key);
 
-function changeLayout(next: Pick<DashboardSettings, 'order' | 'hidden'>) {
+function changeLayout(next: DashboardLayout) {
   layout = next;
   dashboardPrefs.save(username, dashboardPrefs.withLayout(dashboardPrefs.load(username), next));
+}
+
+// The pinned lists the viewer can no longer see, which the popup marks, and each loaded one's whole-list read for its
+// percentages, read once per list: a new sort keeps it. A panel that read the whole list for its hides counts that.
+let gone = $state<ReadonlySet<PinKey>>(new Set());
+let pinStats = $state.raw<Readonly<Record<PinKey, Promise<ListStats | null>>>>({});
+$effect(() => {
+  for (const [key, read] of Object.entries(panels.pinned) as [PinKey, (typeof panels.pinned)[PinKey]][]) {
+    read?.then((list) => {
+      if (list.status === 'gone') gone = new Set([...gone, key]);
+      const pin = pinOf(key);
+      if (list.status !== 'loaded' || !pin || untrack(() => pinStats[key])) return;
+      const stats =
+        list.scope === 'whole'
+          ? Promise.resolve(toCardListStats(list.cards, { withItems: true }))
+          : fetchPinnedListStats({ fetch: viewerFetch(), pin, total: list.total });
+      pinStats = { ...pinStats, [key]: stats };
+    }, () => {});
+  }
+});
+
+// A sort or hides picked on a pinned list's panel: saved on the pin. A new sort reads that panel again, and so do hides
+// on a panel that only read its first items.
+function changePin(key: PinKey, change: Pick<ListPin, 'sort' | 'hide'>, reread: boolean) {
+  const pins = layout.pins.map((pin) => (pinKey(pin) === key ? { ...pin, ...change } : pin));
+  changeLayout({ ...layout, pins });
+  const pin = pins.find((entry) => pinKey(entry) === key);
+  if (!pin || !reread) return;
+  const list = fetchPinnedList({ fetch: viewerFetch(), pin, datePreferences: data.datePreferences });
+  panels = { ...panels, pinned: { ...panels.pinned, [key]: list } };
+}
+
+const sortPin = (key: PinKey, sort: ListSort) => changePin(key, { sort }, true);
+
+function hidePin(key: PinKey, hide: string[]) {
+  changePin(key, { hide: hide.length > 0 ? hide : undefined }, false);
+  if (hide.length === 0) return;
+  void panels.pinned[key]?.then(
+    (list) => list.status === 'loaded' && list.scope === 'first' && changePin(key, {}, true),
+    () => {},
+  );
+}
+
+// The same for the Watchlist panel, saved to this browser.
+let watchlistHide = $derived<readonly string[]>(data.dashboard.watchlist.hide);
+
+function readWatchlist() {
+  const watchlist = fetchWatchlist({
+    fetch: viewerFetch(),
+    token: null,
+    datePreferences: data.datePreferences,
+    sort: dashboardPrefs.load(username).watchlist_sort,
+    hide: watchlistHide,
+  });
+  panels = { ...panels, watchlist };
+}
+
+function sortWatchlist(sort: ListSort) {
+  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), watchlist_sort: sort });
+  readWatchlist();
+}
+
+function hideWatchlist(hide: string[]) {
+  watchlistHide = hide;
+  dashboardPrefs.save(username, { ...dashboardPrefs.load(username), watchlist_hide: hide });
+  if (hide.length === 0) return;
+  void panels.watchlist?.then((list) => list.scope !== 'whole' && list.scope !== 'tooLong' && readWatchlist(), () => {});
 }
 
 // Watching Now, Hot in Your Network and the Social Feed share the feed's reads, made once here.
@@ -182,12 +262,14 @@ const social = $derived(
 );
 $effect(() => social?.start());
 
-const readOf = (panel: DashboardPanel) =>
-  panel === 'watchingNow' || panel === 'hotInNetwork' ? panels.socialFeed : panels[panel];
+const readOf = (section: DashboardSection) => {
+  if (isPinKey(section)) return panels.pinned[section];
+  return section === 'watchingNow' || section === 'hotInNetwork' ? panels.socialFeed : panels[section];
+};
 
-// A panel hidden when the page loaded may never have read; once the popup closes with it on, load the dashboard again.
+// A section hidden when the page loaded may never have read; once the popup closes with it on, load the dashboard again.
 function loadShown() {
-  const unread = (panel: DashboardPanel) => data.dashboard.hidden[panel] && !layout.hidden[panel] && !readOf(panel);
+  const unread = (section: DashboardSection) => dashboardPrefs.isShown(layout, section) && !readOf(section);
   if (layout.order.some(unread)) void invalidateAll();
 }
 
@@ -223,16 +305,26 @@ let customizing = $state(false);
   {#if panels.recaps}<RecapRibbon recaps={panels.recaps} split={loadRecapSplit} />{/if}
 {/if}
 <DashboardInbox requests={data.requests} />
-<!-- In the viewer's order. A panel hidden when the page loaded comes back null. -->
+<!-- In the viewer's order. A panel hidden when the page loaded comes back null. Two of one color side by side are set
+     apart. -->
+<div class="panels" {@attach separatedPanels}>
 {#each shownPanels as panel (panel)}
-  {#if panel === 'upNext' && panels.upNext}
+  {@const pinned = isPinKey(panel) ? panels.pinned[panel] : null}
+  {@const pin = isPinKey(panel) ? pinOf(panel) : undefined}
+  {#if pinned && pin}
+    <PinnedListPanel {pin} list={pinned} stats={isPinKey(panel) ? (pinStats[panel] ?? null) : null}
+      datePreferences={data.datePreferences}
+      onsort={(sort) => isPinKey(panel) && sortPin(panel, sort)}
+      onhide={(hide) => isPinKey(panel) && hidePin(panel, hide)} />
+  {:else if panel === 'upNext' && panels.upNext}
     <UpNextPanel upNext={panels.upNext} {username} settings={data.dashboard.upNext} {welcome} />
   {:else if panel === 'schedule' && panels.schedule}
     <SchedulePanel schedule={panels.schedule} filter={data.dashboard.schedule.filter}
     movies={data.dashboard.schedule.movies}
     onpick={loadSchedule} />
   {:else if panel === 'watchlist' && panels.watchlist}
-    <WatchlistPanel watchlist={panels.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
+    <WatchlistPanel watchlist={panels.watchlist} {username} datePreferences={data.datePreferences} {welcome}
+      onsort={sortWatchlist} hide={watchlistHide} onhide={hideWatchlist} />
   {:else if panel === 'lastThirtyDays' && panels.lastThirtyDays}
     <LastThirtyDaysPanel stats={panels.lastThirtyDays} />
   {:else if panel === 'recentlyWatched' && panels.recentlyWatched}
@@ -250,5 +342,11 @@ let customizing = $state(false);
     onpick={loadRecommendations} />
   {/if}
 {/each}
-<DashboardCustomizer bind:open={customizing} order={layout.order} hidden={layout.hidden}
-  onchange={changeLayout} onclose={loadShown} />
+</div>
+<DashboardCustomizer bind:open={customizing} {layout} {gone} onchange={changeLayout} onclose={loadShown} />
+
+<style>
+.panels {
+  display: contents;
+}
+</style>

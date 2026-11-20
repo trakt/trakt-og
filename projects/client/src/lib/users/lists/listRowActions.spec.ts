@@ -31,10 +31,24 @@ describe('listRowActions', () => {
   it("should give a smart list's owner edit, delete and share, and no progress", () => {
     const smart = row({ kind: 'smart', id: null, href: '/users/owner/smart-lists/hbo' });
     const actions = listRowActions({ row: smart, viewer: { slug: 'owner' }, isCollaborator: false, origin });
-    expect(icons(actions)).toEqual(['delete', 'edit', 'shareUrl']);
+    expect(icons(actions)).toEqual(['delete', 'edit', 'pin', 'shareUrl']);
     expect(icons(listRowActions({ row: smart, viewer: { slug: 'other' }, isCollaborator: false, origin }))).toEqual([
+      'pin',
       'shareUrl',
     ]);
+  });
+
+  it("should pin someone else's list under its owner, and a smart list by its slug", () => {
+    const smart = row({ kind: 'smart', id: null, smart: { slug: 'hbo' } as UserListRow['smart'] });
+
+    expect(listRowActions({ row: row(), viewer: { slug: 'sean' }, isCollaborator: false, origin }).pin).toEqual({
+      viewer: 'sean',
+      list: { kind: 'personal', id: '42', owner: 'owner', name: 'Heist', by: 'owner' },
+    });
+    expect(listRowActions({ row: smart, viewer: { slug: 'owner' }, isCollaborator: false, origin }).pin).toEqual({
+      viewer: 'owner',
+      list: { kind: 'smart', id: 'hbo', owner: 'owner', name: 'Heist' },
+    });
   });
 
   it('should leave progress off an empty list', () => {
@@ -54,7 +68,7 @@ describe('listRowActions', () => {
       isCollaborator: false,
       origin,
     });
-    expect(icons(actions)).toEqual(['delete', 'edit', 'progressHref', 'shareUrl']);
+    expect(icons(actions)).toEqual(['delete', 'edit', 'pin', 'progressHref', 'shareUrl']);
     expect(actions.progressHref).toBe('/users/owner/progress?list=42');
   });
 
@@ -74,6 +88,7 @@ describe('listRowActions', () => {
     const viewer = { slug: 'friend' };
     expect(icons(listRowActions({ row: row(), viewer, isCollaborator: true, origin }))).toEqual([
       'leave',
+      'pin',
       'progressHref',
       'shareUrl',
     ]);

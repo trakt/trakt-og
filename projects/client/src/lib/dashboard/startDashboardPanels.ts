@@ -6,6 +6,8 @@ import type { DatePreferences } from '../settings/DatePreferences.ts';
 import type { ViewerSettings } from '../settings/ViewerSettings.ts';
 import type { DashboardSettings } from './DashboardSettings.ts';
 import { fetchLastThirtyDays } from './fetchLastThirtyDays.ts';
+import { fetchPinnedList, type PinnedList } from './fetchPinnedList.ts';
+import { type PinKey, pinKey } from './listPins.ts';
 import { fetchRecapRibbon } from './fetchRecapRibbon.ts';
 import { fetchRecentlyWatched } from './fetchRecentlyWatched.ts';
 import { fetchRecommendations } from './fetchRecommendations.ts';
@@ -41,6 +43,13 @@ export const PENDING = new Promise<never>(() => {});
 
 const unless = <T>(hidden: boolean, load: () => Promise<T>) => (hidden ? null : load());
 
+/** Each pinned list's read by its key, null for a hidden one. */
+const eachPin = (
+  pins: DashboardSettings['pins'],
+  load: (pin: DashboardSettings['pins'][number]) => Promise<PinnedList>,
+): DashboardPanels['pinned'] =>
+  Object.fromEntries(pins.map((pin) => [pinKey(pin), unless(!!pin.hidden, () => load(pin))]));
+
 /** The feed backs Watching Now and Hot in Your Network too, so it's off only when all three are, or for a Standard app,
  * whose client may not read it. */
 const socialOff = ({ socialFeed, watchingNow, hotInNetwork }: DashboardSettings['hidden']) =>
@@ -50,7 +59,7 @@ const socialOff = ({ socialFeed, watchingNow, hotInNetwork }: DashboardSettings[
  * Starts every visible panel's read, from the browser with the viewer's own token. Up Next, Recently Watched, Last 30
  * Days, the recaps and the watchlist show their saved read at once, then check `last_activities` and hand a fresh read to
  * `onUpdate` if your activity moved; the Social Feed, the schedule and the recommendations depend on other people or
- * the calendar, so they always read. A hidden panel comes back null and makes no request.
+ * the calendar, and pinned lists change under their owners, so they always read. A hidden panel comes back null and makes no request.
  */
 export function startDashboardPanels({
   fetch,
@@ -105,14 +114,17 @@ export function startDashboardPanels({
     schedule: unless(hidden.schedule, () =>
       fetchSchedule({ fetch, token: null, settings, datePreferences, schedule: dashboard.schedule, now }),
     ),
+    // A watchlist read whole for its hides is too big to keep, so it reads fresh.
     watchlist: unless(hidden.watchlist, () =>
-      cached(
-        'watchlist',
-        'watchlist',
-        MAX_AGE_MS,
-        (latest) => watchlistKey(latest, datePreferences),
-        () => fetchWatchlist({ fetch, token: null, datePreferences }),
-      ),
+      dashboard.watchlist.hide.length > 0
+        ? fetchWatchlist({ fetch, token: null, datePreferences, ...dashboard.watchlist })
+        : cached(
+            'watchlist',
+            'watchlist',
+            MAX_AGE_MS,
+            (latest) => [watchlistKey(latest, datePreferences), dashboard.watchlist.sort],
+            () => fetchWatchlist({ fetch, token: null, datePreferences, sort: dashboard.watchlist.sort }),
+          ),
     ),
     lastThirtyDays: unless(hidden.lastThirtyDays, () =>
       cached(
@@ -146,12 +158,13 @@ export function startDashboardPanels({
     recommendations: unless(hidden.recommendations, () =>
       fetchRecommendations({ fetch, token: null, settings: dashboard.recommendations, now }),
     ),
+    pinned: eachPin(dashboard.pins, (pin) => fetchPinnedList({ fetch, pin, datePreferences })),
   };
 }
 
 /** Every visible panel still waiting, so the server renders each placeholder and the browser hydrates the same. */
 export const pendingDashboardPanels = ({
-  dashboard: { hidden },
+  dashboard: { hidden, pins },
   welcome,
 }: Pick<Params, 'dashboard' | 'welcome'>): DashboardPanels => ({
   recaps: welcome ? null : PENDING,
@@ -162,6 +175,7 @@ export const pendingDashboardPanels = ({
   recentlyWatched: unless(hidden.recentlyWatched, () => PENDING),
   socialFeed: unless(socialOff(hidden), () => PENDING),
   recommendations: unless(hidden.recommendations, () => PENDING),
+  pinned: eachPin(pins, () => PENDING),
 });
 
 /** The panels' promises, each null for a hidden panel. */
@@ -174,6 +188,8 @@ export type DashboardPanels = {
   recentlyWatched: ReturnType<typeof fetchRecentlyWatched> | null;
   socialFeed: ReturnType<typeof fetchSocialFeed> | null;
   recommendations: ReturnType<typeof fetchRecommendations> | null;
+  /** Each pinned list's read, by its key. */
+  pinned: Readonly<Record<PinKey, Promise<PinnedList> | null>>;
 };
 
 type CachedPanel = 'recaps' | 'upNext' | 'watchlist' | 'lastThirtyDays' | 'recentlyWatched';

@@ -17,6 +17,8 @@ export interface UserListRow {
   readonly owner: {
     readonly slug: string;
     readonly name: string;
+    /** Left out where only the display name is known. */
+    readonly username?: string;
     readonly href: string;
     readonly avatar: string;
     readonly vip: VipBadge | null;

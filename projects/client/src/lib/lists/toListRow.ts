@@ -48,6 +48,8 @@ export interface ListRow {
   readonly owner: {
     readonly slug: string;
     readonly name: string;
+    /** Left out where only the display name is known. */
+    readonly username?: string;
     readonly href: string;
     readonly avatar: string;
     readonly vip: VipBadge | null;
@@ -105,6 +107,7 @@ export function toListRow(list: ListRowSource): ListRow {
     owner: {
       slug: ownerSlug,
       name: list.user.name?.trim() || list.user.username,
+      username: list.user.username,
       href: `/users/${ownerSlug}`,
       avatar: list.user.ids.trakt ? userAvatar(list.user.ids.trakt) : PLACEHOLDER_AVATAR,
       vip: toVipBadge(list.user),

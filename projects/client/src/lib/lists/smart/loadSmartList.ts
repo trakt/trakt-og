@@ -40,6 +40,7 @@ type ItemsParams = {
   slug: string;
   sort: { by: string; how: string };
   page: number;
+  limit?: number;
 };
 
 // A smart list's items have no list item id or listed date; their rank stands in for the id, so they read like a list's.
@@ -47,8 +48,9 @@ const smartRowsSchema = z
   .array(z.looseObject({ rank: z.number() }))
   .transform((rows) => listItemRowsSchema.parse(rows.map((row) => ({ ...row, id: row.rank, listed_at: '' }))));
 
-async function fetchItems({ fetch, token, slug, sort, page }: ItemsParams) {
-  const search = new URLSearchParams({ extended: 'full', page: `${page}`, limit: `${PER_PAGE}` });
+/** A page of the titles a smart list holds today, in the sort. */
+export async function fetchSmartListItems({ fetch, token, slug, sort, page, limit = PER_PAGE }: ItemsParams) {
+  const search = new URLSearchParams({ extended: 'full', page: `${page}`, limit: `${limit}` });
   const path = `/smart-lists/${encodeURIComponent(slug)}/items/all/${sort.by}/${sort.how}?${search}`;
   const response = await rawApiFetch({ fetch, token, path });
   if (!response.ok) return { status: response.status, headers: response.headers, rows: [] };
@@ -76,7 +78,9 @@ export async function loadSmartList({ fetch, locals, params, url, parent }: Para
         }),
       ).then((response) => response ?? { status: 204 as const }),
     ),
-    withViewer(token, (viewer) => fetchItems({ fetch, token: viewer, slug: params.slug, sort, page: query.page })),
+    withViewer(token, (viewer) =>
+      fetchSmartListItems({ fetch, token: viewer, slug: params.slug, sort, page: query.page }),
+    ),
     parent(),
   ]);
   if (profile.isLocked || [204, 401, 403, 404].includes(summary.status)) {

@@ -34,6 +34,9 @@ describe('dashboardPrefs', () => {
         'socialFeed',
         'recommendations',
       ],
+      watchlist_sort: null,
+      watchlist_hide: [],
+      pins: [],
       hide_first_night: false,
     });
   });
@@ -93,13 +96,72 @@ describe('dashboardPrefs', () => {
       (typeof order)[number],
       boolean
     >;
-    const moved = dashboardPrefs.withLayout(dashboardPrefs.defaults, { order: ['recommendations', ...order], hidden });
+    const moved = dashboardPrefs.withLayout(dashboardPrefs.defaults, {
+      order: ['recommendations', ...order],
+      hidden,
+      pins: [],
+    });
 
     expect(JSON.parse(dashboardPrefs.write(undefined, 'sean', moved))).toEqual({
       sean: { hide_list: true, order: ['recommendations', ...order.filter((panel) => panel !== 'recommendations')] },
     });
-    const back = dashboardPrefs.withLayout(moved, { order, hidden: { ...hidden, watchlist: false } });
+    const back = dashboardPrefs.withLayout(moved, { order, hidden: { ...hidden, watchlist: false }, pins: [] });
     expect(dashboardPrefs.write(undefined, 'sean', back)).toBe('{}');
+  });
+
+  describe('pinned lists', () => {
+    const smart = { kind: 'smart', id: 'sci-fi', owner: 'sean', name: 'Sci-fi' } as const;
+    const friend = { kind: 'personal', id: '12', owner: 'justin', name: 'Criterion', by: 'Justin' } as const;
+    const layout = dashboardPrefs.layoutOf(dashboardPrefs.defaults);
+
+    it('should pin a list first and keep it in the order', () => {
+      const pinned = dashboardPrefs.pin(layout, smart);
+
+      expect(pinned?.pins).toEqual([smart]);
+      expect(pinned?.order.at(0)).toBe('pin:smart:sean:sci-fi');
+    });
+
+    it('should refresh a pinned list without moving or showing it', () => {
+      const pinned = dashboardPrefs.pin(dashboardPrefs.pin(layout, friend) ?? layout, smart) ?? layout;
+      const hidden = { ...pinned, pins: pinned.pins.map((pin) => ({ ...pin, hidden: pin.id === '12' })) };
+      const renamed = dashboardPrefs.pin(hidden, { ...friend, name: 'Criterion Essentials' });
+
+      expect(renamed?.order).toEqual(hidden.order);
+      expect(renamed?.pins.at(1)).toEqual({ ...friend, name: 'Criterion Essentials', hidden: true });
+      expect(renamed && dashboardPrefs.isShown(renamed, 'pin:personal:justin:12')).toBe(false);
+    });
+
+    it('should stop at five pins', () => {
+      const full = [1, 2, 3, 4, 5].reduce(
+        (next, id) => dashboardPrefs.pin(next, { ...friend, id: `${id}` }) ?? next,
+        layout,
+      );
+
+      expect(full.pins).toHaveLength(5);
+      expect(dashboardPrefs.pin(full, smart)).toBeNull();
+    });
+
+    it('should unpin a list from the pins and the order', () => {
+      const pinned = dashboardPrefs.pin(layout, smart) ?? layout;
+
+      expect(dashboardPrefs.unpin(pinned, 'pin:smart:sean:sci-fi')).toEqual(layout);
+    });
+
+    it('should round trip pins through the cookie and drop order entries for lists no longer pinned', () => {
+      const pinned = dashboardPrefs.pin(layout, smart) ?? layout;
+      const cookie = dashboardPrefs.write(
+        undefined,
+        'sean',
+        dashboardPrefs.withLayout(dashboardPrefs.defaults, pinned),
+      );
+      const read = dashboardPrefs.read(cookie, 'sean');
+
+      expect(read.pins).toEqual([smart]);
+      expect(read.order).toEqual(pinned.order);
+      expect(dashboardPrefs.read('{"sean":{"order":["pin:smart:x:y"]}}', 'sean').order).toEqual(
+        dashboardPrefs.defaults.order,
+      );
+    });
   });
 
   it('should round trip the recommendations release and fall back to Out Now', () => {

@@ -46,7 +46,14 @@ export function toBuiltInRow({ kind, profile, items, itemCount }: BuiltInRowPara
     kind,
     href: `${href}/${kind}`,
     name: kind === 'watchlist' ? 'Watchlist' : 'Favorites',
-    owner: { slug: profile.slug, name: profile.displayName, href, avatar: profile.avatarUrl, vip: profile.vip },
+    owner: {
+      slug: profile.slug,
+      name: profile.displayName,
+      username: profile.username,
+      href,
+      avatar: profile.avatarUrl,
+      vip: profile.vip,
+    },
     posters: items.slice(0, 5).map(poster),
     itemCount,
     moviesOnly: listMoviesOnly(

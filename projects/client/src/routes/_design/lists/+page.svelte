@@ -15,6 +15,8 @@ import BuiltInListDialog from '#lib/components/lists/BuiltInListDialog.svelte';
 import NewListDialog from '#lib/components/lists/NewListDialog.svelte';
 import SmartListDialog from '#lib/components/lists/SmartListDialog.svelte';
 import ListNotice from '#lib/components/lists/ListNotice.svelte';
+import { PLACEHOLDER_AVATAR } from '#lib/users/placeholderAvatar.ts';
+import ListOwnerTag from '#lib/components/lists/ListOwnerTag.svelte';
 import ListTag from '#lib/components/lists/ListTag.svelte';
 import ListTitleRow from '#lib/components/lists/ListTitleRow.svelte';
 import ShareButton from '#lib/components/share/ShareButton.svelte';
@@ -22,6 +24,8 @@ import Icon from '#lib/icons/Icon.svelte';
 import barsProgress from '#lib/icons/regular/bars-progress.svg?raw';
 import filtersIcon from '#lib/icons/regular/filters.svg?raw';
 import pencilIcon from '#lib/icons/regular/pen.svg?raw';
+import thumbtackOutline from '#lib/icons/regular/thumbtack.svg?raw';
+import thumbtack from '#lib/icons/solid/thumbtack.svg?raw';
 import ListItemEdit from '#lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '#lib/components/lists/ListReorderControls.svelte';
 import RankInput from '#lib/components/lists/RankInput.svelte';
@@ -169,15 +173,16 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="List tags"
-  note="How the viewer knows the owner (Friend, Following), then the list's status, tinted in its color: on a list row across from its name, and on a list page beside its title. Link and Me explain themselves in a tooltip.">
+  note="How the viewer knows the owner (Friend, Following), then the list's status, tinted in its color: on a list row across from its name, and on a list page beside its title. Link and Me explain themselves in a tooltip. Last, the owner's tag on someone else's pinned list, their avatar in the icon's place.">
   <div class="buttons">
     <ListTag relation="friend" /><ListTag relation="following" />
     {#each ['Private', 'Following', 'Official List', 'Smart', 'Link', 'Me'] as tag (tag)}<ListTag {tag} />{/each}
+    <ListOwnerTag username="sean" avatar={PLACEHOLDER_AVATAR} />
   </div>
 </Specimen>
 
 <Specimen title="List title row" bleed
-  note="A list page's title row, on a list and a smart list alike: the name and its tags, then the viewer's icons and outline buttons. Under 992px the buttons keep only their icons. A list with no description gets a rule in the description band's color under it.">
+  note="A list page's title row, on a list and a smart list alike: the name and its tags, then the viewer's icons and outline buttons. Under 992px the buttons keep only their icons. A list with no description gets a rule in the description band's color under it. Pin, after Share, puts the list on the dashboard; pinned, it fills orange and reads Pinned.">
   <div class="states">
     <Variant label="The owner's list, no description">
       <ListTitleRow id="demo-list-title" name="Heist Night" href="/users/og_tester/lists/heist-night" ruled>
@@ -185,6 +190,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
         {#snippet actions()}
           <button type="button" class="action edit" aria-label="Edit"><Icon svg={pencilIcon} /></button>
           <span class="share"><ShareButton url="https://og.trakt.tv/users/og_tester/lists/heist-night" title="Heist Night" large={false} /></span>
+          <button type="button" class="action pin" aria-label="Pin to dashboard" aria-pressed="false"><Icon svg={thumbtackOutline} /><span class="action-text">Pin</span></button>
           <a class="action progress" href="/users/og_tester/progress"><Icon svg={barsProgress} /><span class="action-text">Progress</span></a>
         {/snippet}
       </ListTitleRow>
@@ -198,6 +204,7 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
         {#snippet actions()}
           <button type="button" class="action edit" aria-label="Edit"><Icon svg={pencilIcon} /></button>
           <span class="share"><ShareButton url="https://og.trakt.tv/users/og_tester/smart-lists/hbo-dramas" title="HBO Dramas" large={false} /></span>
+          <button type="button" class="action pin active" aria-label="Pin to dashboard" aria-pressed="true"><Icon svg={thumbtack} /><span class="action-text">Pinned</span></button>
           <a class="action" href="/shows/trending"><Icon svg={filtersIcon} /><span class="action-text">Open on Trending</span></a>
         {/snippet}
       </ListTitleRow>

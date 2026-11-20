@@ -35,6 +35,7 @@ describe('toListRow', () => {
       owner: {
         slug: 'sean',
         name: 'Sean',
+        username: 'sean',
         href: '/users/sean',
         avatar: 'https://media.trakt.tv/users/3/avatar.webp',
         vip: null,

@@ -1,8 +1,8 @@
 <script lang="ts">
 import DashboardCustomizer from '#lib/components/dashboard/DashboardCustomizer.svelte';
 import DashboardGreeting from '#lib/components/dashboard/DashboardGreeting.svelte';
-import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
-import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { type DashboardLayout, dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { pinKey } from '#lib/dashboard/listPins.ts';
 import DemoButton from '#lib/design/DemoButton.svelte';
 import RecapRibbon from '#lib/components/dashboard/RecapRibbon.svelte';
 import RecapSplitTip from '#lib/components/dashboard/RecapSplitTip.svelte';
@@ -134,14 +134,24 @@ const inboxes = [
   { label: 'Six, folded into the summary line', requests: sample.requests },
 ];
 
-// A member who moved Recommendations to the top and hid Last 30 Days.
+// A member who moved Recommendations to the top, hid Last 30 Days and pinned three lists: their own smart list, a
+// friend's list and one they can no longer see.
+const pins: DashboardLayout['pins'] = [
+  { kind: 'smart', id: 'unwatched-90s-sci-fi', owner: 'sean', name: "90s sci-fi I haven't seen" },
+  { kind: 'personal', id: '1234', owner: 'justin', name: 'Criterion Essentials', by: 'justin' },
+  { kind: 'personal', id: '5678', owner: 'gone', name: 'Horror Marathon', by: 'someone' },
+];
 let customizing = $state(false);
-let layout = $state<Pick<DashboardSettings, 'order' | 'hidden'>>({
-  order: ['recommendations', ...dashboardPrefs.defaults.order.filter((panel) => panel !== 'recommendations')],
-  hidden: Object.fromEntries(
-    dashboardPrefs.defaults.order.map((panel) => [panel, panel === 'lastThirtyDays']),
-  ) as DashboardSettings['hidden'],
-});
+let layout = $state<DashboardLayout>(
+  dashboardPrefs.arrange({
+    order: ['recommendations', ...dashboardPrefs.defaults.order.filter((panel) => panel !== 'recommendations')],
+    hidden: Object.fromEntries(
+      dashboardPrefs.PANELS.map((panel) => [panel, panel === 'lastThirtyDays']),
+    ) as DashboardLayout['hidden'],
+    pins,
+  }),
+);
+const gone = new Set([pinKey(pins[2] as DashboardLayout['pins'][number])]);
 </script>
 
 <Specimen title="Greeting and recap ribbon" bleed
@@ -161,10 +171,9 @@ let layout = $state<Pick<DashboardSettings, 'order' | 'hidden'>>({
 </Specimen>
 
 <Specimen title="Customize your dashboard"
-  note="Opened from the greeting's pencil. Drag a grip, or focus it and use the up and down arrows, to move a section; click a section to show or hide it. On the dashboard each change shows behind the popup and saves to the browser; Reset puts back OG's order with everything on.">
+  note="Opened from the greeting's pencil. Drag a grip, or focus it and use the up and down arrows, to move a section; click a section to show or hide it. A pinned list keeps to one line: its name, cut short when long, then its tags and owner (or No longer available) on the right, and the orange tack in the grip's place unpins it. On the dashboard each change shows behind the popup and saves to the browser; Reset puts back OG's order with everything on.">
   <DemoButton onclick={() => (customizing = true)}>Open</DemoButton>
-  <DashboardCustomizer bind:open={customizing} order={layout.order} hidden={layout.hidden}
-    onchange={(next) => (layout = next)} />
+  <DashboardCustomizer bind:open={customizing} {layout} {gone} onchange={(next) => (layout = next)} />
 </Specimen>
 
 <Specimen title="Recaps in January" bleed note="In January the strip shows last year under its Year in Review.">

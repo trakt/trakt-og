@@ -28,6 +28,7 @@ describe('itemListRowActions', () => {
       delete: {},
       progressHref: '/users/sean/progress?list=7',
       shareUrl: 'https://og.trakt.tv/users/sean/lists/heist-night',
+      pin: { viewer: 'sean', list: { kind: 'personal', id: '7', owner: 'sean', name: 'Heist Night' } },
     });
   });
 

@@ -1,3 +1,5 @@
+import type { ListPin } from '../../dashboard/listPins.ts';
+
 /** A row icon. Left without `onclick`, it renders as OG's icon but is marked unavailable until its issue wires it. */
 type ListRowAction = { readonly onclick?: () => void; readonly warning?: string; readonly busy?: boolean };
 
@@ -18,4 +20,6 @@ export interface ListRowActions {
   readonly chart?: { readonly href: string; readonly label: string };
   /** The absolute URL the share icon shares. */
   readonly shareUrl?: string;
+  /** Signed in: Pin to dashboard, for the viewer's dashboard. */
+  readonly pin?: { readonly viewer: string; readonly list: Omit<ListPin, 'hidden'> };
 }

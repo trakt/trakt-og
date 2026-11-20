@@ -7,7 +7,7 @@ import type { UserListRow } from './UserListRow.ts';
 
 type Params = {
   list: SmartList;
-  profile: Pick<ProfileUser, 'slug' | 'displayName' | 'avatarUrl' | 'vip'>;
+  profile: Pick<ProfileUser, 'slug' | 'username' | 'displayName' | 'avatarUrl' | 'vip'>;
   /** Its 1-based place in the order the API sent. */
   rank: number;
 };
@@ -27,7 +27,14 @@ export function toSmartListRow({ list, profile, rank }: Params): UserListRow {
     smart: list,
     href: smartListPath(profile.slug, list.slug),
     name: list.name,
-    owner: { slug: profile.slug, name: profile.displayName, href, avatar: profile.avatarUrl, vip: profile.vip },
+    owner: {
+      slug: profile.slug,
+      name: profile.displayName,
+      username: profile.username,
+      href,
+      avatar: profile.avatarUrl,
+      vip: profile.vip,
+    },
     posters: list.posters.slice(0, 5).map((path) => ({ image: imageUrl(path, 'thumb') })),
     itemCount: 0,
     pills: ['Smart', ...PILLS[list.privacy]],

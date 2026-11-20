@@ -1,10 +1,11 @@
 import type { ListRowActions } from '../components/media/ListRowActions.ts';
+import { pinFor } from '../dashboard/listPins.ts';
 import { listProgressHref } from '../lists/listProgressHref.ts';
 import type { SummaryList } from '../summary/toSummaryList.ts';
 
 /** What the icons read off a row: a summary's, a lists page's or a search result's. */
-export type ActionList = Pick<SummaryList, 'id' | 'kind' | 'href' | 'moviesOnly'> & {
-  readonly owner: { readonly slug: string };
+export type ActionList = Pick<SummaryList, 'id' | 'kind' | 'href' | 'name' | 'moviesOnly'> & {
+  readonly owner: { readonly slug: string; readonly username?: string; readonly avatar?: string };
   readonly itemCount?: number;
 };
 
@@ -26,11 +27,15 @@ export function itemListRowActions({ list, viewer, origin }: Params): ListRowAct
   const progressHref = viewer
     ? listProgressHref({ list: { ...list, ownerSlug: list.owner.slug }, viewerSlug: viewer.slug })
     : undefined;
+  const pinned =
+    viewer && pinFor({ list: { ...list, ownerSlug: list.owner.slug }, viewer: viewer.slug, owner: list.owner });
+  const pin = viewer && pinned && { viewer: viewer.slug, list: pinned };
 
   return {
     ...(owner && list.kind !== 'official' && { edit: {} }),
     ...(owner && list.kind === 'personal' && { delete: {} }),
     ...(progressHref && { progressHref }),
     shareUrl: `${origin}${list.href}`,
+    ...(pin && { pin }),
   };
 }

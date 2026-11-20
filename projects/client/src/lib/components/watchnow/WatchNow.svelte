@@ -61,7 +61,10 @@ const under = $derived(
       </span>
     </button>
   </div>
-  <WatchNowDialog bind:open {button} {title} {year} {fanart} />
+  <!-- A new item, like the next episode on the same route, gets a fresh dialog that loads its own links. -->
+  {#key button.path}
+    <WatchNowDialog bind:open {button} {title} {year} {fanart} />
+  {/key}
 {/if}
 
 <style>

@@ -382,6 +382,9 @@
 
   /* List row pills and icons */
   --color-list-edit: var(--color-action-edit);
+  --color-list-pin: var(--brand-seventh); /* Pin to dashboard: the outline tack */
+  --color-list-pin-on: color-mix(in srgb, var(--brand-seventh) 85%, #000); /* pinned: the filled button, under white */
+  --color-list-pin-on-hover: color-mix(in srgb, var(--brand-seventh) 72%, #000);
   --color-list-delete: var(--color-action-delete);
   --color-list-progress: light-dark(#555, #eee);
   --color-list-open-chart: var(--color-list-chip-smart); /* a smart list row's Open on its chart: the Smart tag's */
@@ -446,6 +449,7 @@
   /* List page */
   --list-title-padding: 4px 0 6px; /* .subnav-wrapper.list-title-wrapper */
   --list-title-heading-margin: 10px 0; /* .subnav-wrapper .left h2 */
+  --list-owner-tag-avatar: 14px; /* ListOwnerTag: the owner's avatar in the icon's place */
   --list-title-pill-gap: var(--comment-tags-gap); /* the tags beside a list's title, spaced like a list row's */
   --list-grid-offset: 10px; /* on top of the poster grid's 20px: 30px from the band above to the first posters */
   --list-description-padding: 14px 16px; /* the title row's: its 4px 0 6px padding plus the heading's 10px margins */
@@ -530,8 +534,8 @@
 
   /* Dashboard panels */
   --color-panel-gray: light-dark(#e5e5e5, #1d1d1d); /* #ondeck-wrapper */
+  --color-panel-rule: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1)); /* between two panels of one color */
   --color-watchlist-bg: light-dark(#e5e5e5, var(--dk-bg3)); /* body.dashboard #list-wrapper */
-  --watchlist-shimmer-sort-width: 160px; /* "Sorted by" and the sort's name, until the watchlist lands */
   /* dark-knight's `section > .container > .posters` and `#recently-watched-wrapper` quick-icon bars */
   --color-panel-quick-icons: light-dark(#1d1d1d, var(--dk-bg2));
   --color-help-text: light-dark(#777, #999);
@@ -2983,7 +2987,7 @@
   --radius-comment-bubble-round: var(--radius-container); /* the comment's bubble, every corner alike */
   --comment-bubble-padding-nested: 9px 13px;
   --comment-chip-height: var(--list-card-chip-height);
-  --comment-chip-padding: 9px;
+  --comment-chip-padding: 7px;
   --color-comment-chip-review: var(--brand-secondary);
   --color-comment-chip-spoiler: var(--color-list-chip-private);
   --color-comment-chip-rated: var(--brand-primary);

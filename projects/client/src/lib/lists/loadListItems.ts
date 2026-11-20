@@ -54,30 +54,35 @@ export function urlListSort(query: ListQuery): ListSort | undefined {
 // The worker's largest page, and enough of them for a VIP's 5,000-item watchlist (`TRAKT_WATCHLIST_ITEM_LIMIT_VIP`).
 export const STATS_PAGE = 250;
 export const MAX_STATS_PAGES = 20;
-const MAX_WHOLE_LIST = STATS_PAGE * MAX_STATS_PAGES;
+export const MAX_WHOLE_LIST = STATS_PAGE * MAX_STATS_PAGES;
 export const RANKED: ListSort = { by: 'rank', how: 'asc' };
 
-const itemCount = (items: ListItems) => Number(items.headers.get('x-pagination-item-count')) || items.rows.length;
+export const itemCount = (items: ListItems) =>
+  Number(items.headers.get('x-pagination-item-count')) || items.rows.length;
 const tooLongToHide = (items: ListItems) => items.status === 200 && itemCount(items) > MAX_WHOLE_LIST;
 
-const shuffled = <T>(rows: readonly T[]) =>
+export const shuffled = <T>(rows: readonly T[]) =>
   rows
     .map((row) => ({ row, at: Math.random() }))
     .sort((a, b) => a.at - b.at)
     .map(({ row }) => row);
 
 /**
- * Every item that matches the filters, in one sort, for the page to sort or hide in the browser: the worker's first
- * page says how many more to read at once. Past the stats bar's cap, the rest are left off.
+ * Every page of a read at the worker's largest size: the first page, read here unless given, says how many more to read
+ * at once. Past the stats bar's cap, the rest are left off.
  */
-async function fetchWholeList({ query, sort, ...request }: ItemsRequest & { sort: ListSort }): Promise<ListItems> {
-  const read = (page: number) => fetchListItems({ ...request, query: { ...query, page, limit: STATS_PAGE }, sort });
-  const first = await read(1);
+export async function readAllPages(read: (page: number) => Promise<ListItems>, first?: ListItems): Promise<ListItems> {
+  first ??= await read(1);
   const pages = Math.min(Math.ceil(itemCount(first) / STATS_PAGE), MAX_STATS_PAGES);
   if (first.status !== 200 || pages <= 1) return first;
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => read(i + 2)));
   const failed = rest.find(({ status }) => status !== 200);
   return failed ?? { ...first, rows: [...first.rows, ...rest.flatMap(({ rows }) => rows)] };
+}
+
+/** Every item that matches the filters, in one sort, for the page to sort or hide in the browser. */
+function fetchWholeList({ query, sort, ...request }: ItemsRequest & { sort: ListSort }): Promise<ListItems> {
+  return readAllPages((page) => fetchListItems({ ...request, query: { ...query, page, limit: STATS_PAGE }, sort }));
 }
 
 type LoadListItemsParams = {

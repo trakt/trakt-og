@@ -1,15 +1,27 @@
 <!--
   The dashboard's customize popup, in the header link picker's look: an art header with how many sections show, then
-  every movable panel as one tile per row. A tile turns its panel on or off (bold and washed red with a red check when
-  on). Drag a row's grip, or focus it and use the arrow keys, to move it. The dashboard behind changes as you go and
-  each change is already saved; Reset puts back OG's order with every panel on.
+  every movable panel and pinned list as one tile per row. A tile turns its section on or off (bold and washed red with a
+  red check when on). A pinned list's tile cuts its name short with an ellipsis and sets its owner and tags (Smart,
+  Official List, and the owner's avatar and username on someone else's) on the right, or says it's no longer available; its orange tack after the tile
+  unpins it, and while any list is pinned every tile leaves that room, so they all end in line. Drag a row's grip, or focus it and use the
+  arrow keys, to move it. The dashboard behind changes as you go and each change is already saved; Reset puts back
+  OG's order with every section on, pinned lists first.
 -->
 <script lang="ts">
 import { chipDropIndex } from '#lib/components/header/chipDropIndex.ts';
 import Dialog from '#lib/components/dialog/Dialog.svelte';
 import DialogArtHeader from '#lib/components/dialog/DialogArtHeader.svelte';
-import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
-import { type DashboardPanel, dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import ListOwnerTag from '#lib/components/lists/ListOwnerTag.svelte';
+import ListTag from '#lib/components/lists/ListTag.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
+import {
+  type DashboardLayout,
+  type DashboardPanel,
+  type DashboardSection,
+  dashboardPrefs,
+} from '#lib/dashboard/dashboardPrefs.ts';
+import { isPinKey, type ListPin, type PinKey, pinKey } from '#lib/dashboard/listPins.ts';
+import thumbtack from '#lib/icons/solid/thumbtack.svg?raw';
 import { titleFanart } from '#lib/firstNight/titleFanart.ts';
 import Icon from '#lib/icons/Icon.svelte';
 import check from '#lib/icons/solid/check.svg?raw';
@@ -17,17 +29,17 @@ import grip from '#lib/icons/solid/grip-dots-vertical.svg?raw';
 import { moveItem } from '#lib/utils/moveItem.ts';
 import { tick } from 'svelte';
 
-type Layout = Pick<DashboardSettings, 'order' | 'hidden'>;
-
 interface Props {
   open: boolean;
-  order: Layout['order'];
-  hidden: Layout['hidden'];
-  onchange: (layout: Layout) => void;
+  layout: DashboardLayout;
+  /** Pinned lists the viewer can no longer see. */
+  gone?: ReadonlySet<PinKey>;
+  onchange: (layout: DashboardLayout) => void;
   onclose?: () => void;
 }
 
-let { open = $bindable(), order, hidden, onchange, onclose }: Props = $props();
+let { open = $bindable(), layout, gone = new Set(), onchange, onclose }: Props = $props();
+const order = $derived(layout.order);
 const id = $props.id();
 
 const TITLE = 'Customize your dashboard';
@@ -44,36 +56,48 @@ const TITLES: Record<DashboardPanel, string> = {
 };
 
 const art = $derived(open ? titleFanart('shows', 'mr-robot') : Promise.resolve(undefined));
-const shown = $derived(order.filter((panel) => !hidden[panel]).length);
+const shown = $derived(order.filter((section) => dashboardPrefs.isShown(layout, section)).length);
+const pinOf = (key: PinKey) => layout.pins.find((pin) => pinKey(pin) === key);
+const titleOf = (section: DashboardSection) => (isPinKey(section) ? (pinOf(section)?.name ?? '') : TITLES[section]);
 
 let list = $state<HTMLElement>();
 let body = $state<HTMLElement>();
 // The dragged row's copy under the pointer, placed inside the body; its own slot dims and moves as it passes others.
-let ghost = $state<{ panel: DashboardPanel; x: number; y: number; width: number } | null>(null);
-let dragging = $state<DashboardPanel | null>(null);
+let ghost = $state<{ panel: DashboardSection; x: number; y: number; width: number } | null>(null);
+let dragging = $state<DashboardSection | null>(null);
 let announcement = $state('');
 
-const gripOf = (panel: DashboardPanel) =>
+const gripOf = (panel: DashboardSection) =>
   [...(list?.querySelectorAll<HTMLElement>('[data-panel]') ?? [])]
     .find((row) => row.dataset.panel === panel)
     ?.querySelector<HTMLElement>('.grip');
 
-function toggle(panel: DashboardPanel) {
-  onchange({ order, hidden: { ...hidden, [panel]: !hidden[panel] } });
+function toggle(section: DashboardSection) {
+  if (!isPinKey(section)) {
+    onchange({ ...layout, hidden: { ...layout.hidden, [section]: !layout.hidden[section] } });
+    return;
+  }
+  const pins = layout.pins.map((pin) => (pinKey(pin) === section ? { ...pin, hidden: !pin.hidden } : pin));
+  onchange({ ...layout, pins });
 }
 
-async function move(panel: DashboardPanel, to: number) {
+function unpin(key: PinKey) {
+  announcement = `${titleOf(key)} unpinned`;
+  onchange(dashboardPrefs.unpin(layout, key));
+}
+
+async function move(panel: DashboardSection, to: number) {
   const from = order.indexOf(panel);
   if (from === to) return;
-  onchange({ order: moveItem(order, from, to), hidden });
-  announcement = `${TITLES[panel]}, ${to + 1} of ${order.length}`;
+  onchange({ ...layout, order: moveItem(order, from, to) });
+  announcement = `${titleOf(panel)}, ${to + 1} of ${order.length}`;
   // Moving the row's element drops its focus, so give it back.
   if (dragging) return;
   await tick();
   gripOf(panel)?.focus();
 }
 
-function nudge(event: KeyboardEvent, panel: DashboardPanel) {
+function nudge(event: KeyboardEvent, panel: DashboardSection) {
   const step = { ArrowUp: -1, ArrowDown: 1 }[event.key];
   if (!step) return;
   event.preventDefault();
@@ -82,7 +106,7 @@ function nudge(event: KeyboardEvent, panel: DashboardPanel) {
 }
 
 // The copy follows the pointer, not the grip: moving a row moves its element, which drops any pointer capture.
-function drag(event: PointerEvent, panel: DashboardPanel) {
+function drag(event: PointerEvent, panel: DashboardSection) {
   const row = event.currentTarget instanceof Element ? event.currentTarget.closest('[data-panel]') : null;
   if (event.button !== 0 || !row) return;
   event.preventDefault();
@@ -120,8 +144,9 @@ function drag(event: PointerEvent, panel: DashboardPanel) {
 }
 
 function reset() {
-  const { order: defaults } = dashboardPrefs.defaults;
-  onchange({ order: defaults, hidden: Object.fromEntries(defaults.map((panel) => [panel, false])) as Layout['hidden'] });
+  const { order: defaults, hidden } = dashboardPrefs.layoutOf(dashboardPrefs.defaults);
+  const pins = layout.pins.map(({ hidden: _, ...pin }) => pin);
+  onchange(dashboardPrefs.arrange({ order: defaults, hidden, pins }));
   announcement = "Back to OG's order, every section on";
 }
 
@@ -131,8 +156,35 @@ function done() {
 }
 </script>
 
-{#snippet tile(panel: DashboardPanel)}
-  <span class="title">{TITLES[panel]}</span><span class="mark"><Icon svg={check} /></span>
+{#snippet tile(section: DashboardSection)}
+  {#if isPinKey(section)}
+    {@const pin = pinOf(section)}
+    <span class="title pinned">{pin?.name}</span>
+    {#if pin}{@render about(pin, gone.has(section))}{/if}
+  {:else}
+    <span class="title">{TITLES[section]}</span>
+  {/if}
+  <span class="mark"><Icon svg={check} /></span>
+{/snippet}
+
+{#snippet about(pin: ListPin, missing: boolean)}
+  <span class="about">
+    {#if missing}
+      <span class="missing">No longer available</span>
+    {:else}
+      {#if pin.kind === 'smart'}<ListTag tag="Smart" />{:else if pin.kind === 'official'}<ListTag tag="Official List" />{/if}
+      {#if pin.by}<ListOwnerTag username={pin.by} avatar={pin.avatar} />{/if}
+    {/if}
+  </span>
+{/snippet}
+
+{#snippet unpinButton(key: PinKey)}
+  <Tooltip text="Unpin from dashboard" placement="right">
+    {#snippet trigger(tooltip)}
+      <button type="button" class="unpin" aria-label="Unpin {titleOf(key)}" {...tooltip} onclick={() => unpin(key)}
+        ><Icon svg={thumbtack} /></button>
+    {/snippet}
+  </Tooltip>
 {/snippet}
 
 <Dialog bind:open title={TITLE} size="notes" variant="art" lightDismiss contained {onclose}>
@@ -152,13 +204,15 @@ function done() {
     <ol class="rows" aria-label="Dashboard sections" bind:this={list}>
       {#each order as panel (panel)}
         <li class={['row', { dragging: dragging === panel }]} data-panel={panel}>
-          <button type="button" class="grip" aria-label="Move {TITLES[panel]}" aria-describedby="{id}-hint"
+          <button type="button" class="grip" aria-label="Move {titleOf(panel)}" aria-describedby="{id}-hint"
             onpointerdown={(event) => drag(event, panel)} onkeydown={(event) => nudge(event, panel)}>
             <Icon svg={grip} />
           </button>
-          <button type="button" class="choice" aria-pressed={!hidden[panel]} onclick={() => toggle(panel)}>
+          <button type="button" class="choice" aria-pressed={dashboardPrefs.isShown(layout, panel)}
+            onclick={() => toggle(panel)}>
             {@render tile(panel)}
           </button>
+          {#if isPinKey(panel)}{@render unpinButton(panel)}{:else if layout.pins.length > 0}<span class="unpin-room"></span>{/if}
         </li>
       {/each}
     </ol>
@@ -166,7 +220,9 @@ function done() {
       <div class="row ghost" style:translate="{ghost.x}px {ghost.y}px" style:inline-size="{ghost.width}px"
         aria-hidden="true">
         <span class="grip"><Icon svg={grip} /></span>
-        <span class="choice" aria-pressed={!hidden[ghost.panel]}>{@render tile(ghost.panel)}</span>
+        <span class="choice" aria-pressed={dashboardPrefs.isShown(layout, ghost.panel)}>{@render tile(ghost.panel)}</span>
+        {#if isPinKey(ghost.panel)}<span class="unpin"><Icon svg={thumbtack} /></span>{:else if layout.pins.length > 0}<span
+            class="unpin-room"></span>{/if}
       </div>
     {/if}
   </div>
@@ -280,6 +336,55 @@ function done() {
 
   [aria-pressed='true'] & {
     font-weight: var(--font-weight-headings-heavy);
+  }
+}
+
+/* A pinned list's name gives way first, cut short, to its owner and tags on the right. */
+.pinned {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.about {
+  display: flex;
+  flex: none;
+  align-items: center;
+  white-space: nowrap;
+  gap: var(--list-title-pill-gap);
+  color: var(--color-dialog-art-hint);
+  font-size: var(--font-size-dialog-art-hint);
+  font-weight: normal;
+}
+
+.missing {
+  color: var(--color-list-pin);
+}
+
+/* The pinned tack, which unpins, as narrow as the grip across the row; the other rows keep its room while any list is
+   pinned. */
+.unpin,
+.unpin-room {
+  flex: none;
+  inline-size: var(--dashboard-customizer-grip-inline);
+}
+
+.unpin {
+  display: grid;
+  place-items: center end;
+  block-size: var(--dashboard-customizer-grip);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-list-pin);
+  font-size: var(--font-size-dashboard-customizer-grip);
+  cursor: pointer;
+
+  &:is(:hover, :focus-visible) {
+    color: var(--color-list-pin-on-hover);
   }
 }
 

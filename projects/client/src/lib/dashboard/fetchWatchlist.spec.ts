@@ -34,7 +34,7 @@ describe('fetchWatchlist', () => {
     expect(url.searchParams.get('limit')).toBe('18');
     expect(url.searchParams.get('extended')).toBe('full');
     expect(seen.at(0)?.headers.get('authorization')).toBe('Bearer abc');
-    expect(list).toMatchObject({ total: 1234, sortName: 'Added Date', sortHow: 'desc' });
+    expect(list).toMatchObject({ total: 1234, sort: { by: 'added', how: 'desc' } });
     expect(list.cards).toHaveLength(watchlistFixture.rows.length);
   });
 
@@ -56,7 +56,21 @@ describe('fetchWatchlist', () => {
 
     const list = await fetchWatchlist({ fetch, token: 'abc', datePreferences });
 
-    expect(list).toMatchObject({ total: watchlistFixture.rows.length, sortName: 'Rank', sortHow: 'asc' });
+    expect(list).toMatchObject({ total: watchlistFixture.rows.length, sort: { by: 'rank', how: 'asc' } });
+  });
+
+  it("should ask for the panel's own sort when one is picked", async () => {
+    server.use(
+      http.get(`${WATCHLIST}/all/my_rating/desc`, ({ request }) => {
+        seen.push(request);
+        return HttpResponse.json(watchlistFixture.rows);
+      }),
+    );
+
+    const list = await fetchWatchlist({ fetch, token: 'abc', datePreferences, sort: { by: 'my_rating', how: 'desc' } });
+
+    expect(seen).toHaveLength(1);
+    expect(list.sort).toEqual({ by: 'my_rating', how: 'desc' });
   });
 
   it('should reject when the watchlist fails, so the panel shows its own error', async () => {

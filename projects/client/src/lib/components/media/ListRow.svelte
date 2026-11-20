@@ -20,6 +20,7 @@ import CommentText from '#lib/components/comments/CommentText.svelte';
 import { parseComment } from '#lib/components/comments/text/parseComment.ts';
 import VipLabel from '#lib/components/labels/VipLabel.svelte';
 import ShareButton from '#lib/components/share/ShareButton.svelte';
+import PinListButton from '#lib/components/lists/PinListButton.svelte';
 import Shimmer from '#lib/components/loading/Shimmer.svelte';
 import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import Icon from '#lib/icons/Icon.svelte';
@@ -203,6 +204,9 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
             {#if actions.edit}{@render action('Edit', pencil, 'edit', actions.edit)}{/if}
             {#if actions.delete?.onclick}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={actions.delete.warning} disabled={actions.delete.busy} onconfirm={actions.delete.onclick}>{actions.delete.question ?? 'Delete this list?'}</ManageConfirm></span>{:else if actions.delete}{@render action('Delete', deleteIcon, 'delete', actions.delete)}{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', actions.leave)}{/if}
+            {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} large={false}
+              tracking={{ source: 'user-list' }} /></span>{/if}
+            {#if actions.pin}<span class="pin-slot"><PinListButton viewer={actions.pin.viewer} pin={actions.pin.list} /></span>{/if}
             {#if actions.progressHref}
               <Tooltip text="View watched progress">
                 {#snippet trigger(tooltip)}
@@ -212,8 +216,6 @@ const blocks = $derived(parseComment(description?.trim() ?? ''));
                 {/snippet}
               </Tooltip>
             {/if}
-            {#if actions.shareUrl}<span class="share"><ShareButton url={actions.shareUrl} title={name} large={false}
-              tracking={{ source: 'user-list' }} /></span>{/if}
           </div>
         {/if}
       </footer>
@@ -513,7 +515,8 @@ h3 {
 /* Each tool in a rounded box that fills on hover, like a comment's or a note's. */
 .action,
 .delete :global(.confirm > button),
-.share :global(button) {
+.share :global(button),
+.pin-slot :global(button) {
   display: inline-grid;
   place-items: center;
   inline-size: var(--comment-tool-size);
@@ -565,6 +568,19 @@ h3 {
 .share {
   color: var(--color-action-share);
   font-size: var(--font-size-list-row-action);
+}
+
+/* PinListButton: an orange outline tack, filled orange once pinned, as Like fills blue. */
+.pin-slot {
+  display: inline-flex;
+  color: var(--color-list-pin);
+
+  /* Past the boxes' hover, which nests under their selector list and so takes its most specific member's weight. */
+  & :global(button.active),
+  & :global(button.active:hover:not([aria-disabled='true'])) {
+    background-color: var(--color-list-pin-on);
+    color: var(--color-text-inverse);
+  }
 }
 
 /* A tablet column: a smaller fan, and only the numbers. */

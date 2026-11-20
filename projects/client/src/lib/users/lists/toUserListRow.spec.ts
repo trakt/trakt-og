@@ -34,6 +34,7 @@ describe('toUserListRow', () => {
       owner: {
         slug: 'og_tester',
         name: 'OG Tester',
+        username: 'og_tester',
         href: '/users/og_tester',
         avatar: 'https://media.trakt.tv/users/6/avatar.webp',
         vip: { kind: 'vip', tag: { text: 'EP', title: 'Executive Producer' }, years: null },

@@ -1,4 +1,5 @@
-import type { DashboardPanel, DashboardPrefs } from './dashboardPrefs.ts';
+import type { DashboardPanel, DashboardPrefs, DashboardSection } from './dashboardPrefs.ts';
+import type { ListPin } from './listPins.ts';
 import type { UpNextSortBy } from './upNextSorts.ts';
 
 /** Up Next's sort: OG's key and direction, and its name for the help line. */
@@ -26,12 +27,20 @@ export type DashboardSettings = {
     readonly startDay: DashboardPrefs['upcoming_start_day'];
     readonly poster: DashboardPrefs['upcoming_poster'];
   };
+  readonly watchlist: {
+    /** Picked on the panel; null, the watchlist's own. */
+    readonly sort: DashboardPrefs['watchlist_sort'];
+    /** The eye's Hide options picked on the panel. */
+    readonly hide: DashboardPrefs['watchlist_hide'];
+  };
   readonly recommendations: {
     readonly type: DashboardPrefs['recommendations_type'];
     readonly release: DashboardPrefs['recommendations_release'];
   };
-  /** The movable panels, in the viewer's order. */
-  readonly order: readonly DashboardPanel[];
+  /** The movable panels and pinned lists, in the viewer's order. */
+  readonly order: readonly DashboardSection[];
   /** The panels the viewer hid. Suggested People is cut, so it has no switch here. */
   readonly hidden: Readonly<Record<DashboardPanel, boolean>>;
+  /** The lists pinned to the dashboard, each with its own hide switch. */
+  readonly pins: readonly ListPin[];
 };

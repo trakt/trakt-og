@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toSmartListRow } from './toSmartListRow.ts';
 
-const profile = { slug: 'justin', displayName: 'Justin', avatarUrl: 'avatar.jpg', vip: null };
+const profile = { slug: 'justin', username: 'justin', displayName: 'Justin', avatarUrl: 'avatar.jpg', vip: null };
 const list = {
   id: 5716,
   slug: 'family-friendly-2dec46d4d59a4d7f',
@@ -32,6 +32,7 @@ describe('mapper: toSmartListRow', () => {
     expect(row.owner).toEqual({
       slug: 'justin',
       name: 'Justin',
+      username: 'justin',
       href: '/users/justin',
       avatar: 'avatar.jpg',
       vip: null,

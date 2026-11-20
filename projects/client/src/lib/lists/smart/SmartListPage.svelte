@@ -33,6 +33,8 @@ import Icon from '#lib/icons/Icon.svelte';
 import filtersIcon from '#lib/icons/regular/filters.svg?raw';
 import ListTag from '#lib/components/lists/ListTag.svelte';
 import ListTitleRow from '#lib/components/lists/ListTitleRow.svelte';
+import PinListButton from '#lib/components/lists/PinListButton.svelte';
+import { pinFor } from '#lib/dashboard/listPins.ts';
 import { memberRelation } from '#lib/components/comments/memberRelation.ts';
 import { overlay } from '#lib/overlay/overlay.ts';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
@@ -61,6 +63,15 @@ let busy = $state(false);
 let edited = $state<{ slug: string; name: string; privacy: SmartListPrivacy }>();
 const list = $derived(
   edited?.slug === data.smart.slug ? { ...data.smart, name: edited.name, privacy: edited.privacy } : data.smart,
+);
+const pin = $derived(
+  data.user
+    ? pinFor({
+      list: { kind: 'smart', id: list.slug, ownerSlug: data.profile.slug, name: list.name },
+      viewer: data.user.slug,
+      owner: { username: data.profile.username, avatar: data.profile.avatarUrl },
+    })
+    : null,
 );
 const source = $derived(smartListSourceLabel(list.source, list.mediaType));
 // Friend or Following, from the viewer's network, as on the list's row.
@@ -136,6 +147,7 @@ async function remove() {
         {/if}
         <span class="share"><ShareButton url={page.url.href} title={list.name} large={false}
           tracking={{ source: 'user-list' }} /></span>
+        {#if pin && data.user}<PinListButton viewer={data.user.slug} {pin} labelled />{/if}
         {#if data.chartHref}
           {@const label = `Open on ${smartListSourceLabel(list.source)}`}
           <a class="action open" href={data.chartHref} aria-label={label}><Icon svg={filtersIcon} /><span

@@ -2,7 +2,7 @@
   A list page's title row, on a list and a smart list alike: the name as a link with its tags after it, and the
   viewer's actions on the right. The page passes its own tags (each in a `.tag`, or the collaborators chip in a
   `.title-chip`) and actions, which take this row's look by class: icons as `.action` buttons or links, with `.edit`,
-  `.progress`, `.leave` or `.manage` (lit with `.active`), a `.delete` holding its ManageConfirm and a
+  `.progress`, `.leave`, `.manage` or `.pin` (lit with `.active`), a `.delete` holding its ManageConfirm and a
   `.share` holding its ShareButton, and outline text buttons from an `.action` with an `.action-text` label. Managing
   washes it green.
     <ListTitleRow id="list-title" name={list.name} href={list.href} {tags} {actions} />
@@ -196,6 +196,27 @@ h2 {
 
 .actions :global(.share) {
   color: var(--color-action-share);
+}
+
+/* Pin: an outline button with an orange tack, filled orange once pinned, as Like fills blue. */
+.actions :global(.action.pin > :first-child) {
+  color: var(--color-list-pin);
+}
+
+.actions :global(.action.pin.active) {
+  border-color: var(--color-list-pin-on);
+  background-color: var(--color-list-pin-on);
+  color: var(--color-text-inverse);
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--color-list-pin-on-hover);
+    background-color: var(--color-list-pin-on-hover);
+    color: var(--color-text-inverse);
+  }
+}
+
+.actions :global(.action.pin.active > :first-child) {
+  color: inherit;
 }
 
 .actions :global(.manage) {

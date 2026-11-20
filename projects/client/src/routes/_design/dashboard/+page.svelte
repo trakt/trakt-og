@@ -11,6 +11,10 @@
   import SchedulePanel from '#lib/components/dashboard/SchedulePanel.svelte';
   import UpNextPanel from '#lib/components/dashboard/UpNextPanel.svelte';
   import WatchlistPanel from '#lib/components/dashboard/WatchlistPanel.svelte';
+  import PinnedListPanel from '#lib/components/dashboard/PinnedListPanel.svelte';
+  import type { PinnedList } from '#lib/dashboard/fetchPinnedList.ts';
+  import type { ListSort } from '#lib/lists/resolveListSort.ts';
+  import { toListStats } from '#lib/lists/toListStats.ts';
   import Specimen from '#lib/design/Specimen.svelte';
   import Variant from '#lib/design/Variant.svelte';
   import type { OnDeckItem } from '#lib/components/media/OnDeckItem.ts';
@@ -33,7 +37,6 @@
   import { toScheduleDays } from '#lib/dashboard/toScheduleDays.ts';
   import { upcomingDays } from '#lib/dashboard/upcomingDays.ts';
   import { watchlistFixture } from '#lib/dashboard/watchlistFixture.ts';
-  import { listItemSorts } from '#lib/lists/listItemSorts.ts';
   import { toListItemCard } from '#lib/lists/toListItemCard.ts';
   import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
   import { scheduleStart } from '#lib/dashboard/scheduleStart.ts';
@@ -104,20 +107,46 @@ const defaults = toDashboardSettings({ settings: null });
   { label: 'Failed', schedule: scheduleFailed },
   ]);
 
-  function watchlistSample(sortBy: string, sortHow: DashboardWatchlist['sortHow']): DashboardWatchlist {
+  function watchlistSample(by: string, how: DashboardWatchlist['sort']['how']): DashboardWatchlist {
     const { datePreferences } = data;
     return {
-      cards: watchlistFixture.rows.map((row) => toListItemCard(row, { sortBy, datePreferences })),
+      cards: watchlistFixture.rows.map((row) => toListItemCard(row, { sortBy: by, datePreferences })),
       total: watchlistFixture.total,
-      sortName: listItemSorts.find(({ by }) => by === sortBy)?.label ?? 'Rank',
-    sortHow,
+      sort: { by, how },
+      scope: 'whole',
     };
   }
+  let demoSort = $state<ListSort>({ by: 'added', how: 'desc' });
+  let demoHide = $state<string[]>([]);
+  const watchlistSorted = $derived(Promise.resolve(watchlistSample(demoSort.by, demoSort.how)));
+  const pinnedStats = Promise.resolve(toListStats(watchlistFixture.rows, { withItems: true }));
   const watchlist = $derived(Promise.resolve(watchlistSample('added', 'desc')));
   const watchlistRated = $derived(Promise.resolve(watchlistSample('percentage', 'asc')));
-const watchlistEmpty = Promise.resolve({ cards: [], total: 0, sortName: 'Rank', sortHow: 'asc' as const });
+const watchlistEmpty = Promise.resolve<DashboardWatchlist>({ cards: [], total: 0, sort: { by: 'rank', how: 'asc' }, scope: 'first' });
   const watchlistLoading = new Promise<DashboardWatchlist>(() => {});
   const watchlistFailed = browser ? Promise.reject(new Error('demo')) : watchlistLoading;
+  const pinnedSmart = { kind: 'smart', id: 'hbo-dramas', owner: 'og_tester', name: 'HBO Dramas' } as const;
+  const pinnedFriend = $derived({
+    kind: 'personal',
+    id: '1234',
+    owner: 'sean',
+    name: 'Criterion Essentials',
+    by: 'sean',
+    hide: demoHide,
+  } as const);
+  const pinnedList = $derived(
+    watchlistSorted.then((list): PinnedList => ({ status: 'loaded', numbers: true, ...list })),
+  );
+  const pinnedEmpty = Promise.resolve<PinnedList>({
+    status: 'loaded',
+    numbers: false,
+    cards: [],
+    total: 0,
+    sort: { by: 'rank', how: 'asc' },
+    scope: 'first',
+  });
+  const pinnedLoading = new Promise<PinnedList>(() => {});
+  const pinnedFailed = browser ? Promise.reject(new Error('demo')) : pinnedLoading;
 
   // The first sample is a check-in with 30 minutes to go, which history holds at its end time.
   const checkinEnd = new Date(Date.now() + 30 * 60_000).toISOString();
@@ -330,13 +359,39 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
   </div>
 </Specimen>
 
-<Specimen title="Watchlist" bleed note="The sort's name and direction come from the viewer's saved list sort.">
+<Specimen title="Pinned list" bleed
+  note="A list pinned from its page's tack. The title links to the list, with its tags after it. On the right: Watched and Collected read the whole list against your library, the sort (try it) re-reads the posters, whose second line follows the sort, each with its rank as this list shows its numbers (any list sorted by rank does too), and the eye's Hide toggles (try them) drop items from the whole list. A list the viewer can no longer see renders nothing; the customize popup marks it.">
+  <div class="states">
+    <Variant label="Someone else's list">
+      <PinnedListPanel pin={pinnedFriend} list={pinnedList} stats={pinnedStats}
+        datePreferences={data.datePreferences} onsort={(sort) => (demoSort = sort)}
+        onhide={(hide) => (demoHide = hide)} />
+    </Variant>
+    <Variant label="Empty">
+      <PinnedListPanel pin={pinnedSmart} list={pinnedEmpty} stats={null}
+        datePreferences={data.datePreferences} onsort={() => {}} onhide={() => {}} />
+    </Variant>
+    <Variant label="Loading">
+      <PinnedListPanel pin={pinnedSmart} list={pinnedLoading} stats={null}
+        datePreferences={data.datePreferences} onsort={() => {}} onhide={() => {}} />
+    </Variant>
+    <Variant label="Failed">
+      <PinnedListPanel pin={pinnedSmart} list={pinnedFailed} stats={null}
+        datePreferences={data.datePreferences} onsort={() => {}} onhide={() => {}} />
+    </Variant>
+  </div>
+</Specimen>
+
+<Specimen title="Watchlist" bleed note="Starts in the watchlist's own sort; the sort menu and arrow change it for the panel alone, and the posters' second line follows the sort. The eye's Hide toggles read the whole watchlist and drop items from it.">
   <div class="states">
     <Variant label="Added Date, newest first">
       <WatchlistPanel
-        watchlist={watchlist}
+        watchlist={watchlistSorted}
         username="me"
         datePreferences={data.datePreferences}
+        onsort={(sort) => (demoSort = sort)}
+        hide={demoHide}
+        onhide={(hide) => (demoHide = hide)}
       />
     </Variant>
     <Variant label="Trakt Percentage">

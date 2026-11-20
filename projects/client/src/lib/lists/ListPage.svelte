@@ -60,6 +60,8 @@
   import Pagination from '#lib/components/pagination/Pagination.svelte';
   import ReadMore from '#lib/components/readmore/ReadMore.svelte';
   import ShareButton from '#lib/components/share/ShareButton.svelte';
+  import PinListButton from '#lib/components/lists/PinListButton.svelte';
+  import { pinFor } from '#lib/dashboard/listPins.ts';
   import ShareArrival from '#lib/share/ShareArrival.svelte';
   import CollaboratorsChip from '#lib/components/lists/CollaboratorsChip.svelte';
   import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
@@ -255,6 +257,15 @@ const filtered = $derived(
 );
 const clearedHref = $derived(
   listHref(page.url, { types: [], genres: [], terms: '', watchnow: '', hide: data.query.hide?.length ? [] : undefined }),
+);
+const pin = $derived(
+  data.list && data.user
+    ? pinFor({
+      list: data.list,
+      viewer: data.user.slug,
+      owner: 'profile' in data ? { username: data.profile.username, avatar: data.profile.avatarUrl } : {},
+    })
+    : null,
 );
 const ownList = $derived(data.kind !== 'official' && data.user?.slug === data.profile.slug);
 let editing = $state(false);
@@ -872,6 +883,7 @@ const draggable = $derived(
             {#if actions.delete}<span class="delete" style:--confirm-icon-size="var(--font-size-list-row-action)"><ManageConfirm name="delete" svg={deleteIcon} label="Delete" yes="Yes, delete it!" warning={deleteWarning} disabled={deleting} onconfirm={removeList}>Delete this list?</ManageConfirm></span>{/if}
             <span class="share"><ShareButton url={actions.shareUrl} title={list.name} large={false}
               tracking={{ source: 'user-list' }} /></span>
+            {#if pin && data.user}<PinListButton viewer={data.user.slug} {pin} labelled />{/if}
             {#if actions.leave}{@render action('Stop collaborating on this list', userXmark, 'leave', 'Leave', leave)}{/if}
             {/if}
             {#if actions.progressHref && !managing}

@@ -20,6 +20,8 @@
   import type { HeaderUser } from '#lib/components/header/HeaderUser.ts';
   import BuiltInListEditor from '#lib/components/lists/BuiltInListEditor.svelte';
   import ListReorderControls from '#lib/components/lists/ListReorderControls.svelte';
+  import DragGhost from '#lib/components/lists/DragGhost.svelte';
+  import { createDragReorder } from '#lib/lists/createDragReorder.svelte.ts';
   import { toast } from '#lib/components/toast/toast.svelte.ts';
   import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
   import ListEditor from '#lib/components/lists/ListEditor.svelte';
@@ -79,8 +81,6 @@ let shuffled = $state<readonly string[]>([]);
   let order = $state<readonly UserListRow[] | null>(null);
   let reordering = $state(false);
   let busy = $state(false);
-  let dragging = $state<string | null>(null);
-  let dragRank = $state<number | null>(null);
   let rowsElement = $state<HTMLDivElement>();
   let addButton = $state<HTMLButtonElement>();
   const left = new SvelteMap<number, boolean>();
@@ -105,10 +105,9 @@ const allLists = $derived(
     order = null;
     left.clear();
     reordering = false;
-    dragging = null;
   });
   const toggleReorder = () => {
-    if (!canReorder || busy || dragging || deleting !== null) return;
+    if (!canReorder || busy || reorder.dragging !== null || deleting !== null) return;
     reordering = !reordering;
   };
   const shortcut = () => {
@@ -125,7 +124,8 @@ const allLists = $derived(
     window.addEventListener('keydown', keydown);
     return () => window.removeEventListener('keydown', keydown);
   };
-  async function moveRow(list: UserListRow, rank: number) {
+  // A drop leaves the page where it is; the arrows follow the row they moved.
+  async function moveRow(list: UserListRow, rank: number, { scroll = true } = {}) {
     if (!canReorder || !reordering || busy) return;
     const source = data.lists;
     const before = allLists;
@@ -134,7 +134,7 @@ const allLists = $derived(
     order = next;
     busy = true;
     await tick();
-    const element = rowsElement?.querySelector<HTMLElement>(`[data-list-key="${list.key}"]`);
+    const element = scroll ? rowsElement?.querySelector<HTMLElement>(`[data-list-key="${list.key}"]`) : undefined;
   element?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion.current ? 'instant' : 'smooth' });
     const ok = await saveListOrder({
       fetch: viewerFetch(),
@@ -144,47 +144,13 @@ const allLists = $derived(
     if (!ok && source === data.lists) order = before;
     busy = false;
   }
-  function startDrag(list: UserListRow, event: PointerEvent) {
-    if (busy || !reordering || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
-    event.preventDefault();
-    event.currentTarget.focus();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    dragging = list.key;
-    dragRank = list.rank;
-  }
-  const dragEvents = (element: HTMLDivElement) => {
-    const move = (event: PointerEvent) => {
-      if (!dragging) return;
-      if (event.clientY < 100) window.scrollBy(0, -20);
-      if (event.clientY > window.innerHeight - 100) window.scrollBy(0, 20);
-      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-list-key]');
-      const row = allLists.find(({ key }) => key === target?.dataset.listKey);
-      if (row) dragRank = row.rank;
-    };
-    const end = (event: PointerEvent) => {
-      const list = allLists.find(({ key }) => key === dragging);
-      const rank = dragRank;
-      dragging = null;
-      dragRank = null;
-      if (event.type !== 'pointercancel' && list && rank !== null) void moveRow(list, rank);
-    };
-    const cancel = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || !dragging) return;
-      event.preventDefault();
-      dragging = null;
-      dragRank = null;
-    };
-    window.addEventListener('keydown', cancel);
-    element.addEventListener('pointermove', move);
-    element.addEventListener('pointerup', end);
-    element.addEventListener('pointercancel', end);
-    return () => {
-      window.removeEventListener('keydown', cancel);
-      element.removeEventListener('pointermove', move);
-      element.removeEventListener('pointerup', end);
-      element.removeEventListener('pointercancel', end);
-    };
-  };
+  const reorder = createDragReorder({
+    items: () => lists,
+    key: (row) => row.key,
+    selector: '[data-list-key]',
+    canDrag: () => reordering && !busy,
+    drop: (row, rank) => moveRow(row, rank, { scroll: false }),
+  });
 let editor = $state<{ id: number | null; posters?: readonly string[]; count?: number }>();
   // The watchlist or favorites row's editor, which edits only the description and default sort.
 let builtInEditor = $state<{ kind: 'watchlist' | 'favorites'; posters: readonly string[]; count: number }>();
@@ -462,7 +428,7 @@ const withPosters = (row: UserListRow): UserListRow =>
       total={allLists.length}
       busy={busy}
       onmove={(rank) => moveRow(list, rank)}
-      ondrag={(event) => startDrag(list, event)}
+      ondrag={(event) => reorder.start(list, event)}
     />
   {/snippet}
 {/snippet}
@@ -499,7 +465,7 @@ const withPosters = (row: UserListRow): UserListRow =>
       <!-- Add list is wired by. -->
       <span class="owner-tools">
         <button bind:this={addButton} type="button" class="tool add" disabled={busy || reordering || deleting !== null} onclick={() => { editor = { id: null }; }}><Icon svg={addCircle} /><span>Add list</span></button>
-        <button type="button" class="tool reorder" class:active={reordering} aria-pressed={reordering} aria-keyshortcuts="r" disabled={!canReorder || busy || Boolean(dragging)} onclick={toggleReorder}><Icon svg={reordering ? check : move} /><span>{reordering ? 'Done' : 'Reorder'}</span></button>
+        <button type="button" class="tool reorder" class:active={reordering} aria-pressed={reordering} aria-keyshortcuts="r" disabled={!canReorder || busy || reorder.dragging !== null} onclick={toggleReorder}><Icon svg={reordering ? check : move} /><span>{reordering ? 'Done' : 'Reorder'}</span></button>
       </span>
     {/if}
   {/snippet}
@@ -564,13 +530,18 @@ const withPosters = (row: UserListRow): UserListRow =>
       {/each}
       {#if builtIns.length > 0 && lists.length > 0}<hr class="rule" transition:slide={{ duration }} />{/if}
     {/if}
-    <div class="rows" bind:this={rowsElement} {@attach dragEvents} aria-busy={busy}>
-      {#each lists as list (list.key)}
-        <div data-list-key={list.key} class:dragging={dragging === list.key} class:drop-target={dragging !== null && dragRank === list.rank} out:slide={{ duration }} animate:flip={{ duration }} {@attach nearViewport(nearRow(list))}>
+    <div class="rows" bind:this={rowsElement} {@attach reorder.attach} aria-busy={busy}>
+      {#each reorder.items as list (list.key)}
+        <div data-list-key={list.key} class:dragging={reorder.dragging === list.key} out:slide={{ duration }} animate:flip={{ duration }} {@attach nearViewport(nearRow(list))}>
           {@render row(withPosters(list), personal ? list.rank : undefined)}
         </div>
       {/each}
     </div>
+    {#if reorder.ghost}
+      <DragGhost ghost={reorder.ghost} {duration} onlanded={reorder.landed}>
+        {@render row(withPosters(reorder.ghost.item), reorder.ghost.item.rank)}
+      </DragGhost>
+    {/if}
     {#if searchedOut}
       <EmptyState
         action={{
@@ -676,11 +647,13 @@ const withPosters = (row: UserListRow): UserListRow =>
   .rows > div {
     scroll-margin-block-start: calc(var(--header-height) + var(--list-reorder-scroll-offset));
   }
+  /* The dragged row's place: faded, in OG's red drop outline. */
   .dragging {
-    opacity: var(--list-reorder-drag-opacity);
-  }
-  .drop-target {
     outline: var(--list-reorder-rank-border) solid var(--brand-primary);
+
+    & > :global(*) {
+      opacity: var(--list-reorder-drag-opacity);
+    }
   }
 
 .sort,

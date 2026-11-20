@@ -30,6 +30,11 @@ import ListItemEdit from '#lib/components/lists/ListItemEdit.svelte';
 import ListReorderControls from '#lib/components/lists/ListReorderControls.svelte';
 import RankInput from '#lib/components/lists/RankInput.svelte';
 import ListRow from '#lib/components/media/ListRow.svelte';
+import DragGhost from '#lib/components/lists/DragGhost.svelte';
+import { createDragReorder } from '#lib/lists/createDragReorder.svelte.ts';
+import { moveItem } from '#lib/utils/moveItem.ts';
+import { flip } from 'svelte/animate';
+import { prefersReducedMotion } from 'svelte/motion';
 import NotesDialog from '#lib/components/notes/NotesDialog.svelte';
 import PosterGrid from '#lib/components/media/PosterGrid.svelte';
 import SectionToolbar from '#lib/components/toolbar/SectionToolbar.svelte';
@@ -88,15 +93,38 @@ const editNotes = (item: ListItemCard) => {
   notesOpen = true;
 };
 
-let ranks = $state<Record<number, number>>({ 3: 3, 4: 7 });
-const clamp = (next: number) => Math.max(1, Math.min(12, next));
-const move = (item: ListItemCard, next: number) => (ranks[item.key] = clamp(next));
-const managed = $derived([heat, alien].map((item) => ({ ...item, rank: ranks[item.key] ?? item.rank })));
+const duration = $derived(prefersReducedMotion.current ? 0 : 300);
+const ranked = <T extends { readonly rank: number }>(rows: readonly T[]) => rows.map((row, i) => ({ ...row, rank: i + 1 }));
+const moveTo = <T extends { readonly rank: number }>(rows: readonly T[], from: number, rank: number) =>
+  ranked(moveItem(rows, from, Math.max(0, Math.min(rows.length - 1, rank - 1))));
+
+let managed = $state.raw<readonly ListItemCard[]>(ranked([heat, alien, aliens]));
+const move = (item: ListItemCard, next: number) =>
+  (managed = moveTo(managed, managed.findIndex(({ key }) => key === item.key), next));
+const managedDrag = createDragReorder({
+  items: () => managed,
+  key: (item) => item.key,
+  selector: '[data-demo-item]',
+  canDrag: () => true,
+  drop: move,
+});
+
+let indexRows = $state.raw(
+  ranked(['All-Time Favorites', 'Sci-Fi Club', 'Rainy Sundays'].map((name) => ({ key: name, name, rank: 0 }))),
+);
+const moveRow = (row: { key: string }, next: number) =>
+  (indexRows = moveTo(indexRows, indexRows.findIndex(({ key }) => key === row.key), next));
+const rowDrag = createDragReorder({
+  items: () => indexRows,
+  key: (row) => row.key,
+  selector: '[data-demo-row]',
+  canDrag: () => true,
+  drop: moveRow,
+});
 
 let open = $state(false);
 let demoSort = $state('imdb_votes');
 let builtInOpen = $state(false);
-let rank = $state(2);
 const transferSource = toBuiltInListView({
   kind: 'watchlist',
   profile: { slug: 'og_tester', isPrivate: false },
@@ -136,8 +164,8 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 
 {#snippet edit(item: ListItemCard)}
   <RankInput name={item.title} rank={item.rank} onmove={(next) => move(item, next)} />
-  <ListItemEdit name={item.title} rank={item.rank} total={12} notes={Boolean(item.notes)} draggable changeRank={false}
-  onmove={(next) => move(item, next)} ondrag={() => {}} onchangerank={() => {}} onremove={() => {}}
+  <ListItemEdit name={item.title} rank={item.rank} total={managed.length} notes={Boolean(item.notes)} draggable
+  changeRank={false} onmove={(next) => move(item, next)} ondrag={(event) => managedDrag.start(item, event)} onchangerank={() => {}} onremove={() => {}}
   onnotes={() => editNotes(item)} />
 {/snippet}
 
@@ -285,13 +313,22 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 </Specimen>
 
 <Specimen title="Manage mode" bleed
-  note="Rank inputs and the edit tiles on each poster, then what the title row shows in place of its icons: the count, reset, copy, move and delete.">
+  note="Rank inputs and the edit tiles on each poster, then what the title row shows in place of its icons: the count, reset, copy, move and delete. Drag a poster by its arrows: a copy lifts and follows the pointer, the others slide to make room, and its place stays faded until the poster lands. Esc puts it back.">
+
   <div class="padded managing">
-    <PosterGrid>
-      {#each managed as item (item.key)}
-        <ListItemPoster {item} {datePreferences} {edit} oneditnotes={editNotes} />
-      {/each}
-    </PosterGrid>
+    <div {@attach managedDrag.attach}>
+      <PosterGrid>
+        {#each managedDrag.items as item (item.key)}
+          <div data-demo-item class={{ dragging: managedDrag.dragging === item.key }} animate:flip={{ duration }}>
+            <ListItemPoster {item} {datePreferences} {edit} oneditnotes={editNotes} />
+          </div>
+        {/each}
+      </PosterGrid>
+    </div>
+    {#if managedDrag.ghost}
+      <DragGhost ghost={managedDrag.ghost} {duration} onlanded={managedDrag.landed}
+        poster={managedDrag.ghost.item.image} />
+    {/if}
   </div>
   <div class="padded">
   <ListManageBar count={12} busy={false} onreset={() => {}} ondelete={() => {}}>
@@ -306,16 +343,30 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
   </div>
 </Specimen>
 
-<Specimen title="Lists index reorder" note="The arrows and drag handle on a row of the owner's lists index.">
-  <ListRow href="/users/og_tester/lists/all-time-favorites" name="All-Time Favorites"
+<Specimen title="Lists index reorder"
+  note="The arrows and drag handle on the owner's lists index rows. Drag a row by its handle: a copy lifts and follows the pointer while the other rows slide to make room, and Esc puts it back.">
+  <div {@attach rowDrag.attach}>
+    {#each rowDrag.items as row (row.key)}
+      <div data-demo-row class={{ dragging: rowDrag.dragging === row.key }} animate:flip={{ duration }}>
+        {@render indexRow(row)}
+      </div>
+    {/each}
+  </div>
+  {#if rowDrag.ghost}
+    <DragGhost ghost={rowDrag.ghost} {duration} onlanded={rowDrag.landed}>{@render indexRow(rowDrag.ghost.item)}</DragGhost>
+  {/if}
+</Specimen>
+
+{#snippet indexRow(row: { key: string; name: string; rank: number })}
+  <ListRow href="/users/og_tester/lists/all-time-favorites" name={row.name}
     owner={{ name: 'OG Tester', href: '/users/og_tester' }} posters={[{}, {}, {}, {}, {}]} itemCount={12}
     likeCount={3} likeTarget={{ id: 23, ownerSlug: 'og_tester', viewer: 'og_tester' }}>
     {#snippet reorderControls()}
-      <ListReorderControls name="All-Time Favorites" {rank} total={5}
-        onmove={(next) => rank = Math.max(1, Math.min(5, next))} ondrag={() => {}} />
+      <ListReorderControls name={row.name} rank={row.rank} total={indexRows.length}
+        onmove={(next) => moveRow(row, next)} ondrag={(event) => rowDrag.start(row, event)} />
     {/snippet}
   </ListRow>
-</Specimen>
+{/snippet}
 
 <Specimen title="List stats bar" bleed
   note="Watched and Collected show to any signed-in viewer, on personal and official lists alike. Signed out, the likes are a count with nothing to click.">
@@ -436,6 +487,20 @@ const following = [{ slug: 'teodoro_2', name: 'Elsy Murphy (@teodoro_2)' }];
 /* The list page dims the quick icons while managing. */
 .managing :global(.quick-icons > *) {
   opacity: var(--opacity-list-manage-quick-icons);
+}
+
+/* The list pages' dragged item's place: faded, and a lists index row keeps OG's red drop outline. */
+.dragging {
+  opacity: var(--list-reorder-drag-opacity);
+}
+
+[data-demo-row].dragging {
+  opacity: 1;
+  outline: var(--list-reorder-rank-border) solid var(--brand-primary);
+
+  & > :global(*) {
+    opacity: var(--list-reorder-drag-opacity);
+  }
 }
 
 .states {

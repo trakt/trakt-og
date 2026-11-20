@@ -51,8 +51,6 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
   /** Every list item id in rank order, read the first time a move needs it. */
   let order: readonly number[] | null = null;
   const removed = new SvelteSet<number>();
-  let dragging = $state.raw<ListItemCard | null>(null);
-  let dropRank = $state<number | null>(null);
 
   const cards = $derived(patched ?? source().cards);
   const items = () => {
@@ -107,10 +105,11 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
   }
 
   // Moving a card moves its DOM node, which drops focus: put it back on the control that moved it.
-  const scrollTo = async (key: number) => {
+  const follow = async (key: number, scroll: boolean) => {
     const focused = document.activeElement;
     await tick();
     if (focused instanceof HTMLElement && focused !== document.activeElement) focused.focus({ preventScroll: true });
+    if (!scroll) return;
     document.querySelector(`[data-list-item="${key}"]`)?.scrollIntoView({
       block: 'start',
       behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
@@ -133,63 +132,9 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
     /** A card that just left the list fades out; one leaving for another page doesn't. */
     isRemoved: (key: number) => removed.has(key),
     reset,
-    get dragging() {
-      return dragging;
-    },
-    get dropRank() {
-      return dropRank;
-    },
 
-    /** The drag handle's pointerdown: the card follows the pointer over the grid until it's let go. */
-    startDrag(card: ListItemCard, event: PointerEvent) {
-      if (busy || isBlocked() || event.button !== 0 || !(event.currentTarget instanceof HTMLElement)) return;
-      event.preventDefault();
-      event.currentTarget.focus();
-      event.currentTarget.setPointerCapture(event.pointerId);
-      dragging = card;
-      dropRank = card.rank;
-    },
-
-    /** Attach to the grid: tracks the card under the pointer, scrolls near the edges, and drops or cancels. */
-    dragEvents(element: HTMLElement) {
-      const stop = () => {
-        dragging = null;
-        dropRank = null;
-      };
-      const move = (event: PointerEvent) => {
-        if (!dragging) return;
-        if (event.clientY < 100) globalThis.scrollBy(0, -20);
-        if (event.clientY > globalThis.innerHeight - 100) globalThis.scrollBy(0, 20);
-        const key = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-list-item]')
-          ?.dataset.listItem;
-        const over = cards.find((card) => String(card.key) === key);
-        if (over) dropRank = over.rank;
-      };
-      const end = (event: PointerEvent) => {
-        const card = dragging;
-        const rank = dropRank;
-        stop();
-        if (event.type === 'pointerup' && card && rank !== null) void manager.move(card, rank);
-      };
-      const cancel = (event: KeyboardEvent) => {
-        if (event.key !== 'Escape' || !dragging) return;
-        event.preventDefault();
-        stop();
-      };
-      globalThis.addEventListener('keydown', cancel);
-      element.addEventListener('pointermove', move);
-      element.addEventListener('pointerup', end);
-      element.addEventListener('pointercancel', end);
-      return () => {
-        globalThis.removeEventListener('keydown', cancel);
-        element.removeEventListener('pointermove', move);
-        element.removeEventListener('pointerup', end);
-        element.removeEventListener('pointercancel', end);
-      };
-    },
-
-    /** Move an item to a 1-based rank in the whole list, across pages. */
-    move: (card: ListItemCard, rank: number) =>
+    /** Move an item to a 1-based rank in the whole list, across pages. A drop leaves the page where it is. */
+    move: (card: ListItemCard, rank: number, { scroll = true } = {}) =>
       exclusive(async () => {
         const data = source().cards;
         const before = { order: await wholeOrder(), cards };
@@ -197,7 +142,7 @@ export function createListManager(source: () => Source, isBlocked: () => boolean
         if (next === before.order) return;
         order = next;
         patched = rerankListCards(cards, next, source().sort);
-        void scrollTo(card.key);
+        void follow(card.key, scroll);
         const { owner, listId } = items();
         const ok = await reorderListItems({
           owner,

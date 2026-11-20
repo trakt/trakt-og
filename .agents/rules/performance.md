@@ -5,6 +5,7 @@ Smooth means the same page with less work. Every rule here came from a counted w
 ## Cards and popovers
 
 - **A closed popover renders its shell, not its body.** Mount the body on the first `beforetoggle` to `open` and keep it mounted. The element, its title and its anchor stay, so `aria-controls` and `anchor-name` still resolve. Focus the first choice in `toggle`, which fires after Svelte has flushed the body. (`prompt/PromptPopover.svelte`, `rating/RatingPopover.svelte`, `lists/MediaList.svelte`)
+- **A tooltip renders on its first hover or focus**, like Bootstrap's, and stays. A text tooltip describes its trigger with `aria-description` until then, so it needs no element to point at. On The Simpsons that was 247 hidden popovers, 74 KB raw and 780 of 3,970 elements in the server HTML, but only 3.5 KB gzip: repeated markup compresses well, so count elements, not wire bytes. (`tooltip/Tooltip.svelte`)
 - **Nothing per card runs while hidden.** A loader, dialog or overlay a card might open mounts on first use, not with the card. A hidden `LoadingOverlay` keeps its two infinite animations running, and a closed `<dialog>` still fetches its images. (`lists/MediaList.svelte`, `media/ListRow.svelte`)
 - **One observer serves every card.** Share a module-level `IntersectionObserver` or `ResizeObserver` and map elements to callbacks with a `WeakMap`. (`comments/onceInView.ts`, `discover/DiscoverLists.svelte`)
 

@@ -18,8 +18,11 @@
   `under` lines it up with another anchor instead of the trigger, at that anchor's full width: a summary button's
   tooltip sits right under the whole button, its side tiles included. `at` lines it up with another anchor at its own
   width: a chart column's tooltip over the column's highest point instead of the column's top.
-  Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it
-  (`aria-describedby`), and not even that when it just repeats the name ("Edit note" on an "Edit note" button).
+  Left without any, no tooltip renders. The trigger keeps its own accessible name: the tooltip only describes it, and
+  not even that when it just repeats the name ("Edit note" on an "Edit note" button).
+  The tooltip itself renders on the first hover or focus, like Bootstrap's, so a page of cards doesn't ship one hidden
+  popover per icon. Until then a `text` tooltip describes its trigger with `aria-description`, and a `children` one
+  starts describing it (`aria-describedby`) once it's there.
 -->
 <script lang="ts">
 import type { Snippet } from 'svelte';
@@ -33,7 +36,11 @@ import type { TooltipPlacement } from './TooltipPlacement.ts';
 import TooltipBox from './TooltipBox.svelte';
 import { type TooltipEvent, type TooltipState, tooltipState } from './tooltipState.ts';
 
-type TriggerProps = { 'aria-describedby'?: string; [key: symbol]: Attachment<HTMLElement> };
+type TriggerProps = {
+  'aria-description'?: string;
+  'aria-describedby'?: string;
+  [key: symbol]: Attachment<HTMLElement>;
+};
 
 interface Props {
   trigger: Snippet<[TriggerProps]>;
@@ -63,8 +70,13 @@ const shown = $derived(side ?? placement);
 const flipped = $derived(side === 'top' || side === 'bottom');
 // Bumped to try showing again, the frame after the browser refused.
 let retry = $state(0);
+/** Opened once, so it's rendered: it stays, so its fade out plays when it shuts. */
+let seen = $state(false);
 
-const send = (event: TooltipEvent) => (status = tooltipState(status, event));
+const send = (event: TooltipEvent) => {
+  status = tooltipState(status, event);
+  if (status.open) seen = true;
+};
 
 /** Long enough to cross the gap from the trigger to the tooltip, which the pointer passes through to what's under it. */
 const LEAVE_GRACE_MS = 120;
@@ -129,7 +141,13 @@ const markup = $derived(children ?? (typeof content === 'function' ? content : u
 const key = createAttachmentKey();
 const hasTip = $derived(Boolean(words) || Boolean(markup));
 const triggerProps = $derived<TriggerProps>(
-  hasTip ? { 'aria-describedby': repeats ? undefined : `tooltip-${id}`, [key]: attach } : {},
+  hasTip
+    ? {
+        'aria-description': markup || repeats ? undefined : words,
+        'aria-describedby': markup && seen && !repeats ? `tooltip-${id}` : undefined,
+        [key]: attach,
+      }
+    : {},
 );
 
 // The trigger's name as a screen reader builds it: its label, else its text and its icons' and images' labels.
@@ -144,10 +162,9 @@ const nameOf = (node: HTMLElement) =>
   ].join(' ');
 
 $effect(() => {
-  if (!anchor || !tip) return;
-  // Read so a new text checks again.
-  void words;
-  repeats = repeatsName(nameOf(anchor), tip.textContent ?? '');
+  const said = markup ? tip?.textContent : words;
+  if (!anchor || typeof said !== 'string') return;
+  repeats = repeatsName(nameOf(anchor), said);
 });
 
 // Held back (a picker showing the same thing), it forgets its hover and focus, so it starts fresh when it's back.
@@ -204,7 +221,7 @@ const leaveTip = (event: PointerEvent) => {
   Spans, so a tooltip can sit inside a paragraph (comment text) without breaking it, and no whitespace after the
   trigger, which would show up as a space in running text.
 -->
-{@render trigger(triggerProps)}{#if hasTip}
+{@render trigger(triggerProps)}{#if hasTip && seen}
   <span
   bind:this={tip}
   id="tooltip-{id}"

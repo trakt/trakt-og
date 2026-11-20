@@ -39,7 +39,7 @@ describe('CommentText', () => {
 
   it('should keep the spaces around an inline spoiler as typed', () => {
     const text = (comment: string) => clean(html(comment)).replace(/<[^>]+>/g, '');
-    expect(text('a [spoiler]x[/spoiler] b')).toBe('a xClick to reveal spoilers b');
-    expect(text('a [spoiler]x[/spoiler].')).toBe('a xClick to reveal spoilers.');
+    expect(text('a [spoiler]x[/spoiler] b')).toBe('a x b');
+    expect(text('a [spoiler]x[/spoiler].')).toBe('a x.');
   });
 });

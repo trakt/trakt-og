@@ -18,7 +18,7 @@ import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { okBody } from '../api/okBody.ts';
 import { contractSchema } from '../api/contractSchema.ts';
 import { type Season, seasonSchema } from './seasonSchema.ts';
-import { canSeePortraits } from '../images/canSeePortraits.ts';
+import { loadPortraitToken } from '../images/loadPortraitToken.ts';
 
 type LoadShowParams = {
   fetch: typeof fetch;
@@ -91,6 +91,7 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
       }),
     ),
     guide ? layout.then(({ user }) => fetchParentalGuide({ fetch, token: user ? token : null, type: 'show', id })) : [],
+    layout.then(({ user }) => loadPortraitToken({ fetch, user })),
   ]);
   extras.catch(() => {});
 
@@ -101,12 +102,12 @@ export async function loadShowData({ fetch, token, parent, id: requested, path =
   if (requested !== show.ids.slug) redirect(301, `/shows/${show.ids.slug}${path}`);
   const notable = { type: 'show', id: show.ids.trakt, slug: show.ids.slug } as const;
 
-  const [ratings, stats, people, studios, seasons, watchnow, parentalGuide] = await extras;
+  const [ratings, stats, people, studios, seasons, watchnow, parentalGuide, portraitToken] = await extras;
 
   const episodeTypeTags = !settings?.browsing?.hide_episode_type_tags;
   const view = toShowSummary({
     show,
-    portraits: canSeePortraits(user),
+    portraitToken,
     ratings,
     stats,
     people,

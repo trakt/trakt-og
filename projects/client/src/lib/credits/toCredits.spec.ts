@@ -52,11 +52,11 @@ describe('toCredits', () => {
       actors: [{ label: 'Season Regulars', members: [walter] }],
       crew: { directing: [crewMember(2, 'Vince Gilligan', ['Director'])] },
       episodeCounts: true,
-      portraitOf: { media: 'show', id: 1388 },
+      portraitOf: { media: 'show', id: 1388, token: '1794787200-mac' },
     });
 
     expect(actors[0]?.people[0]?.image).toBe(
-      'https://media.trakt.tv/portraits/show-1388-1/thumb/portrait.webp#fallback=https%3A%2F%2Fmedia.trakt.tv%2Fpeople%2F1%2Fthumb%2Fheadshot.webp',
+      'https://media.trakt.tv/portraits/show-1388-1/thumb/portrait.webp?verify=1794787200-mac#fallback=https%3A%2F%2Fmedia.trakt.tv%2Fpeople%2F1%2Fthumb%2Fheadshot.webp',
     );
     expect(crew[0]?.people[0]?.image).toBe('https://media.trakt.tv/people/2/thumb/headshot.webp');
   });

@@ -32,8 +32,8 @@ interface Params {
   justwatch?: string | null;
   actorSpoilers: boolean;
   episodeTypeTags: boolean;
-  /** Cast as actors in character, for viewers who get them (`canSeePortraits`). */
-  portraits?: boolean;
+  /** The week's portrait link token (`loadPortraitToken`), for viewers who see the cast in character. */
+  portraitToken?: string | null;
   datePreferences: DatePreferences;
   now: Date;
 }
@@ -41,7 +41,9 @@ interface Params {
 /** Season-specific facts and navigation; the show episode and cast mappers provide the shared rows. */
 export function toSeasonSummary(params: Params) {
   const { show, season, seasons, episodes, stats, ratings, datePreferences, now } = params;
-  const portraitOf: PortraitOf | undefined = params.portraits ? { media: 'show', id: show.ids.trakt } : undefined;
+  const portraitOf: PortraitOf | undefined = params.portraitToken
+    ? { media: 'show', id: show.ids.trakt, season: season.number, token: params.portraitToken }
+    : undefined;
   const showHref = `/shows/${show.ids.slug}`;
   const href = `${showHref}/seasons/${season.number}`;
   const standardTitle = seasonName(season.number);

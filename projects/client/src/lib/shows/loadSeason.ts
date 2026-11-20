@@ -12,7 +12,7 @@ import { seasonPeopleSchema } from './seasonPeopleSchema.ts';
 import { toSeasonSummary } from './toSeasonSummary.ts';
 import { watchNowCountry } from '../settings/watchNowCountry.ts';
 import { assertOk } from '../api/assertOk.ts';
-import { canSeePortraits } from '../images/canSeePortraits.ts';
+import { loadPortraitToken } from '../images/loadPortraitToken.ts';
 
 interface Params {
   fetch: typeof fetch;
@@ -66,6 +66,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     layout,
     watchNow,
     note,
+    portraitToken,
   ] = await Promise.all([
     client.shows.summary({ params: { id }, query: { extended: 'full' } }),
     seasonRead,
@@ -80,6 +81,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     layoutRead,
     watchNowRead,
     noteRead,
+    layoutRead.then(({ user }) => loadPortraitToken({ fetch, user })),
   ]);
   assertOk(showResponse, 'Show');
   // A season the show doesn't have answers an empty 204, not a 404.
@@ -108,7 +110,7 @@ export async function loadSeason({ fetch, parent, id, season: requestedSeason, u
     justwatch: watchNow.rank?.link,
     actorSpoilers: layout.settings?.browsing?.spoilers?.actors !== 'hide',
     episodeTypeTags: !layout.settings?.browsing?.hide_episode_type_tags,
-    portraits: canSeePortraits(layout.user),
+    portraitToken,
     datePreferences: layout.datePreferences,
     now: new Date(),
   });

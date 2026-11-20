@@ -43,6 +43,9 @@ const server = setupServer(
       crew: { writing: [{ ...actor(3, 'Vince Gilligan'), jobs: ['Writer'] }] },
     }),
   ),
+  http.get(`${API}/portraits/token`, () =>
+    HttpResponse.json({ token: '1794787200-mac', expires_at: '2026-11-30T00:00:00.000Z' }),
+  ),
   // Watch Now: the sidebar renders without it.
   http.get(`${API}/*`, () => new HttpResponse(null, { status: 404 })),
 );
@@ -106,15 +109,24 @@ describe('loadCredits', () => {
       return data.credits.actors[0]?.people.map(({ image }) => image?.split('#')[0]);
     };
 
-    it("should show a director the actors in character, by the show's id", async () => {
-      expect(await images(director)).toEqual(['https://media.trakt.tv/portraits/show-1388-1/thumb/portrait.webp']);
+    it("should show a director the actors in character, by the show's id and the episode's season", async () => {
+      expect(await images(director)).toEqual([
+        'https://media.trakt.tv/portraits/show-1388-s1-1/thumb/portrait.webp?verify=1794787200-mac',
+      ]);
     });
 
-    it('should keep the headshots for everyone else', async () => {
+    it('should keep the headshots for everyone else, without asking for the token', async () => {
       expect(await images(null)).toEqual(['https://media.trakt.tv/people/1/thumb/headshot.webp']);
       expect(await images({ ...director, isDirector: false })).toEqual([
         'https://media.trakt.tv/people/1/thumb/headshot.webp',
       ]);
+      expect(requests.some(({ pathname }) => pathname === '/portraits/token')).toBe(false);
+    });
+
+    it('should keep the headshots when the API gives no token', async () => {
+      server.use(http.get(`${API}/portraits/token`, () => new HttpResponse('Forbidden', { status: 403 })));
+
+      expect(await images(director)).toEqual(['https://media.trakt.tv/people/1/thumb/headshot.webp']);
     });
   });
 

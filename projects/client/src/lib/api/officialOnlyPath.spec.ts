@@ -11,6 +11,7 @@ describe('officialOnlyPath', () => {
     '/users/sean/progress/watched/added/desc',
     '/lists/12/collaborators',
     '/lists/12/collaborators/sean',
+    '/portraits/token',
   ])('should keep %s for Trakt’s own apps', (path) => {
     expect(officialOnlyPath(path)).toBe(true);
   });

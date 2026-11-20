@@ -3,6 +3,7 @@ const OFFICIAL_ONLY = [
   /(^|\/)watchnow(\/|$)/,
   /^\/users\/[^/]+\/progress\//,
   /^\/lists\/[^/]+\/collaborators(\/|$)/,
+  /^\/portraits\/token$/,
 ] as const;
 
 /**

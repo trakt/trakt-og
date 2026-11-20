@@ -66,12 +66,13 @@ const release = () => {
 
 // Fades out the way it faded in, then closes. Reduced motion has no transition to wait for.
 async function dismiss() {
-  if (!dialog?.open || closing) return;
+  const node = dialog;
+  if (!node?.open || closing) return;
   closing = true;
   await tick();
-  await Promise.allSettled(dialog.getAnimations().map(({ finished }) => finished));
+  await Promise.allSettled(node.getAnimations().map(({ finished }) => finished));
   closing = false;
-  dialog.close();
+  node.close();
 }
 
 // Reads `open`, so it re-runs whenever the prop changes.

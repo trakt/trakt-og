@@ -2,7 +2,7 @@
   Discover's upcoming premieres, never edited by hand: the most anticipated new series and returning seasons from the
   hot premieres feed and the anticipated chart, with toggles for all, new series and returning seasons. Each is its
   own rounded fanart card, two wide then three a row: the show's logo centred over its dimmed fanart (its name when
-  there's no logo yet), a countdown chip that heats up over the last month (on the day, "Today" on fire, and the
+  the logo fails to load), a countdown chip that heats up over the last month (on the day, "Today" on fire, and the
   card glows) beside a calendar chip with the day, the chart pages' card tags for the kind of premiere (in its episode type's
   color), the lists it's on and the network, and og's quick-action bar.
 -->
@@ -114,7 +114,7 @@ function soon(days: number) {
                   <b>{Number(premiere.day.slice(8))}</b>{month.format(utc(premiere.day))}
                 </span>
               </span>
-              {#if !premiere.logo}<span class="name" aria-hidden="true">{premiere.title}</span>{/if}
+              <span class="name" aria-hidden="true">{premiere.title}</span>
             {/snippet}
           </FanartCard>
         </li>
@@ -218,7 +218,8 @@ function soon(days: number) {
   }
 }
 
-/* Where the logo would be, for a show without one. */
+/* Where the logo would be, for a show without one: the logo's URL is built from the id, so a missing one only shows
+   when it fails to load (`data-fallback`). */
 .name {
   position: absolute;
   inset-block-start: var(--premiere-logo-top);
@@ -235,6 +236,10 @@ function soon(days: number) {
   text-transform: uppercase;
   text-wrap: balance;
   pointer-events: none;
+
+  .card:not(:has(:global(.logo[data-fallback]))) & {
+    display: none;
+  }
 }
 
 .fire {

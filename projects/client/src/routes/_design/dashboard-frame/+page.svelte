@@ -1,5 +1,9 @@
 <script lang="ts">
+import DashboardCustomizer from '#lib/components/dashboard/DashboardCustomizer.svelte';
 import DashboardGreeting from '#lib/components/dashboard/DashboardGreeting.svelte';
+import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
+import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import DemoButton from '#lib/design/DemoButton.svelte';
 import RecapRibbon from '#lib/components/dashboard/RecapRibbon.svelte';
 import RecapSplitTip from '#lib/components/dashboard/RecapSplitTip.svelte';
 import TooltipBox from '#lib/components/tooltip/TooltipBox.svelte';
@@ -129,15 +133,24 @@ const inboxes = [
   { label: 'Three, the most that show as boxes', requests: sample.requests.slice(0, 3) },
   { label: 'Six, folded into the summary line', requests: sample.requests },
 ];
+
+// A member who moved Recommendations to the top and hid Last 30 Days.
+let customizing = $state(false);
+let layout = $state<Pick<DashboardSettings, 'order' | 'hidden'>>({
+  order: ['recommendations', ...dashboardPrefs.defaults.order.filter((panel) => panel !== 'recommendations')],
+  hidden: Object.fromEntries(
+    dashboardPrefs.defaults.order.map((panel) => [panel, panel === 'lastThirtyDays']),
+  ) as DashboardSettings['hidden'],
+});
 </script>
 
 <Specimen title="Greeting and recap ribbon" bleed
-  note="Each greeting carries its stats panel. With nothing watched, each stat names its first milestone instead. Hover a month or the year for its split.">
+  note="Each greeting carries its stats panel. With nothing watched, each stat names its first milestone instead. Hover a month or the year for its split. Hover a greeting, or tab to it, for the pencil that opens Customize your dashboard.">
   <div class="states">
     {#each greetings as { label, user, since, stats, recaps, split } (label)}
       <Variant {label}>
         <div>
-          <DashboardGreeting {user} memberSince={since} watching={null}>
+          <DashboardGreeting {user} memberSince={since} watching={null} oncustomize={() => (customizing = true)}>
             <StatsPanel panel={toStatsPanel(stats)} slug={user.slug} fresh={isFresh(stats)} />
           </DashboardGreeting>
           <RecapRibbon {recaps} {split} />
@@ -145,6 +158,13 @@ const inboxes = [
       </Variant>
     {/each}
   </div>
+</Specimen>
+
+<Specimen title="Customize your dashboard"
+  note="Opened from the greeting's pencil. Drag a grip, or focus it and use the up and down arrows, to move a section; click a section to show or hide it. On the dashboard each change shows behind the popup and saves to the browser; Reset puts back OG's order with everything on.">
+  <DemoButton onclick={() => (customizing = true)}>Open</DemoButton>
+  <DashboardCustomizer bind:open={customizing} order={layout.order} hidden={layout.hidden}
+    onchange={(next) => (layout = next)} />
 </Specimen>
 
 <Specimen title="Recaps in January" bleed note="In January the strip shows last year under its Year in Review.">

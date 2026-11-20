@@ -20,7 +20,20 @@ describe('dashboardPrefs', () => {
       hide_stats: false,
       hide_recently_watched: false,
       hide_network: false,
+      hide_watching_now: false,
+      hide_hot_in_network: false,
       hide_recommendations: false,
+      order: [
+        'upNext',
+        'schedule',
+        'watchlist',
+        'lastThirtyDays',
+        'recentlyWatched',
+        'watchingNow',
+        'hotInNetwork',
+        'socialFeed',
+        'recommendations',
+      ],
       hide_first_night: false,
     });
   });
@@ -55,6 +68,38 @@ describe('dashboardPrefs', () => {
     const cookie = JSON.stringify({ sean: { hide_list: true } });
 
     expect(dashboardPrefs.write(cookie, 'sean', dashboardPrefs.defaults)).toBe('{}');
+  });
+
+  it('should read a saved order, dropping unknown and repeated panels and placing missing ones after their OG neighbor', () => {
+    const cookie = JSON.stringify({ sean: { order: ['socialFeed', 'suggestedPeople', 'upNext', 'socialFeed'] } });
+
+    expect(dashboardPrefs.read(cookie, 'sean').order).toEqual([
+      'socialFeed',
+      'recommendations',
+      'upNext',
+      'schedule',
+      'watchlist',
+      'lastThirtyDays',
+      'recentlyWatched',
+      'watchingNow',
+      'hotInNetwork',
+    ]);
+    expect(dashboardPrefs.read('{"sean":{"order":"upNext"}}', 'sean').order).toEqual(dashboardPrefs.defaults.order);
+  });
+
+  it("should write the layout's order and hide switches, and only what moved from OG's", () => {
+    const { order } = dashboardPrefs.defaults;
+    const hidden = { ...Object.fromEntries(order.map((panel) => [panel, false])), watchlist: true } as Record<
+      (typeof order)[number],
+      boolean
+    >;
+    const moved = dashboardPrefs.withLayout(dashboardPrefs.defaults, { order: ['recommendations', ...order], hidden });
+
+    expect(JSON.parse(dashboardPrefs.write(undefined, 'sean', moved))).toEqual({
+      sean: { hide_list: true, order: ['recommendations', ...order.filter((panel) => panel !== 'recommendations')] },
+    });
+    const back = dashboardPrefs.withLayout(moved, { order, hidden: { ...hidden, watchlist: false } });
+    expect(dashboardPrefs.write(undefined, 'sean', back)).toBe('{}');
   });
 
   it('should round trip the recommendations release and fall back to Out Now', () => {

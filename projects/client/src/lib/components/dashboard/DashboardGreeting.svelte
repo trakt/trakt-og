@@ -3,18 +3,22 @@ import type { Snippet } from 'svelte';
 import Container from '#lib/components/container/Container.svelte';
 import { headerArt } from '#lib/components/header/headerArt.ts';
 import VipLabel from '#lib/components/labels/VipLabel.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 import CoverPill from '#lib/components/users/CoverPill.svelte';
 import WatchingNowBar from '#lib/components/users/WatchingNowBar.svelte';
 import Icon from '#lib/icons/Icon.svelte';
 import calendar from '#lib/icons/regular/calendar-lines.svg?raw';
+import pen from '#lib/icons/solid/pen.svg?raw';
 import defaultCover from '#lib/assets/profile-cover-default.jpg';
 import type { ProfileUser } from '#lib/users/ProfileUser.ts';
 import type { WatchingNow } from '#lib/users/WatchingNow.ts';
 
-const { user: viewer, memberSince, watching, children }: {
+const { user: viewer, memberSince, watching, oncustomize, children }: {
   user: ProfileUser;
   memberSince: string;
   watching: WatchingNow | null;
+  /** Opens the customize popup from the pencil, which fades in while the mouse is on the greeting. */
+  oncustomize?: () => void;
   /** The stats panel, under the name. */
   children?: Snippet;
 } = $props();
@@ -42,6 +46,14 @@ const cover = $derived(watching?.fanartUrl ?? viewer.coverUrl);
           <CoverPill><Icon svg={calendar} />Joined <b>{memberSince}</b></CoverPill>
         </div>
       </div>
+      {#if oncustomize}
+        <Tooltip text="Customize" placement="right">
+          {#snippet trigger(tooltip)}
+            <button type="button" class="customize" aria-label="Customize dashboard" onclick={oncustomize}
+              {...tooltip}><Icon svg={pen} /></button>
+          {/snippet}
+        </Tooltip>
+      {/if}
     </div>
     {@render children?.()}
   </Container>
@@ -100,6 +112,44 @@ const cover = $derived(watching?.fanartUrl ?? viewer.coverUrl);
     border-radius: 50%;
     box-shadow: var(--shadow-profile-avatar);
     object-fit: cover;
+  }
+}
+/* The header's red glass pencil, out of sight until the mouse is on the greeting or the keyboard reaches it. */
+.customize {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--header-customize-size);
+  block-size: var(--header-customize-size);
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--color-customize-pencil);
+  box-shadow: inset 0 0 0 1px var(--color-customize-pencil-edge);
+  color: var(--color-header-text);
+  font-size: var(--font-size-header-chip-icon);
+  backdrop-filter: var(--blur-customize-pencil);
+  opacity: 0;
+  scale: 0.85;
+  pointer-events: none;
+  transition: opacity var(--transition-customize-pencil), scale var(--transition-customize-pencil),
+    background-color var(--transition-customize-pencil), box-shadow var(--transition-customize-pencil);
+
+  .greeting-cover:hover &,
+  &:focus-visible {
+    opacity: 1;
+    scale: 1;
+    pointer-events: auto;
+  }
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--brand-primary);
+    box-shadow: inset 0 0 0 1px var(--brand-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }
 h1 {

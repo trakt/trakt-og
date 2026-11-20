@@ -1074,6 +1074,12 @@
   --color-header-add-hover: rgb(237 28 36 / 0.4);
   --opacity-header-dragging: 0.4;
   --header-customize-size: 30px; /* the pencil after the links */
+  /* The header's and the dashboard's customize pencils: red-tinted glass, solid --brand-primary on hover */
+  /* Plain rgb, not color-mix(): Safari snaps a color-mix() background instead of fading it */
+  --color-customize-pencil: rgb(198 16 23 / 0.55); /* --brand-primary-darken */
+  --color-customize-pencil-edge: rgb(237 28 36 / 0.7); /* --brand-primary */
+  --blur-customize-pencil: var(--blur-header-glass);
+  --transition-customize-pencil: 0.3s ease;
   /* The link picker popup: Tune your picks' tiles as rows, a column per group */
   --header-picker-gap: 14px;
   --header-picker-title-gap: 10px; /* a column's title to its first tile */
@@ -1081,6 +1087,13 @@
   --header-picker-row-padding: 8px;
   --font-size-header-picker-choice: 13px;
   --font-size-header-picker-check: 11px;
+  /* The dashboard's customize popup: the link picker's tiles as one list, each with a grip to drag it */
+  --dashboard-customizer-row-gap: var(--header-picker-row-gap);
+  --dashboard-customizer-grip: 26px;
+  --dashboard-customizer-grip-inline: 16px; /* narrower than tall, so the dots sit close to the tile */
+  --color-dashboard-customizer-grip: light-dark(#666, #999);
+  --font-size-dashboard-customizer-grip: 13px;
+  --shadow-dashboard-customizer-lifted: 0 8px 20px rgb(0 0 0 / 0.25); /* the row under the pointer while dragged */
 
   /* Header search: an icon in the bar, and a glass panel with the field and the autocomplete under it */
   --search-panel-width: 820px;
@@ -1204,6 +1217,11 @@
   --dialog-art-button-padding: 0 18px;
   --font-size-dialog-art-button: 14.5px;
   --color-dialog-art-button-hover: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
+  /* The outlined button beside the red one (Cancel, Reset): filled, so it reads on the footer in both themes */
+  --color-dialog-art-secondary-bg: light-dark(#fff, #262626);
+  --color-dialog-art-secondary-hover: light-dark(#f4f4f6, #303030);
+  --color-dialog-art-secondary-border: light-dark(#c4c4c8, #3b3b3b);
+  --color-dialog-art-secondary-border-hover: light-dark(#8e8e93, #5c5c5c);
   --dialog-art-meter-gap: 10px;
   --dialog-art-meter-height: 3px;
   --color-dialog-art-meter-track: light-dark(#ddd, #2c2c2c);
@@ -1214,7 +1232,7 @@
   --dialog-art-kbd-gap: 4px;
   --dialog-art-kbd-padding: 1px 5px;
   --color-dialog-art-kbd-border: light-dark(#ccc, #3a3a3a);
-  --color-dialog-art-hint: light-dark(#777, #888);
+  --color-dialog-art-hint: light-dark(#5c5c5c, #888);
   --font-size-dialog-art-hint: 12px;
   --font-size-dialog-art-kbd: 11px;
   --color-dialog-art-alert-border: rgb(240 173 78 / 0.45); /* --brand-warning */

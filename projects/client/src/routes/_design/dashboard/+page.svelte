@@ -5,6 +5,9 @@
   import RecommendationSpotlight from '#lib/components/dashboard/RecommendationSpotlight.svelte';
   import RecommendationsPanel from '#lib/components/dashboard/RecommendationsPanel.svelte';
   import SocialFeedPanel from '#lib/components/dashboard/SocialFeedPanel.svelte';
+  import WatchingNowPanel from '#lib/components/dashboard/WatchingNowPanel.svelte';
+  import HotInNetworkPanel from '#lib/components/dashboard/HotInNetworkPanel.svelte';
+  import { SocialCircle } from '#lib/dashboard/socialCircle.svelte.ts';
   import SchedulePanel from '#lib/components/dashboard/SchedulePanel.svelte';
   import UpNextPanel from '#lib/components/dashboard/UpNextPanel.svelte';
   import WatchlistPanel from '#lib/components/dashboard/WatchlistPanel.svelte';
@@ -183,7 +186,28 @@ const socialRowsFor = (period: Exclude<SocialSpan, 'today'>) =>
   { label: 'Following nobody in welcome mode: the team to follow', feed: socialNobody, live: 0, welcome: true },
     { label: 'Loading', feed: socialLoading, live: 0 },
   { label: 'Failed', feed: socialFailed, live: 0 },
-  ]);
+  ].map(({ feed, live, following = 8, ...rest }) => ({
+    ...rest,
+    circle: new SocialCircle({
+      feed,
+      datePreferences: data.datePreferences,
+      following,
+      watching: watchingNow(live),
+      rowsFor: feed === socialEmpty ? quietWeek : socialRowsFor,
+    }),
+  })));
+  // The member whose Watchlist and Social Feed are hidden still has Watching Now and Hot in Your Network.
+  const customSocial = $derived(new SocialCircle({
+    feed: social,
+    datePreferences: data.datePreferences,
+    following: 8,
+    watching: watchingNow(0),
+    rowsFor: socialRowsFor,
+  }));
+  $effect(() => {
+    const stops = [...socials.map(({ circle }) => circle), customSocial].map((circle) => circle.start());
+    return () => stops.forEach((stop) => stop());
+  });
 
 const noReasons = { titles: [], likes: [], people: [] };
 const recsFor = ({ type, release }: DashboardSettings['recommendations']) => {
@@ -222,11 +246,10 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
   { label: 'Failed', load: reasonsAfter(null) },
   ] as const;
 
-  // A VIP's saved settings: Up Next by completion with favorites only, finales from yesterday, and the Watchlist and
+  // A member's saved settings: Up Next by completion with favorites only, finales from yesterday, and the Watchlist and
   // Social Feed hidden. The fetchers apply the rest (worker sorts, season posters, the ignore switches).
   const custom = toDashboardSettings({
     settings: {
-      user: { vip: true },
       browsing: {
         progress: {
           on_deck: { sort: 'completed', sort_how: 'asc', only_favorites: true }
@@ -376,19 +399,13 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
 </Specimen>
 
 <Specimen title="Social Feed" bleed
-  note="Watching Now is its own panel while anyone is, with the pulsing live dot as its mark: three cards, and More adds a row. Hover a count for what it counts, and a face for their name. By title, Kristin's titles past two fold into one poster that opens her history. Hot in Your Network is a panel of its own, with a slowly flickering flame as its mark, with a period from today to a month (the week by default): it features the title the most people you follow are on, once it's 5 or more people and 5% of who you follow, and Details opens a card for each of them. Up to three story cards of 3 or more follow, each with its reason's tag and band. Under each poster: what they did and when. A tag over its bottom-left corner says what stands out: a premiere or finale, a rating of 9 or 10, a binge of 3 or more episodes, or several friends. Rest the mouse on a poster for who did what; what each one watched links to their history for the period.">
+  note="Three panels that move and hide on their own, sharing one feed. Watching Now is its own panel while anyone is, with the pulsing live dot as its mark: three cards, and More adds a row. Hover a count for what it counts, and a face for their name. By title, Kristin's titles past two fold into one poster that opens her history. Hot in Your Network is a panel of its own, with a slowly flickering flame as its mark, with a period from today to a month (the week by default): it features the title the most people you follow are on, once it's 5 or more people and 5% of who you follow, and Details opens a card for each of them. Up to three story cards of 3 or more follow, each with its reason's tag and band. Under each poster: what they did and when. A tag over its bottom-left corner says what stands out: a premiere or finale, a rating of 9 or 10, a binge of 3 or more episodes, or several friends. Rest the mouse on a poster for who did what; what each one watched links to their history for the period.">
   <div class="states">
-    {#each socials as { label, feed, live, welcome, following = 8 } (label)}
+    {#each socials as { label, circle, welcome } (label)}
       <Variant label={label}>
-        <SocialFeedPanel
-          feed={feed}
-          watching={watchingNow(live)}
-          rowsFor={feed === socialEmpty ? quietWeek : socialRowsFor}
-          username="me"
-          datePreferences={data.datePreferences}
-          {following}
-          welcome={welcome}
-        />
+        <WatchingNowPanel {circle} />
+        <HotInNetworkPanel {circle} />
+        <SocialFeedPanel {circle} username="me" welcome={welcome} />
       </Variant>
     {/each}
   </div>
@@ -431,7 +448,7 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
 {/if}
 
 <Specimen title="With dashboard settings" bleed
-  note="A VIP's saved settings: Up Next by completion % with only favorites, and the schedule's finales from yesterday.">
+  note="A member's saved settings: Up Next by completion % with only favorites, and the schedule's finales from yesterday.">
   <p class="hidden-note">The {hiddenNames.join(' and ')} panels are hidden, so they're left out.</p>
   <div class="states">
     <UpNextPanel upNext={customUpNext} username="me" settings={custom.upNext} />
@@ -444,9 +461,10 @@ const reasonsAfter = (result: (typeof recommendationsFixture)[number]['why'] | n
         datePreferences={data.datePreferences}
       />
     {/if}
+    <WatchingNowPanel circle={customSocial} />
+    <HotInNetworkPanel circle={customSocial} />
     {#if !custom.hidden.socialFeed}
-      <SocialFeedPanel feed={social} watching={watchingNow(0)} rowsFor={socialRowsFor} username="me"
-        datePreferences={data.datePreferences} following={8} />
+      <SocialFeedPanel circle={customSocial} username="me" />
     {/if}
     <RecentlyWatchedPanel plays={recentPlays} username="me" datePreferences={data.datePreferences} />
   </div>

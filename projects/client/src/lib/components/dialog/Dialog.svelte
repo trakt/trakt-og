@@ -8,6 +8,8 @@
   `backdrop` blurs an image (the item's fanart) over a black backdrop, like OG's check-in modal.
   `header` replaces the title bar (it gets the id to label the dialog with), and `footer` sits under the panel,
   on the backdrop, like the Watch Now modal's country picker.
+  The whole panel scrolls when it's taller than the window. With `contained`, the header stays put and the content
+  fills the rest as a column, so it picks what scrolls (the dashboard's customize popup scrolls its rows).
 -->
 <script lang="ts">
 import Icon from '#lib/icons/Icon.svelte';
@@ -36,6 +38,8 @@ interface Props {
   onclose?: () => void;
   /** Gets the id its heading needs, so the dialog stays labelled. */
   header?: Snippet<[string]>;
+  /** The header stays put and the content scrolls itself, instead of the whole panel scrolling. */
+  contained?: boolean;
   footer?: Snippet;
   children: Snippet;
 }
@@ -52,6 +56,7 @@ let {
   backdrop,
   onclose,
   variant,
+  contained = false,
 }: Props = $props();
 const id = $props.id();
 let dialog = $state<HTMLDialogElement>();
@@ -114,13 +119,13 @@ const oncancel = (event: Event) => {
   {@attach syncOpen}
 >
   {#if backdrop}<div class="backdrop-image" style:background-image={`url("${backdrop}")`}></div>{/if}
-  <div class="panel">
+  <div class={['panel', { contained }]}>
     {#if header}
       {@render header(`${id}-title`)}
     {:else}
       <h2 id="{id}-title" class="title">{title}</h2>
     {/if}
-    <div class={{ body: !header }}>{@render children()}</div>
+    <div class={{ body: !header, content: contained }}>{@render children()}</div>
     <!-- Last, so opening focuses the first control in the body like OG did. -->
     <button bind:this={close} type="button" class="close" onclick={() => { open = false; onclose?.(); }}>
       <Icon svg={deleteThick} label="Close" />
@@ -305,6 +310,19 @@ const oncancel = (event: Event) => {
 
 .art .panel {
   border: 1px solid var(--color-dialog-art-border);
+}
+
+.panel.contained {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
 }
 
 /* The toolbar's outlined fields. A collaborator picker styles its own search box. */

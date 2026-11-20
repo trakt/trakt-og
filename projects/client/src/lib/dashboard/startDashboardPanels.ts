@@ -41,6 +41,11 @@ export const PENDING = new Promise<never>(() => {});
 
 const unless = <T>(hidden: boolean, load: () => Promise<T>) => (hidden ? null : load());
 
+/** The feed backs Watching Now and Hot in Your Network too, so it's off only when all three are, or for a Standard app,
+ * whose client may not read it. */
+const socialOff = ({ socialFeed, watchingNow, hotInNetwork }: DashboardSettings['hidden']) =>
+  (socialFeed && watchingNow && hotInNetwork) || isStandardApi();
+
 /**
  * Starts every visible panel's read, from the browser with the viewer's own token. Up Next, Recently Watched, Last 30
  * Days, the recaps and the watchlist show their saved read at once, then check `last_activities` and hand a fresh read to
@@ -135,8 +140,7 @@ export function startDashboardPanels({
         () => fetchRecentlyWatched({ fetch, token: null, datePreferences }),
       ),
     ),
-    // Its feed is Official-only, so a Standard app never shows the panel.
-    socialFeed: unless(hidden.socialFeed || isStandardApi(), () =>
+    socialFeed: unless(socialOff(hidden), () =>
       fetchSocialFeed({ fetch, token: null, following: Promise.resolve(following), now, datePreferences }),
     ),
     recommendations: unless(hidden.recommendations, () =>
@@ -156,7 +160,7 @@ export const pendingDashboardPanels = ({
   watchlist: unless(hidden.watchlist, () => PENDING),
   lastThirtyDays: unless(hidden.lastThirtyDays, () => PENDING),
   recentlyWatched: unless(hidden.recentlyWatched, () => PENDING),
-  socialFeed: unless(hidden.socialFeed || isStandardApi(), () => PENDING),
+  socialFeed: unless(socialOff(hidden), () => PENDING),
   recommendations: unless(hidden.recommendations, () => PENDING),
 });
 

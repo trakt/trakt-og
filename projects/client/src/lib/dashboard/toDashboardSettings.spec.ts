@@ -19,12 +19,25 @@ describe('toDashboardSettings', () => {
       },
       schedule: { filter: 'shows-movies', movies: 'all', startDay: 'today', poster: 'show' },
       recommendations: { type: 'media', release: 'out_now' },
+      order: [
+        'upNext',
+        'schedule',
+        'watchlist',
+        'lastThirtyDays',
+        'recentlyWatched',
+        'watchingNow',
+        'hotInNetwork',
+        'socialFeed',
+        'recommendations',
+      ],
       hidden: {
         upNext: false,
         schedule: false,
         watchlist: false,
         lastThirtyDays: false,
         recentlyWatched: false,
+        watchingNow: false,
+        hotInNetwork: false,
         socialFeed: false,
         recommendations: false,
       },
@@ -97,30 +110,26 @@ describe('toDashboardSettings', () => {
     expect(toDashboardSettings({ settings: null, prefs }).recommendations.release).toBe('coming_soon');
   });
 
-  it('should hide every section for VIPs', () => {
-    const { hidden } = toDashboardSettings({ settings: { user: { vip: true } }, prefs: allHidden });
-
-    expect(Object.values(hidden).every(Boolean)).toBe(true);
-  });
-
-  it('should hide every section for members who joined before September 11, 2024', () => {
-    const settings = { user: { vip: false, joined_at: '2024-09-10T23:59:59.000Z' } };
+  it('should hide every section for every member', () => {
+    const settings = { user: { vip: false, joined_at: '2024-09-11T00:00:00.000Z' } };
 
     expect(Object.values(toDashboardSettings({ settings, prefs: allHidden }).hidden).every(Boolean)).toBe(true);
   });
 
-  it('should only hide Up Next and Recently Watched for everyone else, as OG did', () => {
-    const settings = { user: { vip: false, joined_at: '2024-09-11T00:00:00.000Z' } };
+  it("should take the panels' order from the prefs", () => {
+    const prefs = dashboardPrefs.read(JSON.stringify({ me: { order: ['recommendations', 'upNext'] } }), 'me');
 
-    expect(toDashboardSettings({ settings, prefs: allHidden }).hidden).toEqual({
-      upNext: true,
-      schedule: false,
-      watchlist: false,
-      lastThirtyDays: false,
-      recentlyWatched: true,
-      socialFeed: false,
-      recommendations: false,
-    });
+    expect(toDashboardSettings({ settings: null, prefs }).order).toEqual([
+      'recommendations',
+      'upNext',
+      'schedule',
+      'watchlist',
+      'lastThirtyDays',
+      'recentlyWatched',
+      'watchingNow',
+      'hotInNetwork',
+      'socialFeed',
+    ]);
   });
 
   it('should survive a malformed settings body', () => {

@@ -39,6 +39,24 @@ describe('fetchListItemRefs', () => {
     expect(seen).toEqual(['?extended=full&page=1&limit=250', '?extended=full&page=2&limit=250']);
   });
 
+  it('should keep only the items whose title matches the text, reading every page', async () => {
+    server.use(
+      http.get('https://apiz.trakt.tv/users/sean/lists/7/items/movie/rank/asc', ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page'));
+        return HttpResponse.json(page === 1 ? Array.from({ length: 250 }, (_, i) => movie(i + 1)) : [movie(251)], {
+          headers: { 'X-Pagination-Item-Count': '251' },
+        });
+      }),
+    );
+    const refs = await fetchListItemRefs({
+      fetch,
+      base: '/users/sean/lists/7/items',
+      query: { types: ['movie'], genres: [], terms: 'movie 251' },
+      sort: { by: 'rank', how: 'asc' },
+    });
+    expect(refs.map(({ id }) => id)).toEqual([251]);
+  });
+
   it('should keep the visible filters when reading items for bulk actions', async () => {
     let search: URLSearchParams | undefined;
     server.use(
@@ -59,7 +77,6 @@ describe('fetchListItemRefs', () => {
       page: '1',
       limit: '250',
       genres: 'drama',
-      terms: 'Movie',
       watchnow: 'netflix',
     });
   });

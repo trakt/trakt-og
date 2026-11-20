@@ -1,6 +1,7 @@
 import type { ListItemRow } from './listItemRowsSchema.ts';
 import type { ListQuery } from './ListQuery.ts';
 import { fetchListItems } from './loadListItems.ts';
+import { matchesListTerms } from './matchesListTerms.ts';
 import type { ListSort } from './resolveListSort.ts';
 
 /** A list item as the whole-list writes send it: its list item id for reorders, its media for removals. */
@@ -42,6 +43,7 @@ export async function fetchListItemRefs({
   sort: ListSort;
 }): Promise<readonly ListItemRef[]> {
   const refs: ListItemRef[] = [];
+  let read = 0;
   // ponytail: one page at a time, since most lists fit one; read them in parallel if long lists feel slow.
   for (let page = 1; page <= MAX_PAGES; page++) {
     const { status, rows, headers } = await fetchListItems({
@@ -52,9 +54,14 @@ export async function fetchListItemRefs({
       sort,
     });
     if (status !== 200) throw new Error(`List items: ${status}`);
-    refs.push(...rows.map((row) => ({ id: row.id, type: row.type, trakt: traktId(row) })));
+    read += rows.length;
+    refs.push(
+      ...rows
+        .filter((row) => matchesListTerms(row, query.terms))
+        .map((row) => ({ id: row.id, type: row.type, trakt: traktId(row) })),
+    );
     // A short page is the last: the worker's page count runs long under a genre filter (`listPageMeta.ts`).
-    if (rows.length < PAGE || refs.length >= Number(headers.get('x-pagination-item-count') ?? Infinity)) return refs;
+    if (rows.length < PAGE || read >= Number(headers.get('x-pagination-item-count') ?? Infinity)) return refs;
   }
   throw new Error('List too long');
 }

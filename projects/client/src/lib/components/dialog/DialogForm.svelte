@@ -114,9 +114,9 @@ button {
   justify-content: center;
   min-block-size: var(--dialog-art-button-height);
   padding: var(--dialog-art-button-padding);
-  border: 1px solid var(--color-control-border);
+  border: 1px solid var(--color-dialog-art-secondary-border);
   border-radius: var(--radius-control);
-  background: none;
+  background: var(--color-dialog-art-secondary-bg);
   color: var(--color-control-text);
   font-family: var(--font-headings);
   font-size: var(--font-size-dialog-art-button);
@@ -125,8 +125,8 @@ button {
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    border-color: var(--color-control-border-hover);
-    background-color: var(--color-dialog-art-button-hover);
+    border-color: var(--color-dialog-art-secondary-border-hover);
+    background-color: var(--color-dialog-art-secondary-hover);
   }
 }
 

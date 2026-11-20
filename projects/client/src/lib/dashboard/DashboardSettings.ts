@@ -1,4 +1,4 @@
-import type { DashboardPrefs } from './dashboardPrefs.ts';
+import type { DashboardPanel, DashboardPrefs } from './dashboardPrefs.ts';
 import type { UpNextSortBy } from './upNextSorts.ts';
 
 /** Up Next's sort: OG's key and direction, and its name for the help line. */
@@ -30,14 +30,8 @@ export type DashboardSettings = {
     readonly type: DashboardPrefs['recommendations_type'];
     readonly release: DashboardPrefs['recommendations_release'];
   };
+  /** The movable panels, in the viewer's order. */
+  readonly order: readonly DashboardPanel[];
   /** The panels the viewer hid. Suggested People is cut, so it has no switch here. */
-  readonly hidden: {
-    readonly upNext: boolean;
-    readonly schedule: boolean;
-    readonly watchlist: boolean;
-    readonly lastThirtyDays: boolean;
-    readonly recentlyWatched: boolean;
-    readonly socialFeed: boolean;
-    readonly recommendations: boolean;
-  };
+  readonly hidden: Readonly<Record<DashboardPanel, boolean>>;
 };

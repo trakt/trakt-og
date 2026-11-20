@@ -4,7 +4,7 @@
   the bar clips the overflow until the browser measures it.
   While editing, each link is a chip: drag its grip, or focus the grip and use the arrow keys, to move it, and the
   trash can removes it. Add Link at the end opens the picker. The chips wrap onto more rows when they need them.
-  Signed in, a pencil after the links opens edit mode. It shows when the mouse rests on the links for a moment, or
+  Signed in, a pencil after the links opens edit mode. It fades in while `reveal` is on (the mouse is on the header), or
   when the keyboard reaches it, so the bar looks the same the rest of the time.
 -->
 <script lang="ts">
@@ -22,6 +22,7 @@ import { currentHeaderLink } from './currentHeaderLink.ts';
 import type { HeaderLink } from './HeaderLink.ts';
 import HeaderLinkPicker from './HeaderLinkPicker.svelte';
 import HeaderMenu from './HeaderMenu.svelte';
+import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
 
 interface Props {
   /** The bar's links, in order. */
@@ -33,11 +34,13 @@ interface Props {
   onchange: (ids: string[]) => void;
   /** Opens edit mode from the pencil. Without it (signed out) there's no pencil. */
   oncustomize?: () => void;
+  /** Shows the pencil: the mouse is on the header. */
+  reveal?: boolean;
   /** The member's first name, over their own pages in the picker. */
   name?: string;
 }
 
-const { links, choices, editing, onchange, oncustomize, name = 'Your Pages' }: Props = $props();
+const { links, choices, editing, onchange, oncustomize, reveal = false, name = 'Your Pages' }: Props = $props();
 const id = $props.id();
 
 const current = $derived(currentHeaderLink(links, page.url.pathname));
@@ -84,30 +87,6 @@ $effect(() => {
   if (shown < count) fit = shown;
 });
 
-// How long the mouse rests on the links before the pencil shows, so passing over them on the way to one doesn't.
-const REST_MS = 500;
-let resting = $state(false);
-
-const restOn = (row: HTMLElement) => {
-  let timer = 0;
-  const enter = (event: PointerEvent) => {
-    if (event.pointerType !== 'mouse') return;
-    clearTimeout(timer);
-    timer = window.setTimeout(() => (resting = true), REST_MS);
-  };
-  const leave = () => {
-    clearTimeout(timer);
-    resting = false;
-  };
-  row.addEventListener('pointerenter', enter);
-  row.addEventListener('pointerleave', leave);
-  return () => {
-    // Edit mode swaps the row out under the pointer, which never leaves it; the pencil waits for the next rest.
-    leave();
-    row.removeEventListener('pointerenter', enter);
-    row.removeEventListener('pointerleave', leave);
-  };
-};
 
 let picking = $state(false);
 let chips = $state<HTMLElement>();
@@ -219,7 +198,7 @@ async function remove(linkId: string) {
   <p id="{id}-hint" class="visually-hidden">Arrow keys move it.</p>
   <p class="visually-hidden" aria-live="polite">{announcement}</p>
 {:else}
-  <div class={['row', { resting }]} {@attach restOn}>
+  <div class={['row', { reveal }]}>
   <nav class="links" aria-label="Main" bind:this={nav} {@attach refit}>
     {#each links as link, index (link.id)}
       <a href={link.href} aria-current={link.id === current ? 'true' : undefined} class={{ folded: index >= fit }}
@@ -239,8 +218,12 @@ async function remove(linkId: string) {
     {/if}
   </nav>
   {#if oncustomize}
-    <button type="button" class="customize" aria-label="Customize header" title="Customize header"
-      onclick={oncustomize}><Icon svg={pen} /></button>
+    <Tooltip text="Customize" placement="right">
+      {#snippet trigger(tooltip)}
+        <button type="button" class="customize" aria-label="Customize header" onclick={oncustomize} {...tooltip}
+          ><Icon svg={pen} /></button>
+      {/snippet}
+    </Tooltip>
   {/if}
   </div>
 {/if}
@@ -299,7 +282,7 @@ async function remove(linkId: string) {
   visibility: hidden;
 }
 
-/* The links and the pencil after them, which sits out of sight until the mouse rests on the row. */
+/* The links and the pencil after them, which sits out of sight until the mouse is on the header. */
 .row {
   display: flex;
   align-items: center;
@@ -318,24 +301,26 @@ async function remove(linkId: string) {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: none;
-  box-shadow: inset 0 0 0 1px var(--color-header-chip-edge);
-  color: var(--color-header-muted);
+  background-color: var(--color-customize-pencil);
+  box-shadow: inset 0 0 0 1px var(--color-customize-pencil-edge);
+  color: var(--color-header-text);
   font-size: var(--font-size-header-chip-icon);
+  backdrop-filter: var(--blur-customize-pencil);
   opacity: 0;
   scale: 0.85;
   pointer-events: none;
-  transition: opacity 0.2s, scale 0.2s, background-color 0.2s, color 0.2s;
+  transition: opacity var(--transition-customize-pencil), scale var(--transition-customize-pencil),
+    background-color var(--transition-customize-pencil), box-shadow var(--transition-customize-pencil);
 
-  .row:is(.resting, :focus-within) & {
+  .row:is(.reveal, :focus-within) & {
     opacity: 1;
     scale: 1;
     pointer-events: auto;
   }
 
   &:is(:hover, :focus-visible) {
-    background-color: var(--color-header-pill);
-    color: var(--color-header-text);
+    background-color: var(--brand-primary);
+    box-shadow: inset 0 0 0 1px var(--brand-primary);
   }
 }
 

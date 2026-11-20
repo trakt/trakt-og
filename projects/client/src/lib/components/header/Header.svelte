@@ -19,7 +19,6 @@ import heart from '#lib/icons/solid/heart.svg?raw';
 import list from '#lib/icons/solid/list.svg?raw';
 import memo from '#lib/icons/solid/memo.svg?raw';
 import moon from '#lib/icons/solid/moon.svg?raw';
-import pen from '#lib/icons/solid/pen.svg?raw';
 import resetIcon from '#lib/icons/regular/arrow-rotate-left.svg?raw';
 import check from '#lib/icons/solid/check.svg?raw';
 import rocket from '#lib/icons/solid/rocket.svg?raw';
@@ -112,6 +111,19 @@ const browserSave = (body: SettingsBody) =>
     if (user) headerLinkPrefs.save(user.slug, ids);
   }
 
+  // The links' pencil fades in while the mouse is anywhere on the bar.
+  let hovering = $state(false);
+  const trackHover = (bar: HTMLElement) => {
+    const enter = (event: PointerEvent) => (hovering = event.pointerType === 'mouse');
+    const leave = () => (hovering = false);
+    bar.addEventListener('pointerenter', enter);
+    bar.addEventListener('pointerleave', leave);
+    return () => {
+      bar.removeEventListener('pointerenter', enter);
+      bar.removeEventListener('pointerleave', leave);
+    };
+  };
+
   afterNavigate(({ shallow, type }) => {
     if (shallow && type === 'goto') return;
 
@@ -171,14 +183,14 @@ const profileLinks = $derived(
   main links on the left, and on the right what the member is watching (HeaderWatching), the help menu and the account: Get VIP and the profile menu, or one Sign
   In button.
   While an expired session renews, it keeps the signed-in links and leaves the account empty until the user loads.
-  A member picks their own links: Customize Header in the profile menu, or the pencil that shows when the mouse rests
-  on the links, turns the bar into an editor (HeaderLinks),
+  A member picks their own links: the pencil after them, which fades in while the mouse is on the bar, turns the bar
+  into an editor (HeaderLinks),
   with Reset (back to the default links) and a green Done, list management's, in place of the account. Each change saves to this browser (headerLinkPrefs).
 -->
 <!-- Links point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
 
-<header class={['top-nav', { editing }]}>
+<header class={['top-nav', { editing }]} {@attach trackHover}>
   <HeaderTint />
   <a class="logo" href="/"><img src={logo} alt="Trakt" width="34" height="34" /></a>
 
@@ -192,6 +204,7 @@ const profileLinks = $derived(
       editing={editing}
       onchange={changeLinks}
       oncustomize={user ? () => editing = true : undefined}
+      reveal={hovering}
       name={user?.firstName}
     />
   </div>
@@ -261,9 +274,6 @@ const profileLinks = $derived(
               <button type="button" class="dark-knight" role="switch" aria-checked={dark} onclick={toggleDarkKnight}>
                 <Icon svg={moon} fixedWidth /> Dark Knight
               </button>
-              </li>
-              <li>
-                <button type="button" onclick={() => editing = true}><Icon svg={pen} fixedWidth /> Customize Header</button>
               </li>
             <li><a href={traktUrls.settings} target="_blank" rel="noopener"><Icon svg={gear} fixedWidth /> Settings</a></li>
             </ul>

@@ -1,10 +1,12 @@
 <script lang="ts">
+import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 import { AnalyticsEvent } from '#lib/analytics/AnalyticsEvent.ts';
 import { useTrack } from '#lib/analytics/useTrack.ts';
 import SeoHead from '#lib/seo/SeoHead.svelte';
 import { staticSeo } from '#lib/seo/pages/staticSeo.ts';
+import DashboardCustomizer from '#lib/components/dashboard/DashboardCustomizer.svelte';
 import DashboardGreeting from '#lib/components/dashboard/DashboardGreeting.svelte';
 import FirstNightHero from '#lib/components/first-night/FirstNightHero.svelte';
 import FirstNightProgress from '#lib/components/first-night/FirstNightProgress.svelte';
@@ -18,10 +20,13 @@ import RecentlyWatchedPanel from '#lib/components/dashboard/RecentlyWatchedPanel
 import LastThirtyDaysPanel from '#lib/components/dashboard/LastThirtyDaysPanel.svelte';
 import RecommendationsPanel from '#lib/components/dashboard/RecommendationsPanel.svelte';
 import SocialFeedPanel from '#lib/components/dashboard/SocialFeedPanel.svelte';
+import WatchingNowPanel from '#lib/components/dashboard/WatchingNowPanel.svelte';
+import HotInNetworkPanel from '#lib/components/dashboard/HotInNetworkPanel.svelte';
 import { api } from '#lib/api/api.ts';
 import type { DashboardSettings } from '#lib/dashboard/DashboardSettings.ts';
 import type { RecapSpan } from '#lib/dashboard/RecapRibbon.ts';
-import { dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { type DashboardPanel, dashboardPrefs } from '#lib/dashboard/dashboardPrefs.ts';
+import { SocialCircle } from '#lib/dashboard/socialCircle.svelte.ts';
 import { fetchRecapSplit } from '#lib/dashboard/fetchRecapSplit.ts';
 import { fetchRecommendations } from '#lib/dashboard/fetchRecommendations.ts';
 import { fetchSchedule } from '#lib/dashboard/fetchSchedule.ts';
@@ -153,6 +158,40 @@ function loadRecommendations(picks: DashboardSettings['recommendations']) {
   });
   return fetchRecommendations({ fetch: viewerFetch(), token: null, settings: picks });
 }
+
+// The panels' order and hide switches: the saved ones until the customize popup changes them. A change shows at once
+// and saves to this browser.
+let layout = $derived({ order: data.dashboard.order, hidden: data.dashboard.hidden });
+const shownPanels = $derived(layout.order.filter((panel) => !layout.hidden[panel]));
+
+function changeLayout(next: Pick<DashboardSettings, 'order' | 'hidden'>) {
+  layout = next;
+  dashboardPrefs.save(username, dashboardPrefs.withLayout(dashboardPrefs.load(username), next));
+}
+
+// Watching Now, Hot in Your Network and the Social Feed share the feed's reads, made once here.
+const feed = $derived(panels.socialFeed);
+const social = $derived(
+  feed
+    ? new SocialCircle({
+        feed,
+        datePreferences: data.datePreferences,
+        following: data.stats?.network?.following ?? null,
+      })
+    : null,
+);
+$effect(() => social?.start());
+
+const readOf = (panel: DashboardPanel) =>
+  panel === 'watchingNow' || panel === 'hotInNetwork' ? panels.socialFeed : panels[panel];
+
+// A panel hidden when the page loaded may never have read; once the popup closes with it on, load the dashboard again.
+function loadShown() {
+  const unread = (panel: DashboardPanel) => data.dashboard.hidden[panel] && !layout.hidden[panel] && !readOf(panel);
+  if (layout.order.some(unread)) void invalidateAll();
+}
+
+let customizing = $state(false);
 </script>
 
 <SeoHead {...staticSeo['/dashboard']} />
@@ -168,7 +207,8 @@ function loadRecommendations(picks: DashboardSettings['recommendations']) {
   <FirstNightHero firstNight={data.firstNight} firstName={data.profile.firstName}
   named={!!data.settings?.user.name?.trim()} avatarUrl={data.profile.avatarUrl} />
 {:else}
-  <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={viewerWatching.latest(data.viewerWatching)}>
+  <DashboardGreeting user={data.profile} memberSince={data.memberSince} watching={viewerWatching.latest(data.viewerWatching)}
+    oncustomize={() => (customizing = true)}>
   {#if stats}
     <!-- The API's stats render at once; og's own count loads in the browser. -->
     {#await stats}
@@ -183,31 +223,32 @@ function loadRecommendations(picks: DashboardSettings['recommendations']) {
   {#if panels.recaps}<RecapRibbon recaps={panels.recaps} split={loadRecapSplit} />{/if}
 {/if}
 <DashboardInbox requests={data.requests} />
-<!-- A panel the viewer hid comes back null. -->
-{#if panels.upNext}
-  <UpNextPanel upNext={panels.upNext} {username} settings={data.dashboard.upNext} {welcome} />
-{/if}
-{#if panels.schedule}
-  <SchedulePanel schedule={panels.schedule} filter={data.dashboard.schedule.filter}
-  movies={data.dashboard.schedule.movies}
-  onpick={loadSchedule} />
-{/if}
-{#if panels.watchlist}
-  <WatchlistPanel watchlist={panels.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
-{/if}
-{#if panels.lastThirtyDays}
-  <LastThirtyDaysPanel stats={panels.lastThirtyDays} />
-{/if}
-{#if panels.recentlyWatched}
-  <RecentlyWatchedPanel plays={panels.recentlyWatched} {username} datePreferences={data.datePreferences}
-  {welcome} />
-{/if}
-{#if panels.socialFeed}
-  <SocialFeedPanel feed={panels.socialFeed} {username} datePreferences={data.datePreferences}
-    following={data.stats?.network?.following ?? null} {welcome} />
-{/if}
-{#if panels.recommendations}
-  <RecommendationsPanel recommendations={panels.recommendations} type={data.dashboard.recommendations.type}
-  release={data.dashboard.recommendations.release}
-  onpick={loadRecommendations} />
-{/if}
+<!-- In the viewer's order. A panel hidden when the page loaded comes back null. -->
+{#each shownPanels as panel (panel)}
+  {#if panel === 'upNext' && panels.upNext}
+    <UpNextPanel upNext={panels.upNext} {username} settings={data.dashboard.upNext} {welcome} />
+  {:else if panel === 'schedule' && panels.schedule}
+    <SchedulePanel schedule={panels.schedule} filter={data.dashboard.schedule.filter}
+    movies={data.dashboard.schedule.movies}
+    onpick={loadSchedule} />
+  {:else if panel === 'watchlist' && panels.watchlist}
+    <WatchlistPanel watchlist={panels.watchlist} {username} datePreferences={data.datePreferences} {welcome} />
+  {:else if panel === 'lastThirtyDays' && panels.lastThirtyDays}
+    <LastThirtyDaysPanel stats={panels.lastThirtyDays} />
+  {:else if panel === 'recentlyWatched' && panels.recentlyWatched}
+    <RecentlyWatchedPanel plays={panels.recentlyWatched} {username} datePreferences={data.datePreferences}
+    {welcome} />
+  {:else if panel === 'watchingNow' && social}
+    <WatchingNowPanel circle={social} />
+  {:else if panel === 'hotInNetwork' && social}
+    <HotInNetworkPanel circle={social} />
+  {:else if panel === 'socialFeed' && social}
+    <SocialFeedPanel circle={social} {username} {welcome} />
+  {:else if panel === 'recommendations' && panels.recommendations}
+    <RecommendationsPanel recommendations={panels.recommendations} type={data.dashboard.recommendations.type}
+    release={data.dashboard.recommendations.release}
+    onpick={loadRecommendations} />
+  {/if}
+{/each}
+<DashboardCustomizer bind:open={customizing} order={layout.order} hidden={layout.hidden}
+  onchange={changeLayout} onclose={loadShown} />

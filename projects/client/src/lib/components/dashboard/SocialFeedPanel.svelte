@@ -3,10 +3,8 @@
   import { resolve } from '$app/paths';
   import type { Snippet } from 'svelte';
   import { browser } from '$app/env';
-  import { apiQueue } from '#lib/api/apiQueue.ts';
   import { isApiUnavailable } from '#lib/api/isApiUnavailable.ts';
   import { logHidden } from '#lib/api/logHidden.ts';
-  import { rawApiFetch } from '#lib/api/rawApiFetch.ts';
   import Dropdown from '#lib/components/dropdown/Dropdown.svelte';
   import LoadFailed from '#lib/components/empty/LoadFailed.svelte';
   import EmptyState from '#lib/components/empty/EmptyState.svelte';
@@ -21,14 +19,10 @@
   import { quickIconFill } from '#lib/components/media/quickIconFill.ts';
   import PageNavigator from '#lib/components/page-navigator/PageNavigator.svelte';
   import GenreBand from '#lib/components/users/GenreBand.svelte';
-  import { fetchSocialItems, type SocialFeed, type SocialGet } from '#lib/dashboard/fetchSocialFeed.ts';
-  import { fetchFollowingWatching } from '#lib/dashboard/fetchFollowingWatching.ts';
-  import type { LiveWatch } from '#lib/dashboard/fetchWatching.ts';
-  import { liveTiles } from '#lib/dashboard/liveTiles.ts';
-  import { pollWatching } from '#lib/dashboard/pollWatching.ts';
   import { rowCount } from '#lib/dashboard/rowCount.ts';
   import { savedRows } from '#lib/dashboard/savedRows.ts';
-  import { type SocialPeriod, type SocialSpan, socialWindows } from '#lib/dashboard/socialWindows.ts';
+  import type { SocialCircle } from '#lib/dashboard/socialCircle.svelte.ts';
+  import type { SocialPeriod } from '#lib/dashboard/socialWindows.ts';
 import {
   type SocialCard,
   type SocialLinePart,
@@ -42,51 +36,29 @@ import {
   import type { SocialItem, SocialMember } from '#lib/dashboard/toSocialItem.ts';
   import userGroup from '#lib/icons/regular/user-group.svg?raw';
   import { overlay } from '#lib/overlay/overlay.ts';
-  import type { DatePreferences } from '#lib/settings/DatePreferences.ts';
   import type { BandWords } from '#lib/users/profile/toGenreBand.ts';
-  import Stat from '#lib/components/stats/Stat.svelte';
   import Tooltip from '#lib/components/tooltip/Tooltip.svelte';
   import RatingLine from '#lib/components/rating/RatingLine.svelte';
   import chartSimple from '#lib/icons/regular/chart-simple.svg?raw';
   import posterStack from '#lib/icons/regular/rectangle-vertical-history.svg?raw';
   import fire from '#lib/icons/solid/fire.svg?raw';
-  import { toCircleEvents } from '#lib/dashboard/toCircleEvents.ts';
-  import CircleHighlights from './CircleHighlights.svelte';
   import DashboardPanel from './DashboardPanel.svelte';
+  import PanelCounts from './PanelCounts.svelte';
   import SocialDetails from './SocialDetails.svelte';
-  import SocialTile from './SocialTile.svelte';
-  import { viewerFetch } from '../../auth/viewerFetch.ts';
 
   interface Props {
-    feed: Promise<SocialFeed>;
-    datePreferences: DatePreferences;
+    /** The page's social reads, shared with Watching Now and Hot in Your Network. */
+    circle: SocialCircle;
     /** The viewer's slug, for the saved page count. */
     username: string;
-    /** Who the viewer follows is watching now. Defaults to asking the API with the viewer's token. */
-    watching?: () => Promise<readonly LiveWatch[]>;
-    /** The rows of a period past today. Defaults to asking the API with the viewer's token. */
-    rowsFor?: (period: Exclude<SocialSpan, 'today'>) => Promise<readonly SocialItem[]>;
-    /** How many people the viewer follows, for the featured title's share; null when that didn't load. */
-    following?: number | null;
     /** Welcome mode: following nobody offers the team to follow instead of a link. */
   welcome?: boolean;
   }
 
-  const get: SocialGet = (path) => apiQueue.run(() => rawApiFetch({ fetch: viewerFetch(), path }));
-
-  const {
-    feed,
-    datePreferences,
-    username,
-    watching = () => fetchFollowingWatching({ get }),
-    rowsFor,
-    following = null,
-  welcome = false,
-  }: Props = $props();
+  const { circle, username, welcome = false }: Props = $props();
+  const { feed, datePreferences } = $derived(circle);
 
   const PERIODS: Readonly<Record<SocialPeriod, string>> = { today: 'Today', yesterday: 'Yesterday', week: 'Week' };
-  type CircleSpan = Extract<SocialSpan, 'week' | 'month'>;
-  const SPANS: Readonly<Record<CircleSpan, string>> = { week: 'Week', month: 'Month' };
   const VIEWS: Readonly<Record<SocialView, string>> = { title: 'Title', person: 'Person', time: 'Time' };
 const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' : 'people'}` };
   /** What each view's count counts. */
@@ -98,73 +70,30 @@ const PEOPLE: BandWords = { rest: (count) => `${count} ${count === 1 ? 'person' 
   /** Between the parts of the line under a poster, which may be links. */
   const SPACE = ' ';
   const PER_ROW = 6;
-  const LIVE_PER_ROW = 3;
   /** Less and more step two rows at a time: a page. One to start, and more adds up to six. */
   const ROWS_PER_PAGE = 2;
   const MAX_PAGES = 7;
-  const CLOCK_MS = 30_000;
-  /** The windows' anchor: fixed for the page, so a period's rows and its history links agree. */
-  const opened = new Date();
 
   let period = $state<SocialPeriod>('today');
   let view = $state<SocialView>('title');
-  let live = $state<readonly LiveWatch[]>([]);
-  let now = $state(new Date());
-  let loaded = $state<Partial<Record<Exclude<SocialSpan, 'today'>, readonly SocialItem[]>>>({});
   let fetching = $state<SocialPeriod | null>(null);
   // The grid's width, so a smaller tablet's four columns get whole rows.
   let width = $state(0);
   const perPage = $derived(visibleColumns(width, PER_ROW) * ROWS_PER_PAGE);
-  let liveRows = $state(1);
-  let liveWidth = $state(0);
-  // Half the poster grid's columns, as the live grid's container query below sets: three, two on smaller tablets.
-  const livePerRow = $derived(Math.max(2, visibleColumns(liveWidth, PER_ROW) / 2));
   let failed = $state<SocialPeriod | null>(null);
-  let span = $state<CircleSpan>('week');
-  let spanFetching = $state(false);
-  let spanFailed = $state(false);
 
   const storageKey = $derived(`social_feed_pages:${username}`);
   // The cards only render in the browser, once the streamed promise lands, so SSR never needs the saved pages.
   let saved = $derived(browser ? savedRows.read(storageKey) : null);
 
-  const windowsOf = (which: SocialSpan) => socialWindows(which, opened, datePreferences.timeZone);
-const fromApi = (which: Exclude<SocialSpan, 'today'>) =>
-  fetchSocialItems({ get, windows: windowsOf(which), datePreferences });
-
-  // Each period loads once, for Hot in Your Network and the feed both. A failed load is dropped, so picking it again retries.
-  const requests: Partial<Record<Exclude<SocialSpan, 'today'>, Promise<readonly SocialItem[]>>> = {};
-  function rowsOf(which: Exclude<SocialSpan, 'today'>) {
-    const request = requests[which] ?? (rowsFor ?? fromApi)(which);
-    requests[which] = request;
-    request.catch(() => delete requests[which]);
-    return request;
-  }
-
-  /** Hot in Your Network's period, loaded the first time it's picked. */
-  function pickSpan(next: CircleSpan) {
-    span = next;
-    spanFailed = false;
-    if (loaded[next]) return;
-    spanFetching = true;
-    void rowsOf(next)
-      .then((items) => loaded = { ...loaded, [next]: items })
-      .catch(() => {
-        if (span === next) spanFailed = true;
-      })
-      .finally(() => {
-        if (span === next) spanFetching = false;
-      });
-  }
-
   function pick(next: SocialPeriod) {
     period = next;
     failed = null;
-    if (next === 'today' || loaded[next]) return;
+    if (next === 'today' || circle.loaded[next]) return;
 
     fetching = next;
 
-    void rowsOf(next).then((items) => loaded = { ...loaded, [next]: items }).catch(() => failed = next).finally(() => {
+    void circle.load(next).catch(() => failed = next).finally(() => {
       if (fetching === next) fetching = null;
     });
 }
@@ -181,76 +110,28 @@ function changePages(pages: number) {
     });
   });
 
-  // After the feed lands: who's watching, now and every 2 minutes while visible, and a clock for the minutes left.
-  $effect(() => {
-    let stop = () => {};
-    let cancelled = false;
-    void feed.then(({ follows }) => {
-      if (cancelled || !follows) return;
-      stop = pollWatching({
-        load: watching,
-        onupdate: (value) => {
-          live = value;
-          now = new Date();
-      },
-      });
-    }).catch(() => {});
-    const clock = setInterval(() => now = new Date(), CLOCK_MS);
-
-    return () => {
-      cancelled = true;
-      stop();
-      clearInterval(clock);
-    };
-  });
-
-  // After the feed lands: the week, for what the most people the viewer follows were on.
-  $effect(() => {
-    let cancelled = false;
-    void feed.then(({ follows }) => {
-      if (cancelled || !follows || loaded.week) return;
-      return rowsOf('week').then((items) => {
-        if (!cancelled) loaded = { ...loaded, week: items };
-      });
-    }).catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  });
-
-  const circleOf = (which: SocialSpan, items: readonly SocialItem[] | undefined) =>
-    items && toCircleEvents(items, following, windowsOf(which));
-  const hasEvents = (events: ReturnType<typeof circleOf>) =>
-    events !== undefined && (events.featured !== null || events.standouts.length > 0);
-  // Hot in Your Network shows when the week has something to show, and then stays for every period.
-  const weekEvents = $derived(circleOf('week', loaded.week));
-  const tiles = $derived(liveTiles(live, now));
-  const livePages = $derived(rowCount({ rows: liveRows, items: tiles.length, perRow: livePerRow, maxRows: tiles.length }));
   /** Who's watching now, in a period that runs up to now, for the counts and the band. */
-  const playing = $derived(period === 'yesterday' ? [] : tiles);
+  const playing = $derived(period === 'yesterday' ? [] : circle.tiles);
 const boardOf = (items: readonly SocialItem[] | undefined) =>
   items &&
   toSocialBoard({
     items,
     live: playing.map(({ watch }) => watch),
     view,
-    windows: windowsOf(period),
-    now,
+    windows: circle.windowsOf(period),
+    now: circle.now,
     datePreferences,
   });
 </script>
 
 <!--
-  The dashboard's Social Feed. Watching Now comes first, a panel of its own while anyone is: fanart cards, three
-  across, with the less and more pill for the rest. Then the feed: a period (today, yesterday, the week) and a view
+  The dashboard's Social Feed: a period (today, yesterday, the week) and a view
   (by title, person or time) to pick, and a poster grid of the period with the viewer's own quick icons, so each title
   shows where they stand and can be marked or listed from here. By title, members take turns, and past two a
   member's other titles fold into one poster that opens their history. A Most Active panel follows with a band of who
-  did the most. Pass the unawaited `fetchSocialFeed` promise from the loader: it
-  brings today, and the browser fetches the other periods when they're picked. Until a period lands, shimmering
-  cards hold its place. After it renders, the browser asks
-  what the most recently active members are watching, every 2 minutes while the tab is visible.
+  did the most. It reads from the page's `SocialCircle`: its feed brings today, and the other periods load when
+  they're picked. Until a period lands, shimmering cards hold its place. Who's watching now joins the counts and the
+  band for a period that runs up to now.
 -->
 <!-- Hrefs point at OG routes og hasn't built yet, and resolve() only takes routes that exist. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
@@ -267,11 +148,6 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   ><div class="body">{@render content()}</div></DashboardPanel>
 {/snippet}
 
-<!-- Each count is its icon and number; what it counts is the tooltip, "Titles". -->
-{#snippet stat(svg: string, count: number, one: string, many: string)}
-  {@const noun = count === 1 ? one : many}
-  <Stat {svg} value={count.toLocaleString('en-US')} {noun} label={noun.charAt(0).toUpperCase() + noun.slice(1)} bare />
-{/snippet}
 
 {#snippet face(member: SocialMember)}
   <Tooltip text={member.name}>
@@ -329,7 +205,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     }}
 >
     {#snippet posterOverlay()}
-      {#if item.details}<SocialDetails card={item} {now} />{/if}
+      {#if item.details}<SocialDetails card={item} now={circle.now} />{/if}
       {#if item.tag}{@render tag(item.tag)}{/if}
       <span class="faces">
         {#each item.members.slice(0, 3) as member (member.key)}
@@ -360,7 +236,7 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
   {#if !social.follows}
     {@render panel(false, nobody)}
   {:else}
-    {@const board = boardOf(period === 'today' ? social.items : loaded[period])}
+    {@const board = boardOf(period === 'today' ? social.items : circle.loaded[period])}
     {@const pages = rowCount({ rows: saved, items: board?.cards.length ?? 0, perRow: perPage, maxRows: MAX_PAGES })}
     {@const counted = COUNTS[view]}
     {#snippet body()}
@@ -416,70 +292,18 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
       <PageNavigator label="Social Feed" rows={pages.rows} maxRows={pages.maxRows} onchange={changePages} edge />
     {/snippet}
     {#snippet count()}
-      {#if board}<span class="stats">{@render stat(posterStack, board.total, counted.one, counted.many)}</span>{/if}
+      {#if board}<PanelCounts counts={[{ svg: posterStack, count: board.total, ...counted }]} />{/if}
     {/snippet}
-    {#if tiles.length > 0}
-      {#snippet liveNavigator()}
-        <PageNavigator label="Watching Now" rows={livePages.rows} maxRows={livePages.maxRows}
-          onchange={(rows) => liveRows = rows} edge />
-      {/snippet}
-      {#snippet liveCount()}
-        <span class="stats">{@render stat(userGroup, tiles.length, 'person', 'people')}</span>
-      {/snippet}
-      {#snippet liveHelp()}From people you follow.{/snippet}
-      <DashboardPanel --panel-bg="var(--color-social-live-bg)" title="Watching Now" live help={liveHelp}
-        footer={liveNavigator} aside={liveCount}>
-        <div class="live" bind:clientWidth={liveWidth} {@attach trackDrilldowns({ source: 'social-feed' })}>
-          <PosterGrid columns={LIVE_PER_ROW} phoneColumns={2}>
-            {#each tiles.slice(0, livePages.rows * livePerRow) as tile (tile.watch.member.key)}
-              <SocialTile tile={tile} />
-            {/each}
-          </PosterGrid>
-        </div>
-      </DashboardPanel>
-    {/if}
-    {#if hasEvents(weekEvents)}
-      {@const events = circleOf(span, loaded[span])}
-      {#snippet circleCount()}
-        {#if following !== null}<span class="stats">{@render stat(userGroup, following, 'person you follow',
-            'people you follow')}</span>{/if}
-      {/snippet}
-      <DashboardPanel --panel-bg="var(--color-panel-gray)" title="Hot in Your Network" hot
-        loading={spanFetching} aside={circleCount}>
-        <div class="circle" {@attach trackDrilldowns({ source: 'social-feed' })}>
-          <div class="controls">
-            <Dropdown section="Period">
-              {#snippet trigger()}{SPANS[span]}{/snippet}
-              <ul>
-                {#each Object.entries(SPANS) as [key, label] (key)}
-                  <li><button type="button" aria-current={key === span ? 'true' : undefined}
-                      onclick={() => pickSpan(key as CircleSpan)}>{label}</button></li>
-                {/each}
-              </ul>
-            </Dropdown>
-          </div>
-          {#if spanFailed}
-            <div class="notice"><LoadFailed what={SPANS[span]} onretry={() => pickSpan(span)} /></div>
-          {:else if events && hasEvents(events)}
-            <div class="highlights"><CircleHighlights {events} {following} {now} /></div>
-          {:else if events}
-            <p class="quiet">Nothing three or more of the people you follow were on.</p>
-          {:else}
-            <div class="highlights"><Shimmer inline="100%" block="var(--social-circle-banner-height)" /></div>
-          {/if}
-        </div>
-      </DashboardPanel>
-    {/if}
     {@render panel(fetching !== null, body, board && board.cards.length > 0 ? navigator : undefined, count)}
 
     {#if board && board.bars.length > 0}
       {@const { activities, people } = board.stats}
       <DashboardPanel --panel-bg="var(--color-watchlist-bg)" title="Most Active" icon={fire}>
         {#snippet aside()}
-          <span class="stats">
-            {@render stat(userGroup, people, 'person', 'people')}
-            {@render stat(chartSimple, activities, 'activity', 'activities')}
-          </span>
+          <PanelCounts counts={[
+            { svg: userGroup, count: people, one: 'person', many: 'people' },
+            { svg: chartSimple, count: activities, one: 'activity', many: 'activities' },
+          ]} />
         {/snippet}
         <div class="band"><GenreBand genres={board.bars} words={PEOPLE} /></div>
       </DashboardPanel>
@@ -543,52 +367,13 @@ const boardOf = (items: readonly SocialItem[] | undefined) =>
     align-items: center;
   }
 
-  /* On the heading's line: as tall as the h2's, centered on it. */
-  .stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-stats);
-    align-items: center;
-    min-block-size: calc(var(--font-size-h2) * var(--line-height-headings));
-  }
-
   /* Under its heading, like the panel's own content under "Social Feed". */
   .band {
     padding-block: var(--space-social-band);
   }
 
-  /* Under its heading over the grid's own gutter, then a little room before the less and more pill, which hangs over
-   the panel's edge. */
-  .live {
-    container-type: inline-size;
-    margin-block-start: var(--space-social-live-top);
-    margin-block-end: calc(var(--space-social-live-end) - var(--gutter));
-  }
-
-  /* Smaller tablets: two across, half the width each. */
-  @container (width < 940px) {
-    .live :global(.poster-grid) {
-      --visible: 2;
-    }
-  }
-
   .controls + .grid {
     margin-block-start: var(--space-social-live-top);
-  }
-
-  /* Under its heading, as the feed's dropdowns sit under "Social Feed". */
-  .circle {
-    container-type: inline-size;
-    padding-block: var(--space-heading-dropdowns) var(--space-social-circle-end);
-  }
-
-  .highlights {
-    margin-block-start: var(--space-social-circle-top);
-  }
-
-  .quiet {
-    margin: var(--space-social-circle-top) 0 0;
-    color: var(--color-card-subtitle);
   }
 
   .grid {

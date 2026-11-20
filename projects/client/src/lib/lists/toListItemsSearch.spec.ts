@@ -8,7 +8,7 @@ describe('util: toListItemsSearch', () => {
     );
   });
 
-  it('should leave the hides to the page, which applies them to the whole list', () => {
+  it('should leave the hides and text to the page, which applies them to the whole list', () => {
     const query = { genres: ['drama'], terms: 'Heat', watchnow: 'netflix', hide: ['watched', 'nonotes'] };
     const search = toListItemsSearch({
       query,
@@ -21,7 +21,6 @@ describe('util: toListItemsSearch', () => {
       page: '1',
       limit: '24',
       genres: 'drama',
-      terms: 'Heat',
       watchnow: 'netflix',
     });
   });

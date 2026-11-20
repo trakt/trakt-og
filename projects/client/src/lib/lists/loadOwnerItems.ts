@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { listItemRowsSchema } from './listItemRowsSchema.ts';
 import type { ListQuery } from './ListQuery.ts';
+import { matchesListTerms } from './matchesListTerms.ts';
 import type { ListSort } from './resolveListSort.ts';
 import type { BuiltInListKind } from './toBuiltInListView.ts';
 import { toListItemsSearch } from './toListItemsSearch.ts';
@@ -48,5 +49,5 @@ export async function loadOwnerItems({
     new Set(rows.map(({ id }) => id)).size !== first.total
   )
     throw new Error('List changed while loading. Try again.');
-  return rows;
+  return rows.filter((row) => matchesListTerms(row, selection?.query.terms));
 }

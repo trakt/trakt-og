@@ -166,7 +166,7 @@ describe('loadList', () => {
     expect(authorized).toContain('/lists/44/collaborators');
   });
 
-  it('should read the whole list in its sort for the hides, without sending them, and keep the cover unfiltered', async () => {
+  it('should read the whole list in its sort for the hides and text, without sending them, and keep the cover unfiltered', async () => {
     const result = await load({
       query: '?hide=nonotes,watched&terms=Heat',
       token: 'abc',
@@ -175,13 +175,22 @@ describe('loadList', () => {
     if (!result.list) throw new Error('no list');
     expect(result.wholeList).toBe(true);
     expect(result.hideLimited).toBe(false);
-    expect(result.cards.map(({ title }) => title)).toEqual(['Heat', 'Ronin']);
+    expect(result.cards.map(({ title }) => title)).toEqual(['Heat']);
     expect(seen.some(({ url }) => [...url.searchParams.keys()].some((key) => key.startsWith('hide')))).toBe(false);
+    expect(seen.some(({ url }) => url.searchParams.has('terms'))).toBe(false);
     const whole = seen.find(({ url }) => url.searchParams.get('limit') === '250');
     expect(whole?.url.pathname).toBe('/users/sean/lists/heist-night/items/all/added/desc');
-    expect(whole?.url.searchParams.get('terms')).toBe('Heat');
-    const cover = seen.find(({ url }) => url.pathname.endsWith('/all/rank/asc'));
-    expect(cover?.url.searchParams.has('terms')).toBe(false);
+    expect(seen.some(({ url }) => url.pathname.endsWith('/all/rank/asc'))).toBe(true);
+  });
+
+  it('should filter the whole list by title in the page, since the worker ignores the text', async () => {
+    const result = await load({ query: '?terms=RON' });
+    if (!result.list) throw new Error('no list');
+    expect(result.wholeList).toBe(true);
+    expect(result.cards.map(({ title }) => title)).toEqual(['Ronin']);
+    expect(result.total).toBe(1);
+    expect(result.page).toEqual({ type: 'paginated', current: 1, total: 1 });
+    expect(result.stats?.count).toBe(1);
   });
 
   it('should send bare streaming slugs with the token and resolve applied chips', async () => {

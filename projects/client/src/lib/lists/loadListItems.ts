@@ -6,6 +6,7 @@ import { listCoverOf } from './listCoverOf.ts';
 import { type ListItemRow, listItemRowsSchema } from './listItemRowsSchema.ts';
 import { listPageMeta } from './listPageMeta.ts';
 import type { ListQuery } from './ListQuery.ts';
+import { matchesListTerms } from './matchesListTerms.ts';
 import { type ListSort, resolveListSort } from './resolveListSort.ts';
 import { type ListItemCard, toListItemCard } from './toListItemCard.ts';
 import { toListItemsSearch } from './toListItemsSearch.ts';
@@ -123,7 +124,9 @@ export async function loadListItems({
   // The hides apply in the browser too, over the whole list in the page's sort, up to the stats bar's cap.
   const hiding = (query.hide?.length ?? 0) > 0;
   const firstTooLong = hiding && tooLongToHide(first);
-  const readWhole = sortInBrowser || (hiding && !firstTooLong);
+  // So does the text filter, which the worker ignores.
+  const searching = Boolean(query.terms);
+  const readWhole = sortInBrowser || searching || (hiding && !firstTooLong);
   // Pages of a random sort would repeat items, so it's read ranked and shuffled once.
   const wholeSort = sortInBrowser || sort.by === 'random' ? RANKED : sort;
   const needsViewer = Boolean(token) && (needsToken || VIEWER_SORTS.includes(sort.by) || Boolean(query.watchnow));
@@ -172,7 +175,8 @@ export async function loadListItems({
   if (items.status !== 200) error(502, 'Trakt is having trouble loading this list.');
   const hideLimited = firstTooLong || (hiding && wholeList && tooLongToHide(items));
 
-  const rows = wholeList && sort.by === 'random' ? shuffled(items.rows) : items.rows;
+  const matched = searching ? items.rows.filter((row) => matchesListTerms(row, query.terms)) : items.rows;
+  const rows = wholeList && sort.by === 'random' ? shuffled(matched) : matched;
   const cards: ListItemCard[] = rows.map((row) => toListItemCard(row, { sortBy: sort.by, datePreferences }));
   const page: PageMeta = wholeList
     ? { type: 'paginated', current: query.page, total: Math.max(1, Math.ceil(cards.length / query.limit)) }
@@ -182,7 +186,7 @@ export async function loadListItems({
   // the browser, which counts every page of the list.
   const complete = wholeList || (query.page === 1 && (items.rows.length < query.limit || items.rows.length >= total));
   const withItems = viewerSignedIn;
-  const stats: ListStats | null = complete ? toListStats(items.rows, { withItems }) : null;
+  const stats: ListStats | null = complete ? toListStats(matched, { withItems }) : null;
   const statsRead: ListStatsRead | null = complete
     ? null
     : { base, query, total, withItems, viewer: viewerToken !== null };

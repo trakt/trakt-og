@@ -3493,8 +3493,8 @@
   --premiere-grid-gap: 16px;
   --radius-premiere-card: var(--radius-object);
   --shadow-premiere-card: 0 6px 18px rgb(0 0 0 / 0.25);
-  --premiere-logo-top: 20%; /* clear of the date chip */
-  --premiere-logo-height: 42%;
+  --premiere-logo-top: max(20%, 60px); /* clear of the date chip */
+  --premiere-logo-height: min(42%, 100% - var(--premiere-logo-top) - 44px); /* and of the tags */
   --premiere-chip-gap: 6px; /* between the countdown and the date */
   --color-premiere-cool: rgb(44 44 48 / 0.9); /* the countdown a month or more out */
   --color-premiere-warm: #c4690f; /* two weeks out */
